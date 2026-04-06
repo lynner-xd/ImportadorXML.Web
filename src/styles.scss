@@ -61,7 +61,7 @@ a {
 // ===== PrimeNG Dark Theme Overrides =====
 
 // Inputs
-.p-inputtext, .p-textarea, .p-password input, .p-select {
+.p-inputtext, .p-textarea, .p-password input {
   background: var(--bg-input) !important;
   border: 1px solid var(--border-default) !important;
   color: var(--text-primary) !important;
@@ -93,7 +93,7 @@ a {
   border: 1px solid var(--border-default) !important;
   border-radius: var(--radius-xs) !important;
 
-  &:hover {
+  &:enabled:hover {
     border-color: var(--border-strong) !important;
   }
 
@@ -108,7 +108,7 @@ a {
     font-size: 14px !important;
     font-family: 'Inter', sans-serif !important;
     padding: 0.65rem 0.85rem !important;
-    flex: 1;
+    flex: 1 !important;
 
     &.p-placeholder {
       color: var(--text-muted) !important;
@@ -119,10 +119,10 @@ a {
     color: var(--text-muted) !important;
     background: transparent !important;
     border: none !important;
-    width: 2.5rem;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    width: 2.5rem !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
   }
 }
 
@@ -134,7 +134,7 @@ a {
 
   .p-select-filter-input {
     background: var(--bg-input) !important;
-    border-color: var(--border-default) !important;
+    border: 1px solid var(--border-default) !important;
     color: var(--text-primary) !important;
     font-family: 'Inter', sans-serif !important;
     font-size: 14px !important;
