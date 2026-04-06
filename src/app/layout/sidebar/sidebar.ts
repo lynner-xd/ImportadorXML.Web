@@ -56,6 +56,14 @@ export class SidebarComponent {
     ];
   });
 
+  rootMenuItems = computed(() =>
+    this.menuItems().map(item => ({
+      label: item.label,
+      icon: item.icon,
+      route: item.route ?? item.children?.[0]?.route,
+    }))
+  );
+
   toggleExpand(item: MenuItem): void {
     item.expanded = !item.expanded;
   }
