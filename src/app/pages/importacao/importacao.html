@@ -1,0 +1,90 @@
+<div class="page-header">
+  <h1>Importar XML</h1>
+  <p>Faça upload de arquivos XML fiscais (NFe, NFCe, NFSe)</p>
+</div>
+
+<div class="card">
+  <div class="import-form">
+    <div class="field">
+      <label>Tipo de Importação</label>
+      <select [(ngModel)]="tipo" class="input-select">
+        <option value="Entrada">Entrada</option>
+        <option value="Saida">Saída</option>
+      </select>
+    </div>
+
+    <div class="field">
+      <label>Arquivos XML</label>
+      <div class="file-drop" (click)="fileInput.click()">
+        <input #fileInput type="file" accept=".xml" multiple (change)="onFileSelect($event)" hidden />
+        <i class="pi pi-upload"></i>
+        @if (arquivos.length === 0) {
+          <span>Clique para selecionar arquivos XML</span>
+        } @else {
+          <span>{{ arquivos.length }} arquivo(s) selecionado(s)</span>
+        }
+      </div>
+    </div>
+
+    @if (arquivos.length > 0) {
+      <div class="file-list">
+        @for (f of arquivos; track f.name) {
+          <div class="file-item">
+            <i class="pi pi-file"></i>
+            <span>{{ f.name }}</span>
+            <span class="file-size">{{ (f.size / 1024).toFixed(1) }} KB</span>
+          </div>
+        }
+      </div>
+    }
+
+    @if (error()) {
+      <div class="error-msg">
+        <i class="pi pi-exclamation-circle"></i>
+        {{ error() }}
+      </div>
+    }
+
+    <div class="actions">
+      <button class="btn-primary" (click)="importar()" [disabled]="loading()">
+        @if (loading()) {
+          <i class="pi pi-spinner pi-spin"></i> Importando...
+        } @else {
+          <i class="pi pi-upload"></i> Importar
+        }
+      </button>
+      <button class="btn-secondary" (click)="limpar()">Limpar</button>
+    </div>
+  </div>
+</div>
+
+@if (resultado()) {
+  <div class="card result-card">
+    <h3>Resultado da Importação</h3>
+    <div class="result-stats">
+      <div class="stat">
+        <span class="stat-value">{{ resultado()!.totalProcessados }}</span>
+        <span class="stat-label">Processados</span>
+      </div>
+      <div class="stat success">
+        <span class="stat-value">{{ resultado()!.totalSucesso }}</span>
+        <span class="stat-label">Sucesso</span>
+      </div>
+      <div class="stat error">
+        <span class="stat-value">{{ resultado()!.totalErros }}</span>
+        <span class="stat-label">Erros</span>
+      </div>
+    </div>
+
+    @if (resultado()!.erros.length > 0) {
+      <div class="errors-list">
+        <h4>Erros encontrados:</h4>
+        @for (e of resultado()!.erros; track e.arquivo) {
+          <div class="error-item">
+            <strong>{{ e.arquivo }}:</strong> {{ e.mensagem }}
+          </div>
+        }
+      </div>
+    }
+  </div>
+}

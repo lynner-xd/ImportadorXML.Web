@@ -1,0 +1,107 @@
+<div class="page-header">
+  <div>
+    <h1>Lançamentos Manuais</h1>
+    <p>Gerencie os lançamentos contábeis manuais</p>
+  </div>
+  <button class="btn-primary" (click)="abrirDialog()">
+    <i class="pi pi-plus"></i> Novo Lançamento
+  </button>
+</div>
+
+<div class="card">
+  @if (loading()) {
+    <div class="loading"><i class="pi pi-spinner pi-spin"></i> Carregando...</div>
+  } @else if (lancamentos().length === 0) {
+    <div class="empty">
+      <i class="pi pi-inbox"></i>
+      <p>Nenhum lançamento manual encontrado.</p>
+    </div>
+  } @else {
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Data</th>
+          <th>Descrição</th>
+          <th>Débito</th>
+          <th>Crédito</th>
+          <th class="text-right">Valor</th>
+          <th class="text-center">Ações</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (l of lancamentos(); track l.id) {
+          <tr>
+            <td>{{ l.data | date:'dd/MM/yyyy' }}</td>
+            <td>{{ l.descricao }}</td>
+            <td>{{ l.contaDebitoCodigo }} - {{ l.contaDebitoNome }}</td>
+            <td>{{ l.contaCreditoCodigo }} - {{ l.contaCreditoNome }}</td>
+            <td class="text-right">{{ l.valor | number:'1.2-2' }}</td>
+            <td class="text-center">
+              <button class="btn-icon danger" (click)="excluir(l.id)" title="Excluir">
+                <i class="pi pi-trash"></i>
+              </button>
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  }
+</div>
+
+<!-- Dialog Novo Lançamento -->
+@if (showDialog()) {
+  <div class="dialog-overlay" (click)="showDialog.set(false)">
+    <div class="dialog" (click)="$event.stopPropagation()">
+      <div class="dialog-header">
+        <h2>Novo Lançamento</h2>
+        <button class="btn-icon" (click)="showDialog.set(false)"><i class="pi pi-times"></i></button>
+      </div>
+      <div class="dialog-content">
+        <div class="form-grid">
+          <div class="field">
+            <label>Data</label>
+            <input type="date" [(ngModel)]="form.data" />
+          </div>
+          <div class="field">
+            <label>Valor (R$)</label>
+            <input type="text" [ngModel]="valorFormatado" (ngModelChange)="onValorInput($event)" placeholder="0,00" />
+          </div>
+        </div>
+        <div class="field">
+          <label>Descrição</label>
+          <input type="text" [(ngModel)]="form.descricao" placeholder="Descrição do lançamento" />
+        </div>
+        <div class="field">
+          <label>Observação</label>
+          <textarea [(ngModel)]="form.observacao" placeholder="Observações adicionais (opcional)" rows="3"></textarea>
+        </div>
+        <div class="field">
+          <label>Conta Débito</label>
+          <select [(ngModel)]="form.contaDebitoId" class="input-select">
+            <option value="">Selecione...</option>
+            @for (c of contasAnaliticas(); track c.id) {
+              <option [value]="c.id">{{ c.codigo }} - {{ c.nome }}</option>
+            }
+          </select>
+        </div>
+        <div class="field">
+          <label>Conta Crédito</label>
+          <select [(ngModel)]="form.contaCreditoId" class="input-select">
+            <option value="">Selecione...</option>
+            @for (c of contasAnaliticas(); track c.id) {
+              <option [value]="c.id">{{ c.codigo }} - {{ c.nome }}</option>
+            }
+          </select>
+        </div>
+
+        @if (error()) {
+          <div class="error-msg"><i class="pi pi-exclamation-circle"></i> {{ error() }}</div>
+        }
+      </div>
+      <div class="dialog-footer">
+        <button class="btn-secondary" (click)="showDialog.set(false)">Cancelar</button>
+        <button class="btn-primary" (click)="salvar()">Salvar</button>
+      </div>
+    </div>
+  </div>
+}

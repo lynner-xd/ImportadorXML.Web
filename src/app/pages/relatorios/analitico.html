@@ -1,0 +1,81 @@
+<div class="page-header">
+  <div>
+    <h1>Relatório Analítico</h1>
+    <p>Movimentação detalhada por conta contábil</p>
+  </div>
+</div>
+
+<div class="card">
+  <div class="filtros">
+    @if (isAdmin) {
+      <div class="field">
+        <label>Empresa</label>
+        <select [(ngModel)]="empresaId" class="input-select">
+          <option value="">Selecione a empresa...</option>
+          @for (e of empresas(); track e.id) {
+            <option [value]="e.id">{{ e.razaoSocial }} - {{ e.cnpj }}</option>
+          }
+        </select>
+      </div>
+    }
+    <div class="field">
+      <label>Conta</label>
+      <select [(ngModel)]="contaId" class="input-select">
+        <option value="">Selecione a conta...</option>
+        @for (c of contas(); track c.id) {
+          <option [value]="c.id">{{ c.codigo }} - {{ c.nome }}</option>
+        }
+      </select>
+    </div>
+    <div class="field">
+      <label>Data Início</label>
+      <input type="date" [(ngModel)]="dataInicio" />
+    </div>
+    <div class="field">
+      <label>Data Fim</label>
+      <input type="date" [(ngModel)]="dataFim" />
+    </div>
+    <div class="field field-actions">
+      <button class="btn-primary" (click)="gerar()" [disabled]="loading()">
+        @if (loading()) { <i class="pi pi-spinner pi-spin"></i> } @else { <i class="pi pi-search"></i> }
+        Gerar
+      </button>
+      @if (gerado() && dados().length > 0) {
+        <button class="btn-secondary" (click)="exportarPdf()"><i class="pi pi-file-pdf"></i> PDF</button>
+      }
+    </div>
+  </div>
+</div>
+
+@if (gerado()) {
+  <div class="card" style="margin-top: 1rem;">
+    @if (dados().length === 0) {
+      <div class="empty"><i class="pi pi-inbox"></i><p>Nenhum dado encontrado.</p></div>
+    } @else {
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Data</th>
+            <th>Descrição</th>
+            <th class="text-right">Saldo Anterior</th>
+            <th class="text-right">Débito</th>
+            <th class="text-right">Crédito</th>
+            <th class="text-right">Saldo Atual</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (item of dados(); track $index) {
+            <tr>
+              <td>{{ item.data | date:'dd/MM/yyyy' }}</td>
+              <td>{{ item.descricao }}</td>
+              <td class="text-right">{{ item.saldoAnterior | number:'1.2-2' }}</td>
+              <td class="text-right">{{ item.debito | number:'1.2-2' }}</td>
+              <td class="text-right">{{ item.credito | number:'1.2-2' }}</td>
+              <td class="text-right"><strong>{{ item.saldoAtual | number:'1.2-2' }}</strong></td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    }
+  </div>
+}

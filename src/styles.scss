@@ -1,0 +1,323 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+:root {
+  // Cores principais
+  --primary-dark: #0A1F44;
+  --primary-base: #123A7A;
+  --accent-primary: #2F80ED;
+  --accent-secondary: #56A3FF;
+
+  // Fundos
+  --bg-app: #0B0F1A;
+  --bg-section: #111827;
+  --bg-card: #1A2236;
+  --bg-hover: #222C44;
+  --bg-input: #0F172A;
+
+  // Tipografia
+  --text-primary: #E6EAF2;
+  --text-secondary: #AAB3C5;
+  --text-muted: #6B7280;
+  --text-on-primary: #FFFFFF;
+
+  // Bordas
+  --border-default: #2A344D;
+  --border-strong: #34415E;
+  --divider: #1F2937;
+  --focus-ring: #2F80ED;
+
+  // Feedback
+  --success: #22C55E;
+  --error: #EF4444;
+  --warning: #F59E0B;
+  --info: #38BDF8;
+
+  // Espaçamento
+  --radius: 12px;
+  --radius-sm: 8px;
+  --radius-xs: 6px;
+}
+
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html, body {
+  height: 100%;
+  font-family: 'Inter', sans-serif;
+  font-size: 14px;
+  background-color: var(--bg-app);
+  color: var(--text-primary);
+  -webkit-font-smoothing: antialiased;
+}
+
+a {
+  color: var(--accent-primary);
+  text-decoration: none;
+}
+
+// ===== PrimeNG Dark Theme Overrides =====
+
+// Inputs
+.p-inputtext, .p-textarea, .p-password input, .p-select {
+  background: var(--bg-input) !important;
+  border: 1px solid var(--border-default) !important;
+  color: var(--text-primary) !important;
+  border-radius: var(--radius-xs) !important;
+  font-family: 'Inter', sans-serif !important;
+  font-size: 14px !important;
+  padding: 0.65rem 0.85rem !important;
+
+  &::placeholder {
+    color: var(--text-muted) !important;
+  }
+
+  &:enabled:hover {
+    border-color: var(--border-strong) !important;
+  }
+
+  &:enabled:focus {
+    border-color: var(--focus-ring) !important;
+    box-shadow: 0 0 0 2px rgba(47, 128, 237, 0.2) !important;
+  }
+}
+
+// Select / Dropdown
+.p-select-panel, .p-select-overlay {
+  background: var(--bg-card) !important;
+  border: 1px solid var(--border-default) !important;
+  border-radius: var(--radius-sm) !important;
+}
+
+.p-select-option {
+  color: var(--text-primary) !important;
+
+  &:hover, &.p-select-option-selected {
+    background: var(--bg-hover) !important;
+    color: var(--accent-primary) !important;
+  }
+}
+
+// Buttons
+.p-button {
+  border-radius: var(--radius-xs) !important;
+  font-family: 'Inter', sans-serif !important;
+  font-weight: 600 !important;
+  font-size: 14px !important;
+  padding: 0.6rem 1.2rem !important;
+  transition: all 0.15s ease !important;
+
+  &.p-button-primary, &:not(.p-button-secondary):not(.p-button-danger):not(.p-button-outlined):not(.p-button-text) {
+    background: var(--accent-primary) !important;
+    border-color: var(--accent-primary) !important;
+    color: var(--text-on-primary) !important;
+
+    &:hover {
+      background: var(--accent-secondary) !important;
+      border-color: var(--accent-secondary) !important;
+    }
+  }
+
+  &.p-button-secondary, &.p-button-outlined {
+    background: transparent !important;
+    border: 1px solid var(--border-default) !important;
+    color: var(--text-primary) !important;
+
+    &:hover {
+      background: var(--bg-hover) !important;
+    }
+  }
+
+  &.p-button-danger {
+    background: var(--error) !important;
+    border-color: var(--error) !important;
+    color: var(--text-on-primary) !important;
+
+    &:hover {
+      background: #dc2626 !important;
+    }
+  }
+
+  &.p-button-success {
+    background: var(--success) !important;
+    border-color: var(--success) !important;
+    color: var(--text-on-primary) !important;
+  }
+
+  &.p-button-text {
+    background: transparent !important;
+    border: none !important;
+    color: var(--text-secondary) !important;
+
+    &:hover {
+      color: var(--text-primary) !important;
+      background: var(--bg-hover) !important;
+    }
+  }
+
+  &.p-button-sm {
+    padding: 0.4rem 0.8rem !important;
+    font-size: 13px !important;
+  }
+}
+
+// Table
+.p-datatable {
+  .p-datatable-thead > tr > th {
+    background: var(--bg-section) !important;
+    color: var(--text-secondary) !important;
+    border-bottom: 1px solid var(--border-default) !important;
+    font-weight: 600 !important;
+    font-size: 13px !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.03em !important;
+    padding: 0.75rem 1rem !important;
+  }
+
+  .p-datatable-tbody > tr {
+    background: transparent !important;
+    color: var(--text-primary) !important;
+    border-bottom: 1px solid var(--divider) !important;
+
+    &:hover {
+      background: var(--bg-hover) !important;
+    }
+
+    > td {
+      padding: 0.75rem 1rem !important;
+      border: none !important;
+    }
+  }
+}
+
+// Dialog
+.p-dialog {
+  background: var(--bg-card) !important;
+  border: 1px solid var(--border-default) !important;
+  border-radius: var(--radius) !important;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5) !important;
+
+  .p-dialog-header {
+    background: var(--bg-card) !important;
+    color: var(--text-primary) !important;
+    border-bottom: 1px solid var(--divider) !important;
+    padding: 1.25rem 1.5rem !important;
+  }
+
+  .p-dialog-content {
+    background: var(--bg-card) !important;
+    color: var(--text-primary) !important;
+    padding: 1.5rem !important;
+  }
+
+  .p-dialog-footer {
+    background: var(--bg-card) !important;
+    border-top: 1px solid var(--divider) !important;
+    padding: 1rem 1.5rem !important;
+  }
+}
+
+.p-dialog-mask {
+  background: rgba(0, 0, 0, 0.6) !important;
+}
+
+// Toast
+.p-toast-message {
+  background: var(--bg-card) !important;
+  border: 1px solid var(--border-default) !important;
+  border-radius: var(--radius-sm) !important;
+  color: var(--text-primary) !important;
+}
+
+// Tag / Badge
+.p-tag {
+  font-size: 12px !important;
+  font-weight: 600 !important;
+  border-radius: var(--radius-xs) !important;
+  padding: 0.25rem 0.6rem !important;
+
+  &.p-tag-success {
+    background: rgba(34, 197, 94, 0.15) !important;
+    color: var(--success) !important;
+  }
+
+  &.p-tag-danger {
+    background: rgba(239, 68, 68, 0.15) !important;
+    color: var(--error) !important;
+  }
+
+  &.p-tag-warn, &.p-tag-warning {
+    background: rgba(245, 158, 11, 0.15) !important;
+    color: var(--warning) !important;
+  }
+
+  &.p-tag-info {
+    background: rgba(56, 189, 248, 0.15) !important;
+    color: var(--info) !important;
+  }
+}
+
+// Checkbox
+.p-checkbox .p-checkbox-box.p-highlight {
+  background: var(--accent-primary) !important;
+  border-color: var(--accent-primary) !important;
+}
+
+// FileUpload
+.p-fileupload {
+  background: var(--bg-card) !important;
+  border: 1px solid var(--border-default) !important;
+  border-radius: var(--radius) !important;
+}
+
+// Confirm dialog
+.p-confirmdialog {
+  .p-dialog-content {
+    padding: 1.5rem !important;
+  }
+}
+
+// Scrollbar
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--bg-app);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--border-strong);
+  border-radius: 3px;
+
+  &:hover {
+    background: var(--text-muted);
+  }
+}
+
+// Utility classes
+.card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius);
+  padding: 1.5rem;
+}
+
+.page-header {
+  margin-bottom: 1.5rem;
+
+  h1 {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 0.25rem;
+  }
+
+  p {
+    font-size: 0.875rem;
+    color: var(--text-secondary);
+  }
+}

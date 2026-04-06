@@ -1,0 +1,104 @@
+<div class="page-header">
+  <div>
+    <h1>Gestão de Usuários</h1>
+    <p>Cadastre, edite e controle o acesso das empresas</p>
+  </div>
+  <button class="btn-primary" (click)="abrirNovo()">
+    <i class="pi pi-plus"></i> Novo Usuário
+  </button>
+</div>
+
+@if (successMsg()) {
+  <div class="success-msg">
+    <i class="pi pi-check-circle"></i> {{ successMsg() }}
+  </div>
+}
+
+<div class="card">
+  @if (loading()) {
+    <div class="loading"><i class="pi pi-spinner pi-spin"></i> Carregando...</div>
+  } @else if (usuarios().length === 0) {
+    <div class="empty"><i class="pi pi-users"></i><p>Nenhum usuário cadastrado.</p></div>
+  } @else {
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Email</th>
+          <th>Razão Social</th>
+          <th>CNPJ</th>
+          <th>Data Criação</th>
+          <th class="text-center">Status</th>
+          <th class="text-center">Ações</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (u of usuarios(); track u.id) {
+          <tr>
+            <td>{{ u.email }}</td>
+            <td>{{ u.empresa?.razaoSocial }}</td>
+            <td>{{ u.empresa?.cnpj }}</td>
+            <td>{{ u.dataCriacao | date:'dd/MM/yyyy' }}</td>
+            <td class="text-center">
+              @if (u.ativo) {
+                <span class="tag tag-success">Ativo</span>
+              } @else {
+                <span class="tag tag-danger">Inativo</span>
+              }
+            </td>
+            <td class="text-center actions-cell">
+              <button class="btn-icon" (click)="abrirEditar(u)" title="Editar">
+                <i class="pi pi-pencil"></i>
+              </button>
+              <button class="btn-icon" (click)="alterarStatus(u)" [title]="u.ativo ? 'Inativar' : 'Ativar'">
+                <i [class]="u.ativo ? 'pi pi-ban' : 'pi pi-check'"></i>
+              </button>
+              <button class="btn-icon" (click)="resetSenha(u)" title="Resetar Senha">
+                <i class="pi pi-refresh"></i>
+              </button>
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  }
+</div>
+
+@if (showDialog()) {
+  <div class="dialog-overlay" (click)="showDialog.set(false)">
+    <div class="dialog" (click)="$event.stopPropagation()">
+      <div class="dialog-header">
+        <h2>{{ editando() ? 'Editar Usuário' : 'Novo Usuário' }}</h2>
+        <button class="btn-icon" (click)="showDialog.set(false)"><i class="pi pi-times"></i></button>
+      </div>
+      <div class="dialog-content">
+        <div class="field">
+          <label>Email</label>
+          <input type="email" [(ngModel)]="form.email" placeholder="email@empresa.com" />
+        </div>
+        <div class="field">
+          <label>Razão Social</label>
+          <input type="text" [(ngModel)]="form.razaoSocial" placeholder="Nome da empresa" />
+        </div>
+        <div class="field">
+          <label>CNPJ</label>
+          <input type="text" [(ngModel)]="form.cnpj" placeholder="00.000.000/0000-00" />
+        </div>
+
+        @if (!editando()) {
+          <div class="info-msg">
+            <i class="pi pi-info-circle"></i>
+            Uma senha será gerada e enviada por email ao usuário.
+          </div>
+        }
+
+        @if (error()) {
+          <div class="error-msg"><i class="pi pi-exclamation-circle"></i> {{ error() }}</div>
+        }
+      </div>
+      <div class="dialog-footer">
+        <button class="btn-secondary" (click)="showDialog.set(false)">Cancelar</button>
+        <button class="btn-primary" (click)="salvar()">{{ editando() ? 'Atualizar' : 'Criar' }}</button>
+      </div>
+    </div>
+  </div>
+}

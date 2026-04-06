@@ -1,0 +1,68 @@
+<div class="page-header">
+  <div>
+    <h1>Configuração de Email</h1>
+    <p>Configure o servidor SMTP para envio de emails do sistema</p>
+  </div>
+</div>
+
+@if (successMsg()) {
+  <div class="success-msg"><i class="pi pi-check-circle"></i> {{ successMsg() }}</div>
+}
+
+@if (loading()) {
+  <div class="card"><div class="loading"><i class="pi pi-spinner pi-spin"></i> Carregando...</div></div>
+} @else {
+  <div class="card">
+    <div class="form-grid">
+      <div class="field">
+        <label>Servidor SMTP *</label>
+        <input type="text" [(ngModel)]="form.servidorSmtp" placeholder="Ex: smtp.gmail.com" />
+      </div>
+      <div class="field">
+        <label>Porta *</label>
+        <input type="number" [(ngModel)]="form.porta" />
+      </div>
+    </div>
+
+    <div class="form-grid">
+      <div class="field">
+        <label>Email Remetente *</label>
+        <input type="email" [(ngModel)]="form.emailRemetente" placeholder="noreply@empresa.com" />
+      </div>
+      <div class="field">
+        <label>Senha do Email {{ config()?.configurado ? '' : '*' }}</label>
+        <input type="password" [(ngModel)]="form.senhaRemetente" [placeholder]="config()?.configurado ? 'Deixe vazio para manter a atual' : '••••••••'" />
+      </div>
+    </div>
+
+    <div class="form-grid">
+      <div class="field">
+        <label>Nome do Remetente</label>
+        <input type="text" [(ngModel)]="form.nomeRemetente" placeholder="ImportadorXML" />
+      </div>
+      <div class="field checkbox-field">
+        <label>
+          <input type="checkbox" [(ngModel)]="form.usarSsl" />
+          Usar SSL/TLS
+        </label>
+      </div>
+    </div>
+
+    @if (error()) {
+      <div class="error-msg"><i class="pi pi-exclamation-circle"></i> {{ error() }}</div>
+    }
+
+    <div class="actions">
+      <button class="btn-primary" (click)="salvar()" [disabled]="saving()">
+        @if (saving()) { <i class="pi pi-spinner pi-spin"></i> } @else { <i class="pi pi-save"></i> }
+        Salvar
+      </button>
+      @if (config()?.configurado) {
+        <button class="btn-secondary" (click)="testar()" [disabled]="testing()">
+          @if (testing()) { <i class="pi pi-spinner pi-spin"></i> } @else { <i class="pi pi-send"></i> }
+          Enviar Email de Teste
+        </button>
+      }
+    </div>
+  </div>
+}

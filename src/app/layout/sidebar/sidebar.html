@@ -1,0 +1,52 @@
+<aside class="sidebar">
+  <div class="sidebar-header">
+    <img src="logo-provisoria.png" alt="Logo" class="sidebar-logo" />
+  </div>
+
+  <nav class="sidebar-nav">
+    @for (item of menuItems(); track item.label) {
+      @if (item.children) {
+        <div class="nav-group" [class.expanded]="item.expanded">
+          <button class="nav-item nav-group-toggle" (click)="toggleExpand(item)">
+            <i [class]="item.icon"></i>
+            <span>{{ item.label }}</span>
+            <i class="pi pi-chevron-down toggle-icon"></i>
+          </button>
+          <div class="nav-children">
+            @for (child of item.children; track child.label) {
+              <a class="nav-item nav-child" [routerLink]="child.route" routerLinkActive="active">
+                <i [class]="child.icon"></i>
+                <span>{{ child.label }}</span>
+              </a>
+            }
+          </div>
+        </div>
+      } @else {
+        <a class="nav-item" [routerLink]="item.route" routerLinkActive="active">
+          <i [class]="item.icon"></i>
+          <span>{{ item.label }}</span>
+        </a>
+      }
+    }
+  </nav>
+
+  <div class="sidebar-footer">
+    <div class="user-info">
+      <i class="pi pi-user"></i>
+      <div class="user-details">
+        <span class="user-email">{{ auth.user()?.email }}</span>
+        <span class="user-role">{{ auth.user()?.role }}</span>
+      </div>
+    </div>
+    <div class="footer-actions">
+      <a routerLink="/alterar-senha" class="footer-link">
+        <i class="pi pi-key"></i>
+        <span>Alterar Senha</span>
+      </a>
+      <button class="footer-link logout" (click)="logout()">
+        <i class="pi pi-sign-out"></i>
+        <span>Sair</span>
+      </button>
+    </div>
+  </div>
+</aside>

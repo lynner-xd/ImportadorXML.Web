@@ -1,0 +1,104 @@
+<div class="page-header">
+  <div>
+    <h1>Plano de Contas</h1>
+    <p>Gerencie as contas contábeis da empresa</p>
+  </div>
+  <button class="btn-primary" (click)="abrirNovo()">
+    <i class="pi pi-plus"></i> Nova Conta
+  </button>
+</div>
+
+<div class="card">
+  @if (loading()) {
+    <div class="loading"><i class="pi pi-spinner pi-spin"></i> Carregando...</div>
+  } @else if (contas().length === 0) {
+    <div class="empty">
+      <i class="pi pi-sitemap"></i>
+      <p>Nenhuma conta cadastrada.</p>
+    </div>
+  } @else {
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Código</th>
+          <th>Nome</th>
+          <th>Tipo</th>
+          <th class="text-center">Ações</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (c of contas(); track c.id; let i = $index) {
+          <tr [class]="getRowClass(c, i)">
+            <td><strong>{{ c.codigo }}</strong></td>
+            <td>{{ c.nome }}</td>
+            <td><span [class]="'tag tag-' + c.tipo.toLowerCase()">{{ c.tipo }}</span></td>
+            <td class="text-center">
+              <button class="btn-icon" (click)="abrirEditar(c)" title="Editar">
+                <i class="pi pi-pencil"></i>
+              </button>
+              <button class="btn-icon danger" (click)="excluir(c.id)" title="Excluir">
+                <i class="pi pi-trash"></i>
+              </button>
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  }
+</div>
+
+@if (showDialog()) {
+  <div class="dialog-overlay" (click)="showDialog.set(false)">
+    <div class="dialog" (click)="$event.stopPropagation()">
+      <div class="dialog-header">
+        <h2>{{ editando() ? 'Editar Conta' : 'Nova Conta' }}</h2>
+        <button class="btn-icon" (click)="showDialog.set(false)"><i class="pi pi-times"></i></button>
+      </div>
+      <div class="dialog-content">
+        @if (!editando()) {
+          <div class="field">
+            <label>Conta Pai</label>
+            <select [(ngModel)]="contaPaiSelecionada" (ngModelChange)="onContaPaiChange()" class="input-select">
+              <option value="">Selecione a conta pai...</option>
+              @for (cp of contasPai(); track cp.codigo) {
+                <option [value]="cp.codigo">{{ cp.label }}</option>
+              }
+            </select>
+          </div>
+          @if (codigoGerado()) {
+            <div class="codigo-preview">
+              <span class="codigo-label">Código gerado:</span>
+              <span class="codigo-valor">{{ codigoGerado() }}</span>
+            </div>
+          }
+        } @else {
+          <div class="codigo-preview">
+            <span class="codigo-label">Código:</span>
+            <span class="codigo-valor">{{ form.codigo }}</span>
+          </div>
+        }
+        <div class="field">
+          <label>Nome</label>
+          <input type="text" [(ngModel)]="form.nome" placeholder="Nome da conta" (input)="form.nome = form.nome.toUpperCase()" style="text-transform: uppercase;" />
+        </div>
+        <div class="field">
+          <label>Tipo</label>
+          <select [(ngModel)]="form.tipo" class="input-select">
+            <option value="Ativo">Ativo</option>
+            <option value="Passivo">Passivo</option>
+            <option value="Receita">Receita</option>
+            <option value="Despesa">Despesa</option>
+          </select>
+        </div>
+
+        @if (error()) {
+          <div class="error-msg"><i class="pi pi-exclamation-circle"></i> {{ error() }}</div>
+        }
+      </div>
+      <div class="dialog-footer">
+        <button class="btn-secondary" (click)="showDialog.set(false)">Cancelar</button>
+        <button class="btn-primary" (click)="salvar()">{{ editando() ? 'Atualizar' : 'Criar' }}</button>
+      </div>
+    </div>
+  </div>
+}

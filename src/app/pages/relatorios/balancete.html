@@ -1,0 +1,78 @@
+<div class="page-header">
+  <div>
+    <h1>Relatório Balancete</h1>
+    <p>Visualize o balancete contábil por período</p>
+  </div>
+</div>
+
+<div class="card">
+  <div class="filtros">
+    @if (isAdmin) {
+      <div class="field">
+        <label>Empresa</label>
+        <select [(ngModel)]="empresaId" class="input-select">
+          <option value="">Selecione a empresa...</option>
+          @for (e of empresas(); track e.id) {
+            <option [value]="e.id">{{ e.razaoSocial }} - {{ e.cnpj }}</option>
+          }
+        </select>
+      </div>
+    }
+    <div class="field">
+      <label>Data Início</label>
+      <input type="date" [(ngModel)]="dataInicio" />
+    </div>
+    <div class="field">
+      <label>Data Fim</label>
+      <input type="date" [(ngModel)]="dataFim" />
+    </div>
+    <div class="field field-actions">
+      <button class="btn-primary" (click)="gerar()" [disabled]="loading()">
+        @if (loading()) {
+          <i class="pi pi-spinner pi-spin"></i>
+        } @else {
+          <i class="pi pi-search"></i>
+        }
+        Gerar
+      </button>
+      @if (gerado() && dados().length > 0) {
+        <button class="btn-secondary" (click)="exportarPdf()">
+          <i class="pi pi-file-pdf"></i> PDF
+        </button>
+      }
+    </div>
+  </div>
+</div>
+
+@if (gerado()) {
+  <div class="card" style="margin-top: 1rem;">
+    @if (dados().length === 0) {
+      <div class="empty"><i class="pi pi-inbox"></i><p>Nenhum dado encontrado para o período.</p></div>
+    } @else {
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Código</th>
+            <th>Conta</th>
+            <th class="text-right">Saldo Anterior</th>
+            <th class="text-right">Débitos</th>
+            <th class="text-right">Créditos</th>
+            <th class="text-right">Saldo Atual</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (item of dados(); track item.codigo) {
+            <tr>
+              <td><strong>{{ item.codigo }}</strong></td>
+              <td>{{ item.nome }}</td>
+              <td class="text-right">{{ item.saldoAnterior | number:'1.2-2' }}</td>
+              <td class="text-right">{{ item.debitos | number:'1.2-2' }}</td>
+              <td class="text-right">{{ item.creditos | number:'1.2-2' }}</td>
+              <td class="text-right"><strong>{{ item.saldoAtual | number:'1.2-2' }}</strong></td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    }
+  </div>
+}
