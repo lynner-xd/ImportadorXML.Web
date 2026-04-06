@@ -85,17 +85,81 @@ a {
 }
 
 // Select / Dropdown
-.p-select-panel, .p-select-overlay {
+.p-select {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  background: var(--bg-input) !important;
+  border: 1px solid var(--border-default) !important;
+  border-radius: var(--radius-xs) !important;
+
+  &:hover {
+    border-color: var(--border-strong) !important;
+  }
+
+  &.p-focus {
+    border-color: var(--focus-ring) !important;
+    box-shadow: 0 0 0 2px rgba(47, 128, 237, 0.2) !important;
+    outline: none !important;
+  }
+
+  .p-select-label {
+    color: var(--text-primary) !important;
+    font-size: 14px !important;
+    font-family: 'Inter', sans-serif !important;
+    padding: 0.65rem 0.85rem !important;
+    flex: 1;
+
+    &.p-placeholder {
+      color: var(--text-muted) !important;
+    }
+  }
+
+  .p-select-dropdown {
+    color: var(--text-muted) !important;
+    background: transparent !important;
+    border: none !important;
+    width: 2.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+}
+
+.p-select-overlay {
   background: var(--bg-card) !important;
   border: 1px solid var(--border-default) !important;
   border-radius: var(--radius-sm) !important;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4) !important;
+
+  .p-select-filter-input {
+    background: var(--bg-input) !important;
+    border-color: var(--border-default) !important;
+    color: var(--text-primary) !important;
+    font-family: 'Inter', sans-serif !important;
+    font-size: 14px !important;
+
+    &::placeholder {
+      color: var(--text-muted) !important;
+    }
+  }
 }
 
 .p-select-option {
   color: var(--text-primary) !important;
+  font-size: 14px !important;
+  font-family: 'Inter', sans-serif !important;
+  padding: 0.6rem 0.85rem !important;
+  transition: background 0.1s ease !important;
 
-  &:hover, &.p-select-option-selected {
+  &:hover,
+  &.p-focus {
     background: var(--bg-hover) !important;
+    color: var(--text-primary) !important;
+  }
+
+  &.p-select-option-selected {
+    background: rgba(47, 128, 237, 0.12) !important;
     color: var(--accent-primary) !important;
   }
 }
