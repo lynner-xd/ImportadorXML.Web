@@ -93,7 +93,7 @@ a {
   border: 1px solid var(--border-default) !important;
   border-radius: var(--radius-xs) !important;
 
-  &:enabled:hover {
+  &:not(.p-disabled):hover {
     border-color: var(--border-strong) !important;
   }
 
