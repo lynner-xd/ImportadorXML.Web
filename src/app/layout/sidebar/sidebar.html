@@ -50,3 +50,16 @@
     </div>
   </div>
 </aside>
+
+<nav class="bottom-nav">
+  @for (item of rootMenuItems(); track item.label) {
+    <a
+      class="bottom-nav-item"
+      [routerLink]="item.route"
+      routerLinkActive="active"
+    >
+      <i [class]="item.icon"></i>
+      <span>{{ item.label }}</span>
+    </a>
+  }
+</nav>
