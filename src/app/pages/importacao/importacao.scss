@@ -179,3 +179,23 @@
   color: var(--text-secondary);
   border-bottom: 1px solid var(--divider);
 }
+
+@media (max-width: 768px) {
+  .result-stats {
+    flex-wrap: wrap;
+    gap: 1rem;
+
+    .stat { flex: 1; min-width: 80px; }
+  }
+
+  .actions {
+    flex-direction: column;
+
+    .btn-primary, .btn-secondary {
+      width: 100%;
+      justify-content: center;
+    }
+  }
+
+  .input-select { width: 100%; }
+}

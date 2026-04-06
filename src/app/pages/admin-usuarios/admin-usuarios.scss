@@ -41,3 +41,39 @@
 
 .info-msg { display: flex; align-items: center; gap: 0.5rem; padding: 0.65rem 0.85rem; background: rgba(56, 189, 248, 0.1); border: 1px solid rgba(56, 189, 248, 0.3); border-radius: var(--radius-xs); color: var(--info); font-size: 0.8125rem; }
 .error-msg { display: flex; align-items: center; gap: 0.5rem; padding: 0.65rem 0.85rem; background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.3); border-radius: var(--radius-xs); color: var(--error); font-size: 0.8125rem; }
+
+@media (max-width: 768px) {
+  .page-header {
+    flex-wrap: wrap;
+    gap: 0.75rem;
+  }
+
+  .card {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .data-table { min-width: 500px; }
+
+  .dialog-overlay {
+    align-items: flex-end;
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+
+  .dialog {
+    max-width: 100%;
+    max-height: 90dvh;
+    max-height: 90vh;
+    display: flex;
+    flex-direction: column;
+    border-radius: var(--radius) var(--radius) 0 0;
+  }
+
+  .dialog-content { overflow-y: auto; flex: 1; }
+
+  .dialog-footer {
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    button { flex: 1; justify-content: center; }
+  }
+}

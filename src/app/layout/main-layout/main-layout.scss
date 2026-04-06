@@ -14,6 +14,13 @@
 @media (max-width: 768px) {
   .content {
     margin-left: 0;
-    padding: 1rem 1rem calc(74px + env(safe-area-inset-bottom));
+    padding: 1rem;
+    // Bounded scroll container: content never overlaps the bottom nav
+    height: calc(100vh - 62px - env(safe-area-inset-bottom));
+    height: calc(100dvh - 62px - env(safe-area-inset-bottom));
+    min-height: 0;
+    overflow-y: auto;
+    overflow-x: hidden;
+    -webkit-overflow-scrolling: touch;
   }
 }

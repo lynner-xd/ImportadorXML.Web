@@ -123,3 +123,35 @@
   gap: 0.75rem;
   i { font-size: 2rem; }
 }
+
+@media (max-width: 768px) {
+  .filtros {
+    flex-direction: column;
+  }
+
+  .field {
+    min-width: 0;
+    width: 100%;
+
+    input, select { width: 100%; }
+  }
+
+  .field.field-actions {
+    flex-direction: row;
+    flex-wrap: wrap;
+  }
+
+  .input-select {
+    width: 100%;
+  }
+
+  .data-table {
+    display: block;
+    overflow-x: auto;
+    white-space: nowrap;
+    -webkit-overflow-scrolling: touch;
+
+    td, th { white-space: nowrap; }
+    .text-right { text-align: right; }
+  }
+}
