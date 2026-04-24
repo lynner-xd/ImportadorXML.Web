@@ -102,17 +102,14 @@
     max-width: 100%;
     max-height: 90dvh;
     max-height: 90vh;
-    display: flex;
-    flex-direction: column;
-    border-radius: var(--radius) var(--radius) 0 0; // sheet style no mobile
-  }
-
-  .dialog-content {
     overflow-y: auto;
-    flex: 1;
+    border-radius: var(--radius) var(--radius) 0 0;
   }
 
   .dialog-footer {
+    position: sticky;
+    bottom: 0;
+    background: var(--bg-card);
     flex-wrap: wrap;
     gap: 0.5rem;
 

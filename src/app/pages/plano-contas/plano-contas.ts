@@ -2,7 +2,7 @@ import { Component, OnInit, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ApiService } from '../../core/services/api.service';
-import { PlanoContaResponse, CriarContaRequest } from '../../core/models/plano-conta.models';
+import { PlanoContaResponse } from '../../core/models/plano-conta.models';
 
 interface ContaPai {
   codigo: string;
@@ -25,7 +25,7 @@ export class PlanoContasComponent implements OnInit {
 
   contaPaiSelecionada = '';
   codigoGerado = signal('');
-  form: CriarContaRequest = { codigo: '', nome: '', tipo: 'Ativo' };
+  form: { codigo: string; nome: string; tipo: string } = { codigo: '', nome: '', tipo: 'Ativo' };
 
   contasPai = computed<ContaPai[]>(() => {
     const todas = this.contas();
@@ -126,7 +126,7 @@ export class PlanoContasComponent implements OnInit {
         this.error.set('Selecione a conta pai e preencha o nome.');
         return;
       }
-      this.api.criarConta(this.form).subscribe({
+      this.api.criarConta({ codigoPai: this.contaPaiSelecionada, nome: this.form.nome }).subscribe({
         next: () => { this.showDialog.set(false); this.carregar(); },
         error: (err) => this.error.set(err.error?.message || 'Erro ao criar conta.')
       });

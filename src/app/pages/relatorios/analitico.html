@@ -1,3 +1,10 @@
+@if (toastVisible()) {
+  <div class="toast-warning">
+    <i class="pi pi-exclamation-triangle"></i>
+    {{ toastMessage() }}
+  </div>
+}
+
 <div class="page-header">
   <div>
     <h1>Relatório Analítico</h1>
@@ -18,15 +25,47 @@
         </select>
       </div>
     }
+
     <div class="field">
-      <label>Conta</label>
+      <label>1º Nível</label>
+      <select [(ngModel)]="filtroNivel1" (ngModelChange)="onNivel1Change()" class="input-select">
+        <option value="">Todos</option>
+        @for (c of contasNivel1; track c.id) {
+          <option [value]="c.codigo">{{ c.codigo }} - {{ c.nome }}</option>
+        }
+      </select>
+    </div>
+
+    <div class="field">
+      <label>2º Nível</label>
+      <select [(ngModel)]="filtroNivel2" (ngModelChange)="onNivel2Change()" class="input-select">
+        <option value="">Todos</option>
+        @for (c of contasNivel2; track c.id) {
+          <option [value]="c.codigo">{{ c.codigo }} - {{ c.nome }}</option>
+        }
+      </select>
+    </div>
+
+    <div class="field">
+      <label>3º Nível</label>
+      <select [(ngModel)]="filtroNivel3" (ngModelChange)="onNivel3Change()" class="input-select">
+        <option value="">Todos</option>
+        @for (c of contasNivel3; track c.id) {
+          <option [value]="c.codigo">{{ c.codigo }} - {{ c.nome }}</option>
+        }
+      </select>
+    </div>
+
+    <div class="field">
+      <label>Conta Analítica <span class="required-mark">*</span></label>
       <select [(ngModel)]="contaId" class="input-select">
         <option value="">Selecione a conta...</option>
-        @for (c of contas(); track c.id) {
+        @for (c of contasNivel4; track c.id) {
           <option [value]="c.id">{{ c.codigo }} - {{ c.nome }}</option>
         }
       </select>
     </div>
+
     <div class="field">
       <label>Data Início</label>
       <input type="date" [(ngModel)]="dataInicio" />

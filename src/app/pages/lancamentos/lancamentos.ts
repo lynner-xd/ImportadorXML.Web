@@ -30,6 +30,33 @@ export class LancamentosComponent implements OnInit {
 
   valorFormatado = '';
 
+  filtroDataInicio = '';
+  filtroDataFim = '';
+  filtroDebito = '';
+  filtroCredito = '';
+
+  get lancamentosFiltrados(): LancamentoResponse[] {
+    return this.lancamentos().filter(l => {
+      const data = l.data.substring(0, 10);
+      if (this.filtroDataInicio && data < this.filtroDataInicio) return false;
+      if (this.filtroDataFim && data > this.filtroDataFim) return false;
+      if (this.filtroDebito && !l.contaDebito.toLowerCase().includes(this.filtroDebito.toLowerCase())) return false;
+      if (this.filtroCredito && !l.contaCredito.toLowerCase().includes(this.filtroCredito.toLowerCase())) return false;
+      return true;
+    });
+  }
+
+  get temFiltroAtivo(): boolean {
+    return !!(this.filtroDataInicio || this.filtroDataFim || this.filtroDebito || this.filtroCredito);
+  }
+
+  limparFiltros(): void {
+    this.filtroDataInicio = '';
+    this.filtroDataFim = '';
+    this.filtroDebito = '';
+    this.filtroCredito = '';
+  }
+
   constructor(private api: ApiService) {}
 
   onValorInput(value: string): void {

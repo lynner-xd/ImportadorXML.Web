@@ -7,9 +7,8 @@ export interface PlanoContaResponse {
 }
 
 export interface CriarContaRequest {
-  codigo: string;
+  codigoPai: string;
   nome: string;
-  tipo: string;
 }
 
 export interface AtualizarContaRequest {

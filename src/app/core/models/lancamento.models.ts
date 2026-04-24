@@ -2,12 +2,8 @@ export interface LancamentoResponse {
   id: string;
   data: string;
   descricao: string;
-  contaDebitoId: string;
-  contaDebitoCodigo: string;
-  contaDebitoNome: string;
-  contaCreditoId: string;
-  contaCreditoCodigo: string;
-  contaCreditoNome: string;
+  contaDebito: string;
+  contaCredito: string;
   valor: number;
   observacaoContador?: string;
   origem: string;

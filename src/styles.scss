@@ -58,6 +58,13 @@ a {
   text-decoration: none;
 }
 
+// Native date/time inputs — force browser's native picker to use dark theme
+input[type="date"],
+input[type="datetime-local"],
+input[type="month"] {
+  color-scheme: dark;
+}
+
 // ===== PrimeNG Dark Theme Overrides =====
 
 // Inputs

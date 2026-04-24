@@ -8,7 +8,41 @@
   </button>
 </div>
 
-<div class="card">
+<div class="card filtros-card">
+  <div class="filtros">
+    <div class="field">
+      <label>Data Início</label>
+      <input type="date" [(ngModel)]="filtroDataInicio" />
+    </div>
+    <div class="field">
+      <label>Data Fim</label>
+      <input type="date" [(ngModel)]="filtroDataFim" />
+    </div>
+    <div class="field field-search">
+      <label>Conta Débito</label>
+      <div class="search-wrap">
+        <i class="pi pi-search"></i>
+        <input type="text" [(ngModel)]="filtroDebito" placeholder="Código ou nome..." />
+      </div>
+    </div>
+    <div class="field field-search">
+      <label>Conta Crédito</label>
+      <div class="search-wrap">
+        <i class="pi pi-search"></i>
+        <input type="text" [(ngModel)]="filtroCredito" placeholder="Código ou nome..." />
+      </div>
+    </div>
+    @if (temFiltroAtivo) {
+      <div class="field field-actions">
+        <button class="btn-secondary btn-limpar" (click)="limparFiltros()">
+          <i class="pi pi-times"></i> Limpar
+        </button>
+      </div>
+    }
+  </div>
+</div>
+
+<div class="card" style="margin-top: 1rem;">
   @if (loading()) {
     <div class="loading"><i class="pi pi-spinner pi-spin"></i> Carregando...</div>
   } @else if (lancamentos().length === 0) {
@@ -16,7 +50,15 @@
       <i class="pi pi-inbox"></i>
       <p>Nenhum lançamento manual encontrado.</p>
     </div>
+  } @else if (lancamentosFiltrados.length === 0) {
+    <div class="empty">
+      <i class="pi pi-filter-slash"></i>
+      <p>Nenhum lançamento corresponde aos filtros aplicados.</p>
+    </div>
   } @else {
+    <div class="table-meta">
+      <span>{{ lancamentosFiltrados.length }} de {{ lancamentos().length }} lançamentos</span>
+    </div>
     <table class="data-table">
       <thead>
         <tr>
@@ -29,12 +71,12 @@
         </tr>
       </thead>
       <tbody>
-        @for (l of lancamentos(); track l.id) {
+        @for (l of lancamentosFiltrados; track l.id) {
           <tr>
             <td>{{ l.data | date:'dd/MM/yyyy' }}</td>
             <td>{{ l.descricao }}</td>
-            <td>{{ l.contaDebitoCodigo }} - {{ l.contaDebitoNome }}</td>
-            <td>{{ l.contaCreditoCodigo }} - {{ l.contaCreditoNome }}</td>
+            <td>{{ l.contaDebito }}</td>
+            <td>{{ l.contaCredito }}</td>
             <td class="text-right">{{ l.valor | number:'1.2-2' }}</td>
             <td class="text-center">
               <button class="btn-icon danger" (click)="excluir(l.id)" title="Excluir">

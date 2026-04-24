@@ -18,12 +18,42 @@ export class AnaliticoComponent implements OnInit {
   empresas = signal<EmpresaOption[]>([]);
   contas = signal<PlanoContaResponse[]>([]);
   empresaId = '';
+  filtroNivel1 = '';
+  filtroNivel2 = '';
+  filtroNivel3 = '';
   contaId = '';
   dataInicio = '';
   dataFim = '';
   dados = signal<AnaliticoItem[]>([]);
   loading = signal(false);
   gerado = signal(false);
+  toastVisible = signal(false);
+  toastMessage = signal('');
+
+  get contasNivel1(): PlanoContaResponse[] {
+    return this.contas().filter(c => c.codigo.split('.').length === 1);
+  }
+
+  get contasNivel2(): PlanoContaResponse[] {
+    const todas = this.contas().filter(c => c.codigo.split('.').length === 2);
+    if (!this.filtroNivel1) return todas;
+    return todas.filter(c => c.codigo.startsWith(this.filtroNivel1 + '.'));
+  }
+
+  get contasNivel3(): PlanoContaResponse[] {
+    const todas = this.contas().filter(c => c.codigo.split('.').length === 3);
+    if (this.filtroNivel2) return todas.filter(c => c.codigo.startsWith(this.filtroNivel2 + '.'));
+    if (this.filtroNivel1) return todas.filter(c => c.codigo.startsWith(this.filtroNivel1 + '.'));
+    return todas;
+  }
+
+  get contasNivel4(): PlanoContaResponse[] {
+    const todas = this.contas().filter(c => c.codigo.split('.').length === 4);
+    if (this.filtroNivel3) return todas.filter(c => c.codigo.startsWith(this.filtroNivel3 + '.'));
+    if (this.filtroNivel2) return todas.filter(c => c.codigo.startsWith(this.filtroNivel2 + '.'));
+    if (this.filtroNivel1) return todas.filter(c => c.codigo.startsWith(this.filtroNivel1 + '.'));
+    return todas;
+  }
 
   constructor(private api: ApiService) {}
 
@@ -38,9 +68,29 @@ export class AnaliticoComponent implements OnInit {
     this.api.listarPlanoContas().subscribe({ next: (c) => this.contas.set(c) });
   }
 
+  onNivel1Change(): void {
+    this.filtroNivel2 = '';
+    this.filtroNivel3 = '';
+    this.contaId = '';
+  }
+
+  onNivel2Change(): void {
+    this.filtroNivel3 = '';
+    this.contaId = '';
+  }
+
+  onNivel3Change(): void {
+    this.contaId = '';
+  }
+
   gerar(): void {
-    if (!this.dataInicio || !this.dataFim || !this.contaId) return;
+    if (!this.dataInicio || !this.dataFim) return;
     if (this.isAdmin && !this.empresaId) return;
+
+    if (!this.contaId) {
+      this.showToast('Selecione uma conta analítica (4º nível) para gerar o relatório.');
+      return;
+    }
 
     this.loading.set(true);
     const obs = this.isAdmin
@@ -51,6 +101,12 @@ export class AnaliticoComponent implements OnInit {
       next: (data) => { this.dados.set(data); this.loading.set(false); this.gerado.set(true); },
       error: () => this.loading.set(false)
     });
+  }
+
+  private showToast(message: string): void {
+    this.toastMessage.set(message);
+    this.toastVisible.set(true);
+    setTimeout(() => this.toastVisible.set(false), 4000);
   }
 
   exportarPdf(): void {
