@@ -30,7 +30,11 @@ export class LoginComponent {
 
     this.auth.login({ email: this.email, senha: this.senha }).subscribe({
       next: () => {
-        this.router.navigate(['/home']);
+        if (this.auth.primeiroAcesso()) {
+          this.router.navigate(['/alterar-senha']);
+        } else {
+          this.router.navigate(['/home']);
+        }
       },
       error: (err) => {
         this.loading.set(false);

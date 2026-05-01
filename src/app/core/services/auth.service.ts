@@ -18,6 +18,7 @@ export class AuthService {
   readonly role = computed(() => this._user()?.role ?? '');
   readonly isContador = computed(() => this.role() === 'Contador');
   readonly isEmpresa = computed(() => this.role() === 'Empresa');
+  readonly primeiroAcesso = computed(() => this._user()?.primeiroAcesso ?? false);
 
   constructor(private http: HttpClient, private router: Router) {}
 
@@ -33,6 +34,14 @@ export class AuthService {
 
   alterarSenha(request: AlterarSenhaRequest): Observable<void> {
     return this.http.put<void>(`${this.apiUrl}/usuario/senha`, request);
+  }
+
+  marcarSenhaAlterada(): void {
+    const user = this._user();
+    if (!user) return;
+    const updated = { ...user, primeiroAcesso: false };
+    localStorage.setItem(this.USER_KEY, JSON.stringify(updated));
+    this._user.set(updated);
   }
 
   logout(): void {

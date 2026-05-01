@@ -1,59 +1,71 @@
-# ImportadorXMLWeb
+# ImportadorXML — Frontend Web
 
-This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 20.0.0.
+Interface web do sistema contábil para importação e processamento de XMLs fiscais brasileiros (NFe, NFCe, NFSe).
 
-## Development server
+## Stack
 
-To start a local development server, run:
+- **Angular 20** com standalone components e lazy loading
+- **PrimeNG 21** + PrimeIcons para componentes de UI
+- **TypeScript** com strict mode
+
+## Pré-requisitos
+
+- Node.js 20+
+- Angular CLI: `npm install -g @angular/cli`
+- Backend rodando em `http://localhost:5159` (ver repositório `ImportadorXML`)
+
+## Rodar localmente
 
 ```bash
+npm install --legacy-peer-deps
 ng serve
 ```
 
-Once the server is running, open your browser and navigate to `http://localhost:4200/`. The application will automatically reload whenever you modify any of the source files.
+Acesse `http://localhost:4200`.
 
-## Code scaffolding
+> `--legacy-peer-deps` é necessário pela incompatibilidade de peer deps entre Angular 20 e PrimeNG 21.
 
-Angular CLI includes powerful code scaffolding tools. To generate a new component, run:
-
-```bash
-ng generate component component-name
-```
-
-For a complete list of available schematics (such as `components`, `directives`, or `pipes`), run:
+## Build para produção
 
 ```bash
-ng generate --help
+ng build --configuration production
 ```
 
-## Building
+Os arquivos gerados ficam em `dist/`.
 
-To build the project run:
+## Estrutura de páginas
 
-```bash
-ng build
-```
+| Rota | Acesso | Descrição |
+|------|--------|-----------|
+| `/login` | Público | Autenticação |
+| `/home` | Autenticado | Dashboard |
+| `/importacao` | Empresa | Upload de XMLs fiscais |
+| `/lancamentos` | Empresa | Gestão de lançamentos contábeis |
+| `/plano-contas` | Empresa | Plano de contas em árvore |
+| `/relatorios/balancete` | Empresa | Relatório balancete |
+| `/relatorios/analitico` | Empresa | Relatório analítico |
+| `/relatorios/sintetico` | Empresa | Relatório sintético |
+| `/alterar-senha` | Autenticado | Alteração de senha |
+| `/admin/usuarios` | Contador | Gerenciar usuários/empresas |
+| `/admin/email` | Contador | Configuração de e-mail |
+| `/admin/relatorios/*` | Contador | Relatórios de todas as empresas |
 
-This will compile your project and store the build artifacts in the `dist/` directory. By default, the production build optimizes your application for performance and speed.
+## Roles e acesso
 
-## Running unit tests
+- **Contador** (admin) — acesso total, gerencia empresas e visualiza relatórios de todas
+- **Empresa** — acesso restrito aos próprios dados
 
-To execute unit tests with the [Karma](https://karma-runner.github.io) test runner, use the following command:
+## Variáveis de ambiente
 
-```bash
-ng test
-```
+| Arquivo | Uso | API URL |
+|---------|-----|---------|
+| `src/environments/environment.ts` | Desenvolvimento | `http://localhost:5159/api` |
+| `src/environments/environment.prod.ts` | Produção | `/api` (relativa, via Nginx) |
 
-## Running end-to-end tests
+## Primeiro acesso do admin
 
-For end-to-end (e2e) testing, run:
+Ao fazer login pela primeira vez com a conta admin, o sistema redireciona automaticamente para `/alterar-senha`. O acesso ao sistema só é liberado após a troca de senha.
 
-```bash
-ng e2e
-```
+## Deploy
 
-Angular CLI does not come with an end-to-end testing framework by default. You can choose one that suits your needs.
-
-## Additional Resources
-
-For more information on using the Angular CLI, including detailed command references, visit the [Angular CLI Overview and Command Reference](https://angular.dev/tools/cli) page.
+O deploy é feito via `deploy.sh` na raiz do monorepo. Consulte o README raiz para instruções.

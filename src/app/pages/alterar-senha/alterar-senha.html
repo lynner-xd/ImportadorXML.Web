@@ -1,6 +1,11 @@
 <div class="page-header">
-  <h1>Alterar Senha</h1>
-  <p>Informe sua senha atual e defina uma nova senha</p>
+  @if (isPrimeiroAcesso()) {
+    <h1>Definir Nova Senha</h1>
+    <p>Por segurança, você precisa definir uma nova senha antes de continuar.</p>
+  } @else {
+    <h1>Alterar Senha</h1>
+    <p>Informe sua senha atual e defina uma nova senha</p>
+  }
 </div>
 
 <div class="card form-card">

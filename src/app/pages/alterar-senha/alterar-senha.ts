@@ -1,4 +1,4 @@
-import { Component, signal } from '@angular/core';
+import { Component, signal, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -12,6 +12,9 @@ import { AuthService } from '../../core/services/auth.service';
   styleUrl: './alterar-senha.scss'
 })
 export class AlterarSenhaComponent {
+  private auth = inject(AuthService);
+  private router = inject(Router);
+
   senhaAtual = '';
   novaSenha = '';
   confirmarSenha = '';
@@ -19,7 +22,7 @@ export class AlterarSenhaComponent {
   error = signal('');
   success = signal(false);
 
-  constructor(private auth: AuthService, private router: Router) {}
+  readonly isPrimeiroAcesso = this.auth.primeiroAcesso;
 
   alterar(): void {
     if (!this.senhaAtual || !this.novaSenha || !this.confirmarSenha) {
@@ -40,6 +43,7 @@ export class AlterarSenhaComponent {
 
     this.auth.alterarSenha({ senhaAtual: this.senhaAtual, novaSenha: this.novaSenha }).subscribe({
       next: () => {
+        this.auth.marcarSenhaAlterada();
         this.loading.set(false);
         this.success.set(true);
         setTimeout(() => this.router.navigate(['/home']), 2000);
