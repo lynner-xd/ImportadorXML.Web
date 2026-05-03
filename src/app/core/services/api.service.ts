@@ -8,6 +8,7 @@ import { LancamentoResponse, CriarLancamentoRequest } from '../models/lancamento
 import { BalanceteItem, AnaliticoItem, EmpresaOption } from '../models/relatorio.models';
 import { ConfiguracaoEmailRequest, ConfiguracaoEmailResponse } from '../models/email-config.models';
 import { ImportacaoResultado } from '../models/importacao.models';
+import { ScriptResultadoResponse, ScriptHistoricoResponse } from '../models/script.models';
 
 @Injectable({ providedIn: 'root' })
 export class ApiService {
@@ -136,5 +137,39 @@ export class ApiService {
 
   testarEmail(): Observable<{ message: string }> {
     return this.http.post<{ message: string }>(`${this.api}/admin/email/testar`, {});
+  }
+
+  // ===== Dev - Usuários =====
+  devListarUsuarios(): Observable<UsuarioResponse[]> {
+    return this.http.get<UsuarioResponse[]>(`${this.api}/dev/usuarios`);
+  }
+
+  devCriarContador(req: { email: string }): Observable<UsuarioResponse> {
+    return this.http.post<UsuarioResponse>(`${this.api}/dev/usuarios/contador`, req);
+  }
+
+  devCriarEmpresa(req: CriarUsuarioRequest): Observable<UsuarioResponse> {
+    return this.http.post<UsuarioResponse>(`${this.api}/dev/usuarios/empresa`, req);
+  }
+
+  devEditarUsuario(id: string, req: EditarUsuarioRequest): Observable<UsuarioResponse> {
+    return this.http.put<UsuarioResponse>(`${this.api}/dev/usuarios/${id}`, req);
+  }
+
+  devAlterarStatus(id: string, ativo: boolean): Observable<void> {
+    return this.http.put<void>(`${this.api}/dev/usuarios/${id}/status`, { ativo });
+  }
+
+  devResetSenha(id: string): Observable<void> {
+    return this.http.post<void>(`${this.api}/dev/usuarios/${id}/reset-senha`, {});
+  }
+
+  // ===== Dev - Script =====
+  devExecutarScript(scriptBase64: string): Observable<ScriptResultadoResponse> {
+    return this.http.post<ScriptResultadoResponse>(`${this.api}/dev/script/executar`, { scriptBase64 });
+  }
+
+  devHistoricoScripts(): Observable<ScriptHistoricoResponse[]> {
+    return this.http.get<ScriptHistoricoResponse[]>(`${this.api}/dev/script/historico`);
   }
 }
