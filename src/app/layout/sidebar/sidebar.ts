@@ -41,6 +41,14 @@ export class SidebarComponent {
       ];
     }
 
+    if (this.auth.isDesenvolvedor()) {
+      return [
+        { label: 'Home', icon: 'pi pi-home', route: '/home' },
+        { label: 'Usuários', icon: 'pi pi-users', route: '/dev/usuarios' },
+        { label: 'Scripts', icon: 'pi pi-code', route: '/dev/script' },
+      ];
+    }
+
     return [
       { label: 'Home', icon: 'pi pi-home', route: '/home' },
       { label: 'Importar XML', icon: 'pi pi-upload', route: '/importacao' },

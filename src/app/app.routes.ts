@@ -1,5 +1,5 @@
 import { Routes } from '@angular/router';
-import { authGuard, contadorGuard, empresaGuard } from './core/guards/auth.guard';
+import { authGuard, contadorGuard, empresaGuard, desenvolvedorGuard } from './core/guards/auth.guard';
 import { MainLayoutComponent } from './layout/main-layout/main-layout';
 import { LoginComponent } from './pages/login/login';
 
@@ -28,6 +28,10 @@ export const routes: Routes = [
       { path: 'admin/relatorios/sintetico', canActivate: [contadorGuard], loadComponent: () => import('./pages/admin-relatorios/admin-sintetico').then(m => m.AdminSinteticoComponent) },
       { path: 'admin/usuarios', canActivate: [contadorGuard], loadComponent: () => import('./pages/admin-usuarios/admin-usuarios').then(m => m.AdminUsuariosComponent) },
       { path: 'admin/email', canActivate: [contadorGuard], loadComponent: () => import('./pages/admin-email/admin-email').then(m => m.AdminEmailComponent) },
+
+      // Desenvolvedor
+      { path: 'dev/usuarios', canActivate: [desenvolvedorGuard], loadComponent: () => import('./pages/dev-usuarios/dev-usuarios').then(m => m.DevUsuariosComponent) },
+      { path: 'dev/script', canActivate: [desenvolvedorGuard], loadComponent: () => import('./pages/dev-script/dev-script').then(m => m.DevScriptComponent) },
     ]
   },
   { path: '**', redirectTo: 'login' }
