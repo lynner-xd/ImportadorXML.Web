@@ -38,3 +38,13 @@ export const empresaGuard: CanActivateFn = () => {
   router.navigate(['/home']);
   return false;
 };
+
+export const desenvolvedorGuard: CanActivateFn = () => {
+  const auth = inject(AuthService);
+  const router = inject(Router);
+
+  if (auth.isDesenvolvedor()) return true;
+
+  router.navigate(['/home']);
+  return false;
+};

@@ -18,6 +18,7 @@ export class AuthService {
   readonly role = computed(() => this._user()?.role ?? '');
   readonly isContador = computed(() => this.role() === 'Contador');
   readonly isEmpresa = computed(() => this.role() === 'Empresa');
+  readonly isDesenvolvedor = computed(() => this.role() === 'Desenvolvedor');
   readonly primeiroAcesso = computed(() => this._user()?.primeiroAcesso ?? false);
 
   constructor(private http: HttpClient, private router: Router) {}
