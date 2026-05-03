@@ -1,0 +1,93 @@
+<div class="page-header">
+  <div>
+    <h1>Script SQL</h1>
+    <p>Execute comandos SQL diretamente no banco de dados</p>
+  </div>
+</div>
+
+<div class="script-layout">
+  <div class="editor-panel">
+    <div class="editor-header">
+      <span class="editor-label">Editor SQL</span>
+      <button class="btn-primary" (click)="executar()" [disabled]="loading()">
+        @if (loading()) {
+          <i class="pi pi-spinner pi-spin"></i> Executando...
+        } @else {
+          <i class="pi pi-play"></i> Executar
+        }
+      </button>
+    </div>
+    <textarea
+      class="sql-editor"
+      [value]="script()"
+      (input)="script.set($any($event.target).value)"
+      placeholder="SELECT * FROM usuarios LIMIT 10;"
+      spellcheck="false"
+    ></textarea>
+  </div>
+
+  <div class="historico-panel">
+    <div class="historico-header">
+      <span class="editor-label">Histórico</span>
+    </div>
+    @if (historico().length === 0) {
+      <div class="historico-empty">Nenhuma execução ainda.</div>
+    } @else {
+      <ul class="historico-list">
+        @for (item of historico(); track item.id) {
+          <li class="historico-item" (click)="selecionarHistorico(item)" title="{{ item.script }}">
+            <span class="historico-data">{{ formatarData(item.dataExecucao) }}</span>
+            <span class="historico-script">{{ previewHistorico(item) }}</span>
+          </li>
+        }
+      </ul>
+    }
+  </div>
+</div>
+
+<div class="resultado-panel">
+  @if (erro()) {
+    <div class="resultado-erro">
+      <i class="pi pi-exclamation-triangle"></i>
+      <span>{{ erro() }}</span>
+    </div>
+  } @else if (resultado()) {
+    @if (resultado()!.type === 'select') {
+      @if (resultado()!.rows!.length === 0) {
+        <div class="resultado-vazio">Consulta executada — nenhum registro retornado.</div>
+      } @else {
+        <div class="table-wrapper">
+          <table class="resultado-table">
+            <thead>
+              <tr>
+                @for (col of colunas(); track col) {
+                  <th>{{ col }}</th>
+                }
+              </tr>
+            </thead>
+            <tbody>
+              @for (row of linhas(); track $index) {
+                <tr>
+                  @for (col of colunas(); track col) {
+                    <td>{{ row[col] ?? 'NULL' }}</td>
+                  }
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+        <div class="resultado-info">{{ resultado()!.rows!.length }} linha(s) retornada(s)</div>
+      }
+    } @else if (resultado()!.type === 'dml') {
+      <div class="resultado-sucesso">
+        <i class="pi pi-check-circle"></i>
+        {{ resultado()!.rowsAffected }} linha(s) afetada(s)
+      </div>
+    } @else if (resultado()!.type === 'ddl') {
+      <div class="resultado-sucesso">
+        <i class="pi pi-check-circle"></i>
+        Executado com sucesso
+      </div>
+    }
+  }
+</div>
