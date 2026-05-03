@@ -53,7 +53,7 @@
     </div>
   } @else if (resultado()) {
     @if (resultado()!.type === 'select') {
-      @if (resultado()!.rows!.length === 0) {
+      @if ((resultado()!.rows?.length ?? 0) === 0) {
         <div class="resultado-vazio">Consulta executada — nenhum registro retornado.</div>
       } @else {
         <div class="table-wrapper">
@@ -68,15 +68,15 @@
             <tbody>
               @for (row of linhas(); track $index) {
                 <tr>
-                  @for (col of colunas(); track col) {
-                    <td>{{ row[col] ?? 'NULL' }}</td>
+                  @for (cell of row; track $index) {
+                    <td>{{ cell.val ?? 'NULL' }}</td>
                   }
                 </tr>
               }
             </tbody>
           </table>
         </div>
-        <div class="resultado-info">{{ resultado()!.rows!.length }} linha(s) retornada(s)</div>
+        <div class="resultado-info">{{ resultado()!.rows?.length ?? 0 }} linha(s) retornada(s)</div>
       }
     } @else if (resultado()!.type === 'dml') {
       <div class="resultado-sucesso">

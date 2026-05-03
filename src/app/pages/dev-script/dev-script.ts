@@ -22,7 +22,7 @@ export class DevScriptComponent implements OnInit {
 
   linhas = computed(() =>
     this.resultado()?.rows?.map(r =>
-      Object.fromEntries(this.colunas().map((c, i) => [c, r[i]]))
+      this.colunas().map((c, i) => ({ col: c, val: r[i] }))
     ) ?? []
   );
 
@@ -36,7 +36,9 @@ export class DevScriptComponent implements OnInit {
     const sql = this.script().trim();
     if (!sql) return;
 
-    const scriptBase64 = btoa(unescape(encodeURIComponent(sql)));
+    const scriptBase64 = btoa(
+      Array.from(new TextEncoder().encode(sql), b => String.fromCharCode(b)).join('')
+    );
     this.loading.set(true);
     this.resultado.set(null);
     this.erro.set(null);
