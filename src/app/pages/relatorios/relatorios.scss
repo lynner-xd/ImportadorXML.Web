@@ -152,6 +152,16 @@
   to { transform: translateX(0); opacity: 1; }
 }
 
+.saldo-info {
+  padding: 0.5rem 0.85rem;
+  margin-bottom: 0.75rem;
+  background: var(--bg-hover);
+  border-left: 3px solid var(--accent-primary);
+  border-radius: var(--radius-xs);
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+}
+
 @media (max-width: 768px) {
   .filtros {
     flex-direction: column;

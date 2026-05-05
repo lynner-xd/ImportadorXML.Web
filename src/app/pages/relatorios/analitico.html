@@ -91,12 +91,14 @@
     @if (dados().length === 0) {
       <div class="empty"><i class="pi pi-inbox"></i><p>Nenhum dado encontrado.</p></div>
     } @else {
+      <div class="saldo-info">
+        Saldo anterior ao período: <strong>{{ dados()[0].saldoAnterior | number:'1.2-2' }}</strong>
+      </div>
       <table class="data-table">
         <thead>
           <tr>
             <th>Data</th>
             <th>Descrição</th>
-            <th class="text-right">Saldo Anterior</th>
             <th class="text-right">Débito</th>
             <th class="text-right">Crédito</th>
             <th class="text-right">Saldo Atual</th>
@@ -107,7 +109,6 @@
             <tr>
               <td>{{ item.data | date:'dd/MM/yyyy' }}</td>
               <td>{{ item.descricao }}</td>
-              <td class="text-right">{{ item.saldoAnterior | number:'1.2-2' }}</td>
               <td class="text-right">{{ item.debito | number:'1.2-2' }}</td>
               <td class="text-right">{{ item.credito | number:'1.2-2' }}</td>
               <td class="text-right"><strong>{{ item.saldoAtual | number:'1.2-2' }}</strong></td>
