@@ -160,6 +160,8 @@
   border-radius: var(--radius-xs);
   font-size: 0.875rem;
   color: var(--text-secondary);
+
+  strong { color: var(--text-primary); }
 }
 
 @media (max-width: 768px) {
