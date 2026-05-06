@@ -15,7 +15,10 @@ export const routes: Routes = [
       { path: 'alterar-senha', loadComponent: () => import('./pages/alterar-senha/alterar-senha').then(m => m.AlterarSenhaComponent) },
 
       // Empresa
+      // Empresa — Importação
       { path: 'importacao', canActivate: [empresaGuard], loadComponent: () => import('./pages/importacao/importacao').then(m => m.ImportacaoComponent) },
+      { path: 'importacao/entrada', canActivate: [empresaGuard], data: { tipo: 'Entrada' }, loadComponent: () => import('./pages/importacao/importacao-form/importacao-form').then(m => m.ImportacaoFormComponent) },
+      { path: 'importacao/saida', canActivate: [empresaGuard], data: { tipo: 'Saida' }, loadComponent: () => import('./pages/importacao/importacao-form/importacao-form').then(m => m.ImportacaoFormComponent) },
       { path: 'lancamentos', canActivate: [empresaGuard], loadComponent: () => import('./pages/lancamentos/lancamentos').then(m => m.LancamentosComponent) },
       { path: 'plano-contas', canActivate: [empresaGuard], loadComponent: () => import('./pages/plano-contas/plano-contas').then(m => m.PlanoContasComponent) },
       { path: 'relatorios/balancete', canActivate: [empresaGuard], loadComponent: () => import('./pages/relatorios/balancete').then(m => m.BalanceteComponent) },

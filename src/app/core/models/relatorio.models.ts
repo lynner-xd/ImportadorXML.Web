@@ -7,8 +7,8 @@ export interface BalanceteItem {
   codigo: string;
   nome: string;
   saldoAnterior: number;
-  debitos: number;
-  creditos: number;
+  debito: number;
+  credito: number;
   saldoAtual: number;
 }
 

@@ -1,16 +1,19 @@
 export interface ImportacaoResultado {
   totalProcessados: number;
-  totalSucesso: number;
+  totalImportados: number;
+  totalDuplicados: number;
   totalErros: number;
+  valorTotalImportado: number;
   itensProcessados: ItemProcessado[];
   erros: ImportacaoErro[];
 }
 
 export interface ItemProcessado {
   arquivo: string;
-  tipo: string;
-  numero: string;
+  data: string;
+  empresa: string;
   valor: number;
+  status: string;
 }
 
 export interface ImportacaoErro {

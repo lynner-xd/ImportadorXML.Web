@@ -1,0 +1,145 @@
+<div class="page-header">
+  <div>
+    <h1>{{ titulo }}</h1>
+    <p>{{ subtitulo }}</p>
+  </div>
+  <button class="btn-secondary" (click)="sair()">
+    <i class="pi pi-arrow-left"></i> Voltar à listagem
+  </button>
+</div>
+
+<div class="card">
+  <div class="upload-area">
+    <div class="file-drop" (click)="fileInput.click()">
+      <input #fileInput type="file" accept=".xml" multiple (change)="onFileSelect($event)" hidden />
+      <i class="pi pi-cloud-upload"></i>
+      @if (arquivos().length === 0) {
+        <span>Clique para selecionar arquivos XML</span>
+        <small>NFe, NFCe, NFSe — múltiplos arquivos permitidos</small>
+      } @else {
+        <span>{{ arquivos().length }} arquivo(s) selecionado(s)</span>
+        <small>Clique para alterar a seleção</small>
+      }
+    </div>
+
+    @if (arquivos().length > 0) {
+      <div class="file-list">
+        @for (f of arquivos(); track f.name) {
+          <div class="file-item">
+            <i class="pi pi-file-o"></i>
+            <span>{{ f.name }}</span>
+            <span class="file-size">{{ (f.size / 1024).toFixed(1) }} KB</span>
+          </div>
+        }
+      </div>
+    }
+
+    @if (error()) {
+      <div class="error-msg">
+        <i class="pi pi-exclamation-circle"></i> {{ error() }}
+      </div>
+    }
+
+    <div class="actions">
+      <button class="btn-primary" (click)="importar()" [disabled]="loading() || arquivos().length === 0">
+        @if (loading()) {
+          <i class="pi pi-spinner pi-spin"></i> Importando...
+        } @else {
+          <i class="pi pi-upload"></i> Importar
+        }
+      </button>
+      <button class="btn-secondary" (click)="limpar()" [disabled]="loading()">
+        <i class="pi pi-refresh"></i> Limpar
+      </button>
+      <button class="btn-secondary" (click)="sair()" [disabled]="loading()">
+        <i class="pi pi-times"></i> Sair
+      </button>
+    </div>
+  </div>
+</div>
+
+@if (resultado(); as res) {
+  <div class="card result-card">
+    <h3>Resultado da Importação</h3>
+
+    <div class="result-stats">
+      <div class="stat">
+        <span class="stat-value">{{ res.totalProcessados }}</span>
+        <span class="stat-label">Processados</span>
+      </div>
+      <div class="stat success">
+        <span class="stat-value">{{ res.totalImportados }}</span>
+        <span class="stat-label">Importados</span>
+      </div>
+      <div class="stat warning">
+        <span class="stat-value">{{ res.totalDuplicados }}</span>
+        <span class="stat-label">Duplicados</span>
+      </div>
+      <div class="stat error">
+        <span class="stat-value">{{ res.totalErros }}</span>
+        <span class="stat-label">Erros</span>
+      </div>
+      @if (res.totalImportados > 0) {
+        <div class="stat valor">
+          <span class="stat-value">{{ res.valorTotalImportado | number:'1.2-2' }}</span>
+          <span class="stat-label">Valor Total (R$)</span>
+        </div>
+      }
+    </div>
+
+    @if (res.itensProcessados.length > 0) {
+      <div class="items-table-wrap">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Arquivo</th>
+              <th>Emitente/Tomador</th>
+              <th class="text-right">Valor</th>
+              <th>Data Emissão</th>
+              <th class="text-center">Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (item of res.itensProcessados; track item.arquivo) {
+              <tr>
+                <td class="arquivo-cell">{{ item.arquivo }}</td>
+                <td>{{ item.empresa || '-' }}</td>
+                <td class="text-right">
+                  @if (item.valor) { {{ item.valor | number:'1.2-2' }} } @else { - }
+                </td>
+                <td>
+                  @if (item.data) { {{ item.data | date:'dd/MM/yyyy' }} } @else { - }
+                </td>
+                <td class="text-center">
+                  <span class="status-badge" [class]="statusClass(item.status)">
+                    {{ statusLabel(item.status) }}
+                  </span>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+
+    @if (res.erros.length > 0) {
+      <div class="errors-section">
+        <h4><i class="pi pi-exclamation-triangle"></i> Detalhes dos erros</h4>
+        @for (e of res.erros; track e.arquivo) {
+          <div class="error-item">
+            <strong>{{ e.arquivo }}</strong>
+            <span>{{ e.mensagem }}</span>
+          </div>
+        }
+      </div>
+    }
+
+    @if (res.totalImportados > 0) {
+      <div class="result-actions">
+        <button class="btn-secondary" (click)="sair()">
+          <i class="pi pi-list"></i> Ver documentos importados
+        </button>
+      </div>
+    }
+  </div>
+}

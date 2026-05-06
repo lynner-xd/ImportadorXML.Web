@@ -9,6 +9,7 @@ import { BalanceteItem, AnaliticoItem, EmpresaOption } from '../models/relatorio
 import { ConfiguracaoEmailRequest, ConfiguracaoEmailResponse } from '../models/email-config.models';
 import { ImportacaoResultado } from '../models/importacao.models';
 import { ScriptResultadoResponse, ScriptHistoricoResponse } from '../models/script.models';
+import { DocumentoFiscal } from '../models/documento.models';
 
 @Injectable({ providedIn: 'root' })
 export class ApiService {
@@ -19,6 +20,19 @@ export class ApiService {
   // ===== Importação =====
   importarXml(formData: FormData): Observable<ImportacaoResultado> {
     return this.http.post<ImportacaoResultado>(`${this.api}/importacao`, formData);
+  }
+
+  // ===== Documentos =====
+  listarDocumentos(tipo?: string, dataInicio?: string, dataFim?: string): Observable<DocumentoFiscal[]> {
+    let params = new HttpParams();
+    if (tipo) params = params.set('tipo', tipo);
+    if (dataInicio) params = params.set('dataInicio', dataInicio);
+    if (dataFim) params = params.set('dataFim', dataFim);
+    return this.http.get<DocumentoFiscal[]>(`${this.api}/documentos`, { params });
+  }
+
+  excluirDocumento(id: string): Observable<void> {
+    return this.http.delete<void>(`${this.api}/documentos/${id}`);
   }
 
   // ===== Lançamentos =====

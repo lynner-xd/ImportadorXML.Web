@@ -1,90 +1,114 @@
 <div class="page-header">
-  <h1>Importar XML</h1>
-  <p>Faça upload de arquivos XML fiscais (NFe, NFCe, NFSe)</p>
+  <div>
+    <h1>Importação de XML</h1>
+    <p>Documentos fiscais importados</p>
+  </div>
+  <div class="header-actions">
+    <button class="btn-secondary" (click)="irParaSaida()">
+      <i class="pi pi-upload"></i> Importar Saída
+    </button>
+    <button class="btn-primary" (click)="irParaEntrada()">
+      <i class="pi pi-download"></i> Importar Entrada
+    </button>
+  </div>
 </div>
 
-<div class="card">
-  <div class="import-form">
+<div class="card filtros-card">
+  <div class="filtros">
     <div class="field">
-      <label>Tipo de Importação</label>
-      <select [(ngModel)]="tipo" class="input-select">
+      <label>Tipo</label>
+      <select class="input-select" [ngModel]="filtroTipo()" (ngModelChange)="filtroTipo.set($event)">
+        <option value="">Todos</option>
         <option value="Entrada">Entrada</option>
         <option value="Saida">Saída</option>
       </select>
     </div>
-
     <div class="field">
-      <label>Arquivos XML</label>
-      <div class="file-drop" (click)="fileInput.click()">
-        <input #fileInput type="file" accept=".xml" multiple (change)="onFileSelect($event)" hidden />
-        <i class="pi pi-upload"></i>
-        @if (arquivos.length === 0) {
-          <span>Clique para selecionar arquivos XML</span>
-        } @else {
-          <span>{{ arquivos.length }} arquivo(s) selecionado(s)</span>
-        }
-      </div>
+      <label>Importado de</label>
+      <input type="date" [ngModel]="filtroDataInicio()" (ngModelChange)="filtroDataInicio.set($event)" />
     </div>
-
-    @if (arquivos.length > 0) {
-      <div class="file-list">
-        @for (f of arquivos; track f.name) {
-          <div class="file-item">
-            <i class="pi pi-file"></i>
-            <span>{{ f.name }}</span>
-            <span class="file-size">{{ (f.size / 1024).toFixed(1) }} KB</span>
-          </div>
-        }
+    <div class="field">
+      <label>Importado até</label>
+      <input type="date" [ngModel]="filtroDataFim()" (ngModelChange)="filtroDataFim.set($event)" />
+    </div>
+    @if (temFiltroAtivo()) {
+      <div class="field field-actions">
+        <button class="btn-secondary btn-limpar" (click)="limparFiltros()">
+          <i class="pi pi-times"></i> Limpar
+        </button>
       </div>
     }
-
-    @if (error()) {
-      <div class="error-msg">
-        <i class="pi pi-exclamation-circle"></i>
-        {{ error() }}
-      </div>
-    }
-
-    <div class="actions">
-      <button class="btn-primary" (click)="importar()" [disabled]="loading()">
-        @if (loading()) {
-          <i class="pi pi-spinner pi-spin"></i> Importando...
-        } @else {
-          <i class="pi pi-upload"></i> Importar
-        }
-      </button>
-      <button class="btn-secondary" (click)="limpar()">Limpar</button>
-    </div>
   </div>
 </div>
 
-@if (resultado()) {
-  <div class="card result-card">
-    <h3>Resultado da Importação</h3>
-    <div class="result-stats">
-      <div class="stat">
-        <span class="stat-value">{{ resultado()!.totalProcessados }}</span>
-        <span class="stat-label">Processados</span>
-      </div>
-      <div class="stat success">
-        <span class="stat-value">{{ resultado()!.totalSucesso }}</span>
-        <span class="stat-label">Sucesso</span>
-      </div>
-      <div class="stat error">
-        <span class="stat-value">{{ resultado()!.totalErros }}</span>
-        <span class="stat-label">Erros</span>
-      </div>
-    </div>
-
-    @if (resultado()!.erros.length > 0) {
-      <div class="errors-list">
-        <h4>Erros encontrados:</h4>
-        @for (e of resultado()!.erros; track e.arquivo) {
-          <div class="error-item">
-            <strong>{{ e.arquivo }}:</strong> {{ e.mensagem }}
-          </div>
-        }
-      </div>
-    }
+@if (error()) {
+  <div class="error-global">
+    <i class="pi pi-exclamation-circle"></i> {{ error() }}
   </div>
 }
+
+<div class="card" style="margin-top: 1rem;">
+  @if (loading()) {
+    <div class="loading"><i class="pi pi-spinner pi-spin"></i> Carregando...</div>
+  } @else if (documentos().length === 0) {
+    <div class="empty">
+      <i class="pi pi-inbox"></i>
+      <p>Nenhum documento importado. Use os botões acima para iniciar.</p>
+    </div>
+  } @else if (documentosFiltrados().length === 0) {
+    <div class="empty">
+      <i class="pi pi-filter-slash"></i>
+      <p>Nenhum documento corresponde aos filtros aplicados.</p>
+    </div>
+  } @else {
+    <div class="table-meta">
+      <span>{{ documentosFiltrados().length }} de {{ documentos().length }} documento(s)</span>
+    </div>
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Tipo</th>
+          <th>Nº NF</th>
+          <th>Emitente / Destinatário</th>
+          <th class="text-right">Valor</th>
+          <th>Data Emissão</th>
+          <th>Data Importação</th>
+          <th class="text-center">Ações</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (doc of documentosFiltrados(); track doc.id) {
+          <tr>
+            <td>
+              <span class="badge" [class.badge-entrada]="doc.tipo === 'Entrada'" [class.badge-saida]="doc.tipo === 'Saida'">
+                {{ doc.tipo === 'Entrada' ? 'Entrada' : 'Saída' }}
+              </span>
+            </td>
+            <td>{{ doc.numero ?? '-' }}</td>
+            <td>{{ nomeParticipante(doc) }}</td>
+            <td class="text-right">{{ doc.valorTotal | number:'1.2-2' }}</td>
+            <td>{{ doc.dataEmissao | date:'dd/MM/yyyy' }}</td>
+            <td>{{ doc.dataImportacao | date:'dd/MM/yyyy HH:mm' }}</td>
+            <td class="text-center">
+              @if (confirmandoExclusao() === doc.id) {
+                <span class="confirm-row">
+                  <span class="confirm-label">Confirmar?</span>
+                  <button class="btn-icon danger" (click)="confirmarExclusao(doc.id)" title="Confirmar exclusão">
+                    <i class="pi pi-check"></i>
+                  </button>
+                  <button class="btn-icon" (click)="cancelarExclusao()" title="Cancelar">
+                    <i class="pi pi-times"></i>
+                  </button>
+                </span>
+              } @else {
+                <button class="btn-icon danger" (click)="solicitarExclusao(doc.id)" title="Excluir">
+                  <i class="pi pi-trash"></i>
+                </button>
+              }
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  }
+</div>

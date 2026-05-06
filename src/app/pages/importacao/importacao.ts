@@ -1,8 +1,9 @@
-import { Component, signal } from '@angular/core';
+import { Component, computed, signal, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { Router } from '@angular/router';
 import { ApiService } from '../../core/services/api.service';
-import { ImportacaoResultado } from '../../core/models/importacao.models';
+import { DocumentoFiscal } from '../../core/models/documento.models';
 
 @Component({
   selector: 'app-importacao',
@@ -11,52 +12,91 @@ import { ImportacaoResultado } from '../../core/models/importacao.models';
   templateUrl: './importacao.html',
   styleUrl: './importacao.scss'
 })
-export class ImportacaoComponent {
-  tipo: string = 'Entrada';
-  arquivos: File[] = [];
+export class ImportacaoComponent implements OnInit {
+  documentos = signal<DocumentoFiscal[]>([]);
   loading = signal(false);
-  resultado = signal<ImportacaoResultado | null>(null);
   error = signal('');
 
-  constructor(private api: ApiService) {}
+  filtroTipo = signal<string>('');
+  filtroDataInicio = signal<string>('');
+  filtroDataFim = signal<string>('');
 
-  onFileSelect(event: Event): void {
-    const input = event.target as HTMLInputElement;
-    if (input.files) {
-      this.arquivos = Array.from(input.files);
-    }
+  confirmandoExclusao = signal<string | null>(null);
+
+  documentosFiltrados = computed(() => {
+    let lista = this.documentos();
+    const tipo = this.filtroTipo();
+    const di = this.filtroDataInicio();
+    const df = this.filtroDataFim();
+
+    if (tipo) lista = lista.filter(d => d.tipo === tipo);
+    if (di) lista = lista.filter(d => d.dataImportacao >= di);
+    if (df) lista = lista.filter(d => d.dataImportacao <= df + 'T23:59:59');
+
+    return lista;
+  });
+
+  constructor(private api: ApiService, private router: Router) {}
+
+  ngOnInit(): void {
+    this.carregar();
   }
 
-  importar(): void {
-    if (this.arquivos.length === 0) {
-      this.error.set('Selecione ao menos um arquivo XML.');
-      return;
-    }
-
+  carregar(): void {
     this.loading.set(true);
     this.error.set('');
-    this.resultado.set(null);
-
-    const formData = new FormData();
-    formData.append('tipo', this.tipo);
-    this.arquivos.forEach(f => formData.append('arquivos', f));
-
-    this.api.importarXml(formData).subscribe({
-      next: (res) => {
-        this.resultado.set(res);
+    this.api.listarDocumentos().subscribe({
+      next: (docs) => {
+        this.documentos.set(docs);
         this.loading.set(false);
-        this.arquivos = [];
       },
-      error: (err) => {
-        this.error.set(err.error?.message || 'Erro ao importar arquivos.');
+      error: () => {
+        this.error.set('Erro ao carregar documentos.');
         this.loading.set(false);
       }
     });
   }
 
-  limpar(): void {
-    this.arquivos = [];
-    this.resultado.set(null);
-    this.error.set('');
+  limparFiltros(): void {
+    this.filtroTipo.set('');
+    this.filtroDataInicio.set('');
+    this.filtroDataFim.set('');
   }
+
+  irParaEntrada(): void {
+    this.router.navigate(['/importacao/entrada']);
+  }
+
+  irParaSaida(): void {
+    this.router.navigate(['/importacao/saida']);
+  }
+
+  solicitarExclusao(id: string): void {
+    this.confirmandoExclusao.set(id);
+  }
+
+  cancelarExclusao(): void {
+    this.confirmandoExclusao.set(null);
+  }
+
+  confirmarExclusao(id: string): void {
+    this.api.excluirDocumento(id).subscribe({
+      next: () => {
+        this.documentos.update(lista => lista.filter(d => d.id !== id));
+        this.confirmandoExclusao.set(null);
+      },
+      error: () => {
+        this.error.set('Erro ao excluir documento.');
+        this.confirmandoExclusao.set(null);
+      }
+    });
+  }
+
+  nomeParticipante(doc: DocumentoFiscal): string {
+    return (doc.tipo === 'Entrada' ? doc.nomeEmitente : doc.nomeDestinatario) ?? '-';
+  }
+
+  temFiltroAtivo = computed(() =>
+    !!this.filtroTipo() || !!this.filtroDataInicio() || !!this.filtroDataFim()
+  );
 }
