@@ -57,10 +57,20 @@
     </div>
 
     <div class="field">
+      <label>4º Nível</label>
+      <select [(ngModel)]="filtroNivel4" (ngModelChange)="onNivel4Change()" class="input-select">
+        <option value="">Todos</option>
+        @for (c of contasNivel4; track c.id) {
+          <option [value]="c.codigo">{{ c.codigo }} - {{ c.nome }}</option>
+        }
+      </select>
+    </div>
+
+    <div class="field">
       <label>Conta Analítica <span class="required-mark">*</span></label>
       <select [(ngModel)]="contaId" class="input-select">
         <option value="">Selecione a conta...</option>
-        @for (c of contasNivel4; track c.id) {
+        @for (c of contasNivel5; track c.id) {
           <option [value]="c.id">{{ c.codigo }} - {{ c.nome }}</option>
         }
       </select>

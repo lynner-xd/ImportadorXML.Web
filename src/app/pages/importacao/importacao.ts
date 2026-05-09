@@ -13,27 +13,34 @@ import { DocumentoFiscal } from '../../core/models/documento.models';
   styleUrl: './importacao.scss'
 })
 export class ImportacaoComponent implements OnInit {
+  readonly PAGE_SIZE = 50;
+
   documentos = signal<DocumentoFiscal[]>([]);
+  totalDocumentos = signal(0);
+  paginaAtual = signal(1);
   loading = signal(false);
   error = signal('');
 
-  filtroTipo = signal<string>('');
-  filtroDataInicio = signal<string>('');
-  filtroDataFim = signal<string>('');
+  filtroTipo = '';
+  filtroDataInicio = '';
+  filtroDataFim = '';
 
   confirmandoExclusao = signal<string | null>(null);
+  confirmandoExclusaoEmMassa = signal(false);
 
-  documentosFiltrados = computed(() => {
-    let lista = this.documentos();
-    const tipo = this.filtroTipo();
-    const di = this.filtroDataInicio();
-    const df = this.filtroDataFim();
+  selecionados = signal<Set<string>>(new Set());
 
-    if (tipo) lista = lista.filter(d => d.tipo === tipo);
-    if (di) lista = lista.filter(d => d.dataImportacao >= di);
-    if (df) lista = lista.filter(d => d.dataImportacao <= df + 'T23:59:59');
+  totalPaginas = computed(() => Math.ceil(this.totalDocumentos() / this.PAGE_SIZE));
 
-    return lista;
+  get temFiltroAtivo(): boolean {
+    return !!(this.filtroTipo || this.filtroDataInicio || this.filtroDataFim);
+  }
+
+  todosSelecionados = computed(() => {
+    const docs = this.documentos();
+    if (docs.length === 0) return false;
+    const sel = this.selecionados();
+    return docs.every(d => sel.has(d.id));
   });
 
   constructor(private api: ApiService, private router: Router) {}
@@ -45,9 +52,19 @@ export class ImportacaoComponent implements OnInit {
   carregar(): void {
     this.loading.set(true);
     this.error.set('');
-    this.api.listarDocumentos().subscribe({
-      next: (docs) => {
-        this.documentos.set(docs);
+    this.api.listarDocumentos(
+      this.filtroTipo || undefined,
+      this.filtroDataInicio || undefined,
+      this.filtroDataFim || undefined,
+      this.paginaAtual()
+    ).subscribe({
+      next: (result) => {
+        this.documentos.set(result.items);
+        this.totalDocumentos.set(result.total);
+        const maxPage = Math.ceil(result.total / this.PAGE_SIZE) || 1;
+        if (this.paginaAtual() > maxPage) {
+          this.paginaAtual.set(maxPage);
+        }
         this.loading.set(false);
       },
       error: () => {
@@ -57,10 +74,26 @@ export class ImportacaoComponent implements OnInit {
     });
   }
 
+  onFiltroChange(): void {
+    this.paginaAtual.set(1);
+    this.selecionados.set(new Set());
+    this.carregar();
+  }
+
   limparFiltros(): void {
-    this.filtroTipo.set('');
-    this.filtroDataInicio.set('');
-    this.filtroDataFim.set('');
+    this.filtroTipo = '';
+    this.filtroDataInicio = '';
+    this.filtroDataFim = '';
+    this.paginaAtual.set(1);
+    this.selecionados.set(new Set());
+    this.carregar();
+  }
+
+  irParaPagina(pagina: number): void {
+    if (pagina < 1 || pagina > this.totalPaginas()) return;
+    this.paginaAtual.set(pagina);
+    this.selecionados.set(new Set());
+    this.carregar();
   }
 
   irParaEntrada(): void {
@@ -82,8 +115,8 @@ export class ImportacaoComponent implements OnInit {
   confirmarExclusao(id: string): void {
     this.api.excluirDocumento(id).subscribe({
       next: () => {
-        this.documentos.update(lista => lista.filter(d => d.id !== id));
         this.confirmandoExclusao.set(null);
+        this.carregar();
       },
       error: () => {
         this.error.set('Erro ao excluir documento.');
@@ -92,11 +125,43 @@ export class ImportacaoComponent implements OnInit {
     });
   }
 
+  toggleSelecao(id: string): void {
+    const set = new Set(this.selecionados());
+    if (set.has(id)) set.delete(id);
+    else set.add(id);
+    this.selecionados.set(set);
+  }
+
+  selecionarTodos(): void {
+    this.selecionados.set(new Set(this.documentos().map(d => d.id)));
+  }
+
+  limparSelecao(): void {
+    this.selecionados.set(new Set());
+  }
+
+  excluirSelecionados(): void {
+    if (this.selecionados().size === 0) return;
+    this.confirmandoExclusaoEmMassa.set(true);
+  }
+
+  confirmarExclusaoEmMassa(): void {
+    const ids = Array.from(this.selecionados());
+    this.confirmandoExclusaoEmMassa.set(false);
+    this.api.excluirDocumentos(ids).subscribe({
+      next: () => {
+        this.selecionados.set(new Set());
+        this.carregar();
+      },
+      error: () => this.error.set('Erro ao excluir documentos.')
+    });
+  }
+
+  cancelarExclusaoEmMassa(): void {
+    this.confirmandoExclusaoEmMassa.set(false);
+  }
+
   nomeParticipante(doc: DocumentoFiscal): string {
     return (doc.tipo === 'Entrada' ? doc.nomeEmitente : doc.nomeDestinatario) ?? '-';
   }
-
-  temFiltroAtivo = computed(() =>
-    !!this.filtroTipo() || !!this.filtroDataInicio() || !!this.filtroDataFim()
-  );
 }

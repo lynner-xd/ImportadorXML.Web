@@ -126,6 +126,6 @@ export class LancamentosComponent implements OnInit {
   }
 
   contasAnaliticas(): PlanoContaResponse[] {
-    return this.contas().filter(c => c.codigo.split('.').length === 4);
+    return this.contas().filter(c => c.codigo.split('.').length === 5);
   }
 }

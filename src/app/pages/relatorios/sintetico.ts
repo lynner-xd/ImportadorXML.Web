@@ -62,9 +62,16 @@ export class SinteticoComponent implements OnInit {
       next: (blob) => {
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
-        a.href = url; a.download = 'sintetico.pdf'; a.click();
+        a.href = url; a.download = this.nomeArquivo('sintetico'); a.click();
         URL.revokeObjectURL(url);
       }
     });
+  }
+
+  private nomeArquivo(relatorio: string): string {
+    const now = new Date();
+    const p = (n: number) => n.toString().padStart(2, '0');
+    const ts = `${p(now.getDate())}${p(now.getMonth() + 1)}${now.getFullYear()}${p(now.getHours())}${p(now.getMinutes())}${p(now.getSeconds())}`;
+    return `${relatorio}_${ts}.pdf`;
   }
 }

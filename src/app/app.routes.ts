@@ -1,5 +1,6 @@
 import { Routes } from '@angular/router';
 import { authGuard, contadorGuard, empresaGuard, desenvolvedorGuard } from './core/guards/auth.guard';
+import { CanDeactivateGuard } from './core/guards/can-deactivate.guard';
 import { MainLayoutComponent } from './layout/main-layout/main-layout';
 import { LoginComponent } from './pages/login/login';
 
@@ -17,8 +18,8 @@ export const routes: Routes = [
       // Empresa
       // Empresa — Importação
       { path: 'importacao', canActivate: [empresaGuard], loadComponent: () => import('./pages/importacao/importacao').then(m => m.ImportacaoComponent) },
-      { path: 'importacao/entrada', canActivate: [empresaGuard], data: { tipo: 'Entrada' }, loadComponent: () => import('./pages/importacao/importacao-form/importacao-form').then(m => m.ImportacaoFormComponent) },
-      { path: 'importacao/saida', canActivate: [empresaGuard], data: { tipo: 'Saida' }, loadComponent: () => import('./pages/importacao/importacao-form/importacao-form').then(m => m.ImportacaoFormComponent) },
+      { path: 'importacao/entrada', canActivate: [empresaGuard], canDeactivate: [CanDeactivateGuard], data: { tipo: 'Entrada' }, loadComponent: () => import('./pages/importacao/importacao-form/importacao-form').then(m => m.ImportacaoFormComponent) },
+      { path: 'importacao/saida', canActivate: [empresaGuard], canDeactivate: [CanDeactivateGuard], data: { tipo: 'Saida' }, loadComponent: () => import('./pages/importacao/importacao-form/importacao-form').then(m => m.ImportacaoFormComponent) },
       { path: 'lancamentos', canActivate: [empresaGuard], loadComponent: () => import('./pages/lancamentos/lancamentos').then(m => m.LancamentosComponent) },
       { path: 'plano-contas', canActivate: [empresaGuard], loadComponent: () => import('./pages/plano-contas/plano-contas').then(m => m.PlanoContasComponent) },
       { path: 'relatorios/balancete', canActivate: [empresaGuard], loadComponent: () => import('./pages/relatorios/balancete').then(m => m.BalanceteComponent) },

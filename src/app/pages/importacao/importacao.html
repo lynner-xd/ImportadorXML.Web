@@ -17,7 +17,7 @@
   <div class="filtros">
     <div class="field">
       <label>Tipo</label>
-      <select class="input-select" [ngModel]="filtroTipo()" (ngModelChange)="filtroTipo.set($event)">
+      <select class="input-select" [(ngModel)]="filtroTipo" (ngModelChange)="onFiltroChange()">
         <option value="">Todos</option>
         <option value="Entrada">Entrada</option>
         <option value="Saida">Saída</option>
@@ -25,13 +25,13 @@
     </div>
     <div class="field">
       <label>Importado de</label>
-      <input type="date" [ngModel]="filtroDataInicio()" (ngModelChange)="filtroDataInicio.set($event)" />
+      <input type="date" [(ngModel)]="filtroDataInicio" (ngModelChange)="onFiltroChange()" />
     </div>
     <div class="field">
       <label>Importado até</label>
-      <input type="date" [ngModel]="filtroDataFim()" (ngModelChange)="filtroDataFim.set($event)" />
+      <input type="date" [(ngModel)]="filtroDataFim" (ngModelChange)="onFiltroChange()" />
     </div>
-    @if (temFiltroAtivo()) {
+    @if (temFiltroAtivo) {
       <div class="field field-actions">
         <button class="btn-secondary btn-limpar" (click)="limparFiltros()">
           <i class="pi pi-times"></i> Limpar
@@ -50,23 +50,42 @@
 <div class="card" style="margin-top: 1rem;">
   @if (loading()) {
     <div class="loading"><i class="pi pi-spinner pi-spin"></i> Carregando...</div>
-  } @else if (documentos().length === 0) {
+  } @else if (totalDocumentos() === 0 && !temFiltroAtivo) {
     <div class="empty">
       <i class="pi pi-inbox"></i>
       <p>Nenhum documento importado. Use os botões acima para iniciar.</p>
     </div>
-  } @else if (documentosFiltrados().length === 0) {
+  } @else if (documentos().length === 0) {
     <div class="empty">
       <i class="pi pi-filter-slash"></i>
       <p>Nenhum documento corresponde aos filtros aplicados.</p>
     </div>
   } @else {
+
+    @if (selecionados().size > 0) {
+      <div class="bulk-actions">
+        <span>{{ selecionados().size }} selecionado(s)</span>
+        <button class="btn-danger" (click)="excluirSelecionados()">
+          <i class="pi pi-trash"></i> Excluir selecionados
+        </button>
+        <button class="btn-secondary" (click)="limparSelecao()">
+          <i class="pi pi-times"></i> Cancelar seleção
+        </button>
+      </div>
+    }
+
     <div class="table-meta">
-      <span>{{ documentosFiltrados().length }} de {{ documentos().length }} documento(s)</span>
+      <span>{{ totalDocumentos() }} documento(s) — página {{ paginaAtual() }} de {{ totalPaginas() }}</span>
     </div>
+
     <table class="data-table">
       <thead>
         <tr>
+          <th class="col-check">
+            <input type="checkbox"
+                   [checked]="todosSelecionados()"
+                   (change)="todosSelecionados() ? limparSelecao() : selecionarTodos()" />
+          </th>
           <th>Tipo</th>
           <th>Nº NF</th>
           <th>Emitente / Destinatário</th>
@@ -77,8 +96,13 @@
         </tr>
       </thead>
       <tbody>
-        @for (doc of documentosFiltrados(); track doc.id) {
-          <tr>
+        @for (doc of documentos(); track doc.id) {
+          <tr [class.row-selected]="selecionados().has(doc.id)">
+            <td class="col-check">
+              <input type="checkbox"
+                     [checked]="selecionados().has(doc.id)"
+                     (change)="toggleSelecao(doc.id)" />
+            </td>
             <td>
               <span class="badge" [class.badge-entrada]="doc.tipo === 'Entrada'" [class.badge-saida]="doc.tipo === 'Saida'">
                 {{ doc.tipo === 'Entrada' ? 'Entrada' : 'Saída' }}
@@ -110,5 +134,43 @@
         }
       </tbody>
     </table>
+
+    @if (totalPaginas() > 1) {
+      <div class="pagination">
+        <button class="btn-icon" [disabled]="paginaAtual() === 1" (click)="irParaPagina(paginaAtual() - 1)" title="Página anterior">
+          <i class="pi pi-chevron-left"></i>
+        </button>
+        <span class="pagination-info">{{ paginaAtual() }} / {{ totalPaginas() }}</span>
+        <button class="btn-icon" [disabled]="paginaAtual() === totalPaginas()" (click)="irParaPagina(paginaAtual() + 1)" title="Próxima página">
+          <i class="pi pi-chevron-right"></i>
+        </button>
+      </div>
+    }
   }
 </div>
+
+@if (confirmandoExclusaoEmMassa()) {
+  <div class="dialog-overlay" (click)="cancelarExclusaoEmMassa()">
+    <div class="dialog dialog-confirm" (click)="$event.stopPropagation()">
+      <div class="dialog-header">
+        <div class="dialog-title-row">
+          <i class="pi pi-exclamation-triangle dialog-icon-warn"></i>
+          <h2>Confirmar exclusão</h2>
+        </div>
+        <button class="btn-icon" (click)="cancelarExclusaoEmMassa()">
+          <i class="pi pi-times"></i>
+        </button>
+      </div>
+      <div class="dialog-content">
+        <p>Você está prestes a excluir <strong>{{ selecionados().size }} documento(s) selecionado(s)</strong>.</p>
+        <p class="dialog-warn-text">Esta ação não pode ser desfeita.</p>
+      </div>
+      <div class="dialog-footer">
+        <button class="btn-secondary" (click)="cancelarExclusaoEmMassa()">Cancelar</button>
+        <button class="btn-danger" (click)="confirmarExclusaoEmMassa()">
+          <i class="pi pi-trash"></i> Excluir
+        </button>
+      </div>
+    </div>
+  </div>
+}

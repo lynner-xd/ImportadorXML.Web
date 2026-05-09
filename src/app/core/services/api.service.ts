@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpParams } from '@angular/common/http';
+import { HttpClient, HttpParams, HttpResponse } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { map } from 'rxjs/operators';
 import { environment } from '../../../environments/environment';
 import { UsuarioResponse, CriarUsuarioRequest, EditarUsuarioRequest } from '../models/usuario.models';
 import { PlanoContaResponse, CriarContaRequest, AtualizarContaRequest } from '../models/plano-conta.models';
@@ -9,7 +10,7 @@ import { BalanceteItem, AnaliticoItem, EmpresaOption } from '../models/relatorio
 import { ConfiguracaoEmailRequest, ConfiguracaoEmailResponse } from '../models/email-config.models';
 import { ImportacaoResultado } from '../models/importacao.models';
 import { ScriptResultadoResponse, ScriptHistoricoResponse } from '../models/script.models';
-import { DocumentoFiscal } from '../models/documento.models';
+import { DocumentoFiscal, PagedResult } from '../models/documento.models';
 
 @Injectable({ providedIn: 'root' })
 export class ApiService {
@@ -22,17 +23,31 @@ export class ApiService {
     return this.http.post<ImportacaoResultado>(`${this.api}/importacao`, formData);
   }
 
+  importarChunk(formData: FormData): Observable<ImportacaoResultado | null> {
+    return this.http.post<ImportacaoResultado>(
+      `${this.api}/importacao/chunk`,
+      formData,
+      { observe: 'response' }
+    ).pipe(map((res: HttpResponse<ImportacaoResultado>) => res.status === 200 ? res.body : null));
+  }
+
   // ===== Documentos =====
-  listarDocumentos(tipo?: string, dataInicio?: string, dataFim?: string): Observable<DocumentoFiscal[]> {
-    let params = new HttpParams();
+  listarDocumentos(tipo?: string, dataInicio?: string, dataFim?: string, page = 1, pageSize = 50): Observable<PagedResult<DocumentoFiscal>> {
+    let params = new HttpParams()
+      .set('page', page.toString())
+      .set('pageSize', pageSize.toString());
     if (tipo) params = params.set('tipo', tipo);
     if (dataInicio) params = params.set('dataInicio', dataInicio);
     if (dataFim) params = params.set('dataFim', dataFim);
-    return this.http.get<DocumentoFiscal[]>(`${this.api}/documentos`, { params });
+    return this.http.get<PagedResult<DocumentoFiscal>>(`${this.api}/documentos`, { params });
   }
 
   excluirDocumento(id: string): Observable<void> {
     return this.http.delete<void>(`${this.api}/documentos/${id}`);
+  }
+
+  excluirDocumentos(ids: string[]): Observable<void> {
+    return this.http.delete<void>(`${this.api}/documentos`, { body: { ids } });
   }
 
   // ===== Lançamentos =====

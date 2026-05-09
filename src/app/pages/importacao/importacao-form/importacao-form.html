@@ -10,26 +10,70 @@
 
 <div class="card">
   <div class="upload-area">
-    <div class="file-drop" (click)="fileInput.click()">
-      <input #fileInput type="file" accept=".xml" multiple (change)="onFileSelect($event)" hidden />
-      <i class="pi pi-cloud-upload"></i>
-      @if (arquivos().length === 0) {
-        <span>Clique para selecionar arquivos XML</span>
-        <small>NFe, NFCe, NFSe — múltiplos arquivos permitidos</small>
-      } @else {
-        <span>{{ arquivos().length }} arquivo(s) selecionado(s)</span>
-        <small>Clique para alterar a seleção</small>
-      }
+
+    <!-- Botões de seleção -->
+    <div class="selection-buttons">
+      <div class="file-drop" (click)="fileInput.click()">
+        <input #fileInput type="file" accept=".xml,.zip,.rar" multiple
+               (change)="onFileSelect($event)" hidden />
+        <i class="pi pi-cloud-upload"></i>
+        <span>Selecionar arquivos</span>
+        <small>XML, ZIP ou RAR — múltiplos permitidos</small>
+      </div>
+
+      <div class="file-drop" (click)="folderInput.click()">
+        <input #folderInput type="file" webkitdirectory
+               (change)="onFolderSelect($event)" hidden />
+        <i class="pi pi-folder-open"></i>
+        <span>Selecionar pasta</span>
+        <small>Importa todos os XMLs da pasta</small>
+      </div>
     </div>
 
+    <!-- Lista de arquivos selecionados -->
     @if (arquivos().length > 0) {
       <div class="file-list">
+        <div class="file-list-header">
+          <span>{{ arquivos().length }} arquivo(s) selecionado(s)</span>
+        </div>
         @for (f of arquivos(); track f.name) {
           <div class="file-item">
-            <i class="pi pi-file-o"></i>
+            <i [class]="iconeArquivo(f.name)"></i>
             <span>{{ f.name }}</span>
             <span class="file-size">{{ (f.size / 1024).toFixed(1) }} KB</span>
           </div>
+        }
+      </div>
+    }
+
+    <!-- Progresso de upload chunked -->
+    @if (loading() && arquivoAtual()) {
+      <div class="chunk-progress">
+        <div class="chunk-progress-info">
+          <i class="pi pi-spin pi-spinner"></i>
+          @if (faseUpload() === 'processando') {
+            <span>Processando XMLs de <strong>{{ arquivoAtual() }}</strong>... aguarde</span>
+          } @else {
+            <span>Enviando {{ arquivoAtual() }}...</span>
+            <span class="chunk-percent">{{ progressoChunk() }}%</span>
+          }
+        </div>
+        @if (faseUpload() === 'chunks') {
+          <div class="chunk-progress-bar">
+            <div class="chunk-progress-fill" [style.width.%]="progressoChunk()"></div>
+          </div>
+        }
+        <button class="btn-cancel-upload" (click)="cancelar()" [disabled]="cancelando()">
+          @if (cancelando()) {
+            <i class="pi pi-spinner pi-spin"></i> Cancelando...
+          } @else if (faseUpload() === 'processando') {
+            <i class="pi pi-times-circle"></i> Cancelar processamento
+          } @else {
+            <i class="pi pi-times-circle"></i> Cancelar envio
+          }
+        </button>
+        @if (faseUpload() === 'processando') {
+          <small class="cancel-note">O servidor pode continuar processando em segundo plano.</small>
         }
       </div>
     }
@@ -87,52 +131,54 @@
       }
     </div>
 
-    @if (res.itensProcessados.length > 0) {
-      <div class="items-table-wrap">
-        <table class="data-table">
-          <thead>
-            <tr>
-              <th>Arquivo</th>
-              <th>Emitente/Tomador</th>
-              <th class="text-right">Valor</th>
-              <th>Data Emissão</th>
-              <th class="text-center">Status</th>
-            </tr>
-          </thead>
-          <tbody>
-            @for (item of res.itensProcessados; track item.arquivo) {
+    <div class="result-scroll-area">
+      @if (res.itensProcessados.length > 0) {
+        <div class="items-table-wrap">
+          <table class="data-table">
+            <thead>
               <tr>
-                <td class="arquivo-cell">{{ item.arquivo }}</td>
-                <td>{{ item.empresa || '-' }}</td>
-                <td class="text-right">
-                  @if (item.valor) { {{ item.valor | number:'1.2-2' }} } @else { - }
-                </td>
-                <td>
-                  @if (item.data) { {{ item.data | date:'dd/MM/yyyy' }} } @else { - }
-                </td>
-                <td class="text-center">
-                  <span class="status-badge" [class]="statusClass(item.status)">
-                    {{ statusLabel(item.status) }}
-                  </span>
-                </td>
+                <th>Arquivo</th>
+                <th>Emitente/Tomador</th>
+                <th class="text-right">Valor</th>
+                <th>Data Emissão</th>
+                <th class="text-center">Status</th>
               </tr>
-            }
-          </tbody>
-        </table>
-      </div>
-    }
+            </thead>
+            <tbody>
+              @for (item of res.itensProcessados; track item.arquivo) {
+                <tr>
+                  <td class="arquivo-cell">{{ item.arquivo }}</td>
+                  <td>{{ item.empresa || '-' }}</td>
+                  <td class="text-right">
+                    @if (item.valor) { {{ item.valor | number:'1.2-2' }} } @else { - }
+                  </td>
+                  <td>
+                    @if (item.data) { {{ item.data | date:'dd/MM/yyyy' }} } @else { - }
+                  </td>
+                  <td class="text-center">
+                    <span class="status-badge" [class]="statusClass(item.status)">
+                      {{ statusLabel(item.status) }}
+                    </span>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      }
 
-    @if (res.erros.length > 0) {
-      <div class="errors-section">
-        <h4><i class="pi pi-exclamation-triangle"></i> Detalhes dos erros</h4>
-        @for (e of res.erros; track e.arquivo) {
-          <div class="error-item">
-            <strong>{{ e.arquivo }}</strong>
-            <span>{{ e.mensagem }}</span>
-          </div>
-        }
-      </div>
-    }
+      @if (res.erros.length > 0) {
+        <div class="errors-section">
+          <h4><i class="pi pi-exclamation-triangle"></i> Detalhes dos erros</h4>
+          @for (e of res.erros; track e.arquivo) {
+            <div class="error-item">
+              <strong>{{ e.arquivo }}</strong>
+              <span>{{ e.mensagem }}</span>
+            </div>
+          }
+        </div>
+      }
+    </div>
 
     @if (res.totalImportados > 0) {
       <div class="result-actions">
@@ -141,5 +187,38 @@
         </button>
       </div>
     }
+  </div>
+}
+
+@if (confirmandoSaida()) {
+  <div class="dialog-overlay" (click)="cancelarSaida()">
+    <div class="dialog dialog-confirm" (click)="$event.stopPropagation()">
+      <div class="dialog-header">
+        <div class="dialog-title-row">
+          <i class="pi pi-exclamation-triangle dialog-icon-warn"></i>
+          <h2>Sair durante o processamento?</h2>
+        </div>
+        <button class="btn-icon" (click)="cancelarSaida()">
+          <i class="pi pi-times"></i>
+        </button>
+      </div>
+      <div class="dialog-content">
+        @if (faseUpload() === 'processando') {
+          <p>O servidor está processando <strong>{{ arquivoAtual() }}</strong>.</p>
+          <p class="dialog-warn-text">Se sair, o envio será interrompido, mas o servidor pode continuar o processamento em segundo plano — os documentos podem ser importados mesmo assim.</p>
+        } @else {
+          <p>O envio de <strong>{{ arquivoAtual() }}</strong> está em andamento.</p>
+          <p class="dialog-warn-text">Se sair, o envio será cancelado e os dados não enviados serão perdidos.</p>
+        }
+      </div>
+      <div class="dialog-footer">
+        <button class="btn-secondary" (click)="cancelarSaida()">
+          <i class="pi pi-arrow-left"></i> Continuar aguardando
+        </button>
+        <button class="btn-danger" (click)="confirmarSaida()">
+          <i class="pi pi-sign-out"></i> Sair mesmo assim
+        </button>
+      </div>
+    </div>
   </div>
 }

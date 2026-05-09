@@ -235,3 +235,118 @@
     td.text-center { white-space: nowrap; }
   }
 }
+
+.dialog-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.dialog {
+  background: var(--bg-card);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius);
+  width: 100%;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+}
+
+.dialog-confirm { max-width: 420px; }
+
+.dialog-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1.25rem 1.5rem;
+  border-bottom: 1px solid var(--divider);
+
+  h2 { font-size: 1.05rem; font-weight: 600; margin: 0; }
+}
+
+.dialog-title-row {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.dialog-icon-warn {
+  font-size: 1.1rem;
+  color: #f59e0b;
+}
+
+.dialog-content {
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+
+  p { margin: 0; font-size: 0.9375rem; color: var(--text-primary); }
+}
+
+.dialog-warn-text {
+  color: var(--text-muted) !important;
+  font-size: 0.875rem !important;
+}
+
+.dialog-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.75rem;
+  padding: 1rem 1.5rem;
+  border-top: 1px solid var(--divider);
+}
+
+.col-check {
+  width: 40px;
+  text-align: center;
+}
+
+.row-selected td {
+  background-color: rgba(59, 130, 246, 0.12) !important;
+}
+
+.bulk-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+  background: rgba(47, 128, 237, 0.08);
+  border: 1px solid rgba(47, 128, 237, 0.22);
+  border-radius: var(--radius-xs);
+  margin-bottom: 0.75rem;
+
+  span { font-weight: 600; color: var(--text-primary); }
+}
+
+.btn-danger {
+  background: rgba(220, 53, 69, 0.85);
+  color: #fff;
+  border: none;
+  border-radius: var(--radius-xs);
+  padding: 0.4rem 0.9rem;
+  cursor: pointer;
+  font-size: 0.875rem;
+  font-family: 'Inter', sans-serif;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+
+  &:hover { background: #dc3545; }
+}
+
+.pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  padding: 1rem 0 0;
+
+  .pagination-info {
+    font-size: 0.9rem;
+    color: var(--text-muted);
+  }
+}

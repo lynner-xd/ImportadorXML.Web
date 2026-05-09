@@ -55,7 +55,14 @@ export class BalanceteComponent implements OnInit {
       ? this.api.downloadAdminRelatorioPdf('balancete', this.empresaId, this.dataInicio, this.dataFim)
       : this.api.downloadRelatorioPdf('balancete', this.dataInicio, this.dataFim);
 
-    obs.subscribe({ next: (blob) => this.downloadBlob(blob, 'balancete.pdf') });
+    obs.subscribe({ next: (blob) => this.downloadBlob(blob, this.nomeArquivo('balancete')) });
+  }
+
+  private nomeArquivo(relatorio: string): string {
+    const now = new Date();
+    const p = (n: number) => n.toString().padStart(2, '0');
+    const ts = `${p(now.getDate())}${p(now.getMonth() + 1)}${now.getFullYear()}${p(now.getHours())}${p(now.getMinutes())}${p(now.getSeconds())}`;
+    return `${relatorio}_${ts}.pdf`;
   }
 
   private downloadBlob(blob: Blob, filename: string): void {

@@ -21,6 +21,7 @@ export class AnaliticoComponent implements OnInit {
   filtroNivel1 = '';
   filtroNivel2 = '';
   filtroNivel3 = '';
+  filtroNivel4 = '';
   contaId = '';
   dataInicio = '';
   dataFim = '';
@@ -55,6 +56,15 @@ export class AnaliticoComponent implements OnInit {
     return todas;
   }
 
+  get contasNivel5(): PlanoContaResponse[] {
+    const todas = this.contas().filter(c => c.codigo.split('.').length === 5);
+    if (this.filtroNivel4) return todas.filter(c => c.codigo.startsWith(this.filtroNivel4 + '.'));
+    if (this.filtroNivel3) return todas.filter(c => c.codigo.startsWith(this.filtroNivel3 + '.'));
+    if (this.filtroNivel2) return todas.filter(c => c.codigo.startsWith(this.filtroNivel2 + '.'));
+    if (this.filtroNivel1) return todas.filter(c => c.codigo.startsWith(this.filtroNivel1 + '.'));
+    return todas;
+  }
+
   constructor(private api: ApiService) {}
 
   ngOnInit(): void {
@@ -71,15 +81,22 @@ export class AnaliticoComponent implements OnInit {
   onNivel1Change(): void {
     this.filtroNivel2 = '';
     this.filtroNivel3 = '';
+    this.filtroNivel4 = '';
     this.contaId = '';
   }
 
   onNivel2Change(): void {
     this.filtroNivel3 = '';
+    this.filtroNivel4 = '';
     this.contaId = '';
   }
 
   onNivel3Change(): void {
+    this.filtroNivel4 = '';
+    this.contaId = '';
+  }
+
+  onNivel4Change(): void {
     this.contaId = '';
   }
 
@@ -88,7 +105,7 @@ export class AnaliticoComponent implements OnInit {
     if (this.isAdmin && !this.empresaId) return;
 
     if (!this.contaId) {
-      this.showToast('Selecione uma conta analítica (4º nível) para gerar o relatório.');
+      this.showToast('Selecione uma conta analítica (5º nível) para gerar o relatório.');
       return;
     }
 
@@ -119,9 +136,16 @@ export class AnaliticoComponent implements OnInit {
       next: (blob) => {
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
-        a.href = url; a.download = 'analitico.pdf'; a.click();
+        a.href = url; a.download = this.nomeArquivo('analitico'); a.click();
         URL.revokeObjectURL(url);
       }
     });
+  }
+
+  private nomeArquivo(relatorio: string): string {
+    const now = new Date();
+    const p = (n: number) => n.toString().padStart(2, '0');
+    const ts = `${p(now.getDate())}${p(now.getMonth() + 1)}${now.getFullYear()}${p(now.getHours())}${p(now.getMinutes())}${p(now.getSeconds())}`;
+    return `${relatorio}_${ts}.pdf`;
   }
 }

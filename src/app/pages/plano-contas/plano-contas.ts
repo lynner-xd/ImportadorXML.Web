@@ -29,9 +29,9 @@ export class PlanoContasComponent implements OnInit {
 
   contasPai = computed<ContaPai[]>(() => {
     const todas = this.contas();
-    // Permitir apenas até nível 3 (max 3 partes: 1, 1.1, 1.1.1)
+    // Permitir apenas até nível 4 (max 4 partes: 1, 1.1, 1.1.1, 1.1.1.1)
     return todas
-      .filter(c => c.codigo.split('.').length <= 3)
+      .filter(c => c.codigo.split('.').length <= 4)
       .map(c => ({
         codigo: c.codigo,
         label: `${c.codigo} - ${c.nome}`
@@ -88,7 +88,7 @@ export class PlanoContasComponent implements OnInit {
 
     const proximo = maiorSeq + 1;
     const nivelPai = prefixo.split('.').length;
-    const proximoFormatado = nivelPai >= 3 ? proximo.toString().padStart(3, '0') : proximo.toString();
+    const proximoFormatado = nivelPai >= 4 ? proximo.toString().padStart(3, '0') : proximo.toString();
     const novoCodigo = `${prefixo}.${proximoFormatado}`;
 
     this.codigoGerado.set(novoCodigo);
