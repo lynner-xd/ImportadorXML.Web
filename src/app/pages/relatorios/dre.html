@@ -1,0 +1,90 @@
+<div class="page-header">
+  <div>
+    <h1>Relatório DRE</h1>
+    <p>Demonstração do Resultado do Exercício</p>
+  </div>
+</div>
+
+<div class="card">
+  <div class="filtros">
+    @if (isAdmin) {
+      <div class="field">
+        <label>Empresa</label>
+        <select [(ngModel)]="empresaId" class="input-select">
+          <option value="">Selecione a empresa...</option>
+          @for (e of empresas(); track e.id) {
+            <option [value]="e.id">{{ e.razaoSocial }} - {{ e.cnpj }}</option>
+          }
+        </select>
+      </div>
+    }
+    <div class="field">
+      <label>Data Início</label>
+      <input type="date" [(ngModel)]="dataInicio" />
+    </div>
+    <div class="field">
+      <label>Data Fim</label>
+      <input type="date" [(ngModel)]="dataFim" />
+    </div>
+    <div class="field">
+      <label>Modo</label>
+      <div class="toggle-switch">
+        <button type="button" [class.active]="modo() === 'sintetico'" (click)="setModo('sintetico')">Sintético</button>
+        <button type="button" [class.active]="modo() === 'analitico'" (click)="setModo('analitico')">Analítico</button>
+      </div>
+    </div>
+    <div class="field field-actions">
+      <button class="btn-primary" (click)="gerar()" [disabled]="loading()">
+        @if (loading()) {
+          <i class="pi pi-spinner pi-spin"></i>
+        } @else {
+          <i class="pi pi-search"></i>
+        }
+        Gerar
+      </button>
+      @if (gerado() && dados()) {
+        <button class="btn-secondary" (click)="exportarPdf()">
+          <i class="pi pi-file-pdf"></i> PDF
+        </button>
+      }
+    </div>
+  </div>
+</div>
+
+@if (gerado() && dados()) {
+  <div class="card dre-card" style="margin-top: 1rem;">
+    <table class="dre-table">
+      <tbody>
+        @for (sec of dados()!.secoes; track sec.tipo) {
+          <tr class="dre-secao-header" [class.dre-subtotal]="sec.ehSubtotal">
+            <td colspan="2"><strong>{{ sec.titulo }}</strong></td>
+            <td class="text-right">
+              @if (sec.ehSubtotal) {
+                <strong [class.negativo]="sec.total < 0">{{ formatValor(sec.total) }}</strong>
+              }
+            </td>
+          </tr>
+          @if (!sec.ehSubtotal) {
+            @for (item of sec.contas; track item.codigo) {
+              <tr class="dre-detalhe">
+                <td [style.padding-left.px]="14 + item.nivel * 14">{{ item.codigo }}</td>
+                <td>{{ item.nome }}</td>
+                <td class="text-right" [class.negativo]="sec.sinal === '-'">
+                  {{ formatValorComSinal(item.valor, sec.sinal) }}
+                </td>
+              </tr>
+            }
+            @if (sec.contas.length > 0) {
+              <tr class="dre-total-secao">
+                <td colspan="2"><em>Total {{ sec.titulo }}</em></td>
+                <td class="text-right" [class.negativo]="sec.sinal === '-'">
+                  <em>{{ formatValorComSinal(sec.total, sec.sinal) }}</em>
+                </td>
+              </tr>
+            }
+          }
+        }
+      </tbody>
+    </table>
+  </div>
+}

@@ -6,7 +6,7 @@ import { environment } from '../../../environments/environment';
 import { UsuarioResponse, CriarUsuarioRequest, EditarUsuarioRequest } from '../models/usuario.models';
 import { PlanoContaResponse, CriarContaRequest, AtualizarContaRequest } from '../models/plano-conta.models';
 import { LancamentoResponse, CriarLancamentoRequest } from '../models/lancamento.models';
-import { BalanceteItem, AnaliticoItem, EmpresaOption } from '../models/relatorio.models';
+import { BalanceteItem, AnaliticoItem, EmpresaOption, DreResponse, BalancoPatrimonialResponse } from '../models/relatorio.models';
 import { ConfiguracaoEmailRequest, ConfiguracaoEmailResponse } from '../models/email-config.models';
 import { ImportacaoResultado } from '../models/importacao.models';
 import { ScriptResultadoResponse, ScriptHistoricoResponse } from '../models/script.models';
@@ -101,6 +101,21 @@ export class ApiService {
     return this.http.get<BalanceteItem[]>(`${this.api}/relatorios/sintetico`, { params });
   }
 
+  getDre(dataInicio: string, dataFim: string, modo: string): Observable<DreResponse> {
+    const params = new HttpParams().set('dataInicio', dataInicio).set('dataFim', dataFim).set('modo', modo);
+    return this.http.get<DreResponse>(`${this.api}/relatorios/dre`, { params });
+  }
+
+  getBalancoPatrimonial(dataBase: string, modo: string, exibir: string): Observable<BalancoPatrimonialResponse> {
+    const params = new HttpParams().set('dataBase', dataBase).set('modo', modo).set('exibir', exibir);
+    return this.http.get<BalancoPatrimonialResponse>(`${this.api}/relatorios/balanco-patrimonial`, { params });
+  }
+
+  downloadBalancoPdf(dataBase: string, modo: string, exibir: string): Observable<Blob> {
+    const params = new HttpParams().set('dataBase', dataBase).set('modo', modo).set('exibir', exibir);
+    return this.http.get(`${this.api}/relatorios/balanco-patrimonial/pdf`, { params, responseType: 'blob' });
+  }
+
   downloadRelatorioPdf(tipo: string, dataInicio: string, dataFim: string, extra?: Record<string, string>): Observable<Blob> {
     let params = new HttpParams().set('dataInicio', dataInicio).set('dataFim', dataFim);
     if (extra) Object.entries(extra).forEach(([k, v]) => params = params.set(k, v));
@@ -122,6 +137,21 @@ export class ApiService {
     let params = new HttpParams().set('empresaId', empresaId).set('dataInicio', dataInicio).set('dataFim', dataFim);
     if (codigoPrefixo) params = params.set('codigoPrefixo', codigoPrefixo);
     return this.http.get<BalanceteItem[]>(`${this.api}/admin/relatorios/sintetico`, { params });
+  }
+
+  getAdminDre(empresaId: string, dataInicio: string, dataFim: string, modo: string): Observable<DreResponse> {
+    const params = new HttpParams().set('empresaId', empresaId).set('dataInicio', dataInicio).set('dataFim', dataFim).set('modo', modo);
+    return this.http.get<DreResponse>(`${this.api}/admin/relatorios/dre`, { params });
+  }
+
+  getAdminBalancoPatrimonial(empresaId: string, dataBase: string, modo: string, exibir: string): Observable<BalancoPatrimonialResponse> {
+    const params = new HttpParams().set('empresaId', empresaId).set('dataBase', dataBase).set('modo', modo).set('exibir', exibir);
+    return this.http.get<BalancoPatrimonialResponse>(`${this.api}/admin/relatorios/balanco-patrimonial`, { params });
+  }
+
+  downloadAdminBalancoPdf(empresaId: string, dataBase: string, modo: string, exibir: string): Observable<Blob> {
+    const params = new HttpParams().set('empresaId', empresaId).set('dataBase', dataBase).set('modo', modo).set('exibir', exibir);
+    return this.http.get(`${this.api}/admin/relatorios/balanco-patrimonial/pdf`, { params, responseType: 'blob' });
   }
 
   downloadAdminRelatorioPdf(tipo: string, empresaId: string, dataInicio: string, dataFim: string, extra?: Record<string, string>): Observable<Blob> {

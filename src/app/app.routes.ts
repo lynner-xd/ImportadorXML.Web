@@ -25,11 +25,15 @@ export const routes: Routes = [
       { path: 'relatorios/balancete', canActivate: [empresaGuard], loadComponent: () => import('./pages/relatorios/balancete').then(m => m.BalanceteComponent) },
       { path: 'relatorios/analitico', canActivate: [empresaGuard], loadComponent: () => import('./pages/relatorios/analitico').then(m => m.AnaliticoComponent) },
       { path: 'relatorios/sintetico', canActivate: [empresaGuard], loadComponent: () => import('./pages/relatorios/sintetico').then(m => m.SinteticoComponent) },
+      { path: 'relatorios/dre', canActivate: [empresaGuard], loadComponent: () => import('./pages/relatorios/dre').then(m => m.DreComponent) },
+      { path: 'relatorios/balanco-patrimonial', canActivate: [empresaGuard], loadComponent: () => import('./pages/relatorios/balanco-patrimonial').then(m => m.BalancoPatrimonialComponent) },
 
       // Contador (Admin)
       { path: 'admin/relatorios/balancete', canActivate: [contadorGuard], loadComponent: () => import('./pages/admin-relatorios/admin-balancete').then(m => m.AdminBalanceteComponent) },
       { path: 'admin/relatorios/analitico', canActivate: [contadorGuard], loadComponent: () => import('./pages/admin-relatorios/admin-analitico').then(m => m.AdminAnaliticoComponent) },
       { path: 'admin/relatorios/sintetico', canActivate: [contadorGuard], loadComponent: () => import('./pages/admin-relatorios/admin-sintetico').then(m => m.AdminSinteticoComponent) },
+      { path: 'admin/relatorios/dre', canActivate: [contadorGuard], loadComponent: () => import('./pages/admin-relatorios/admin-dre').then(m => m.AdminDreComponent) },
+      { path: 'admin/relatorios/balanco-patrimonial', canActivate: [contadorGuard], loadComponent: () => import('./pages/admin-relatorios/admin-balanco-patrimonial').then(m => m.AdminBalancoPatrimonialComponent) },
       { path: 'admin/usuarios', canActivate: [contadorGuard], loadComponent: () => import('./pages/admin-usuarios/admin-usuarios').then(m => m.AdminUsuariosComponent) },
       { path: 'admin/email', canActivate: [contadorGuard], loadComponent: () => import('./pages/admin-email/admin-email').then(m => m.AdminEmailComponent) },
 

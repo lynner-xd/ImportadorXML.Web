@@ -1,0 +1,113 @@
+<div class="page-header">
+  <div>
+    <h1>Balanço Patrimonial</h1>
+    <p>Posição patrimonial em uma data base</p>
+  </div>
+</div>
+
+<div class="card">
+  <div class="filtros">
+    @if (isAdmin) {
+      <div class="field">
+        <label>Empresa</label>
+        <select [(ngModel)]="empresaId" class="input-select">
+          <option value="">Selecione a empresa...</option>
+          @for (e of empresas(); track e.id) {
+            <option [value]="e.id">{{ e.razaoSocial }} - {{ e.cnpj }}</option>
+          }
+        </select>
+      </div>
+    }
+    <div class="field">
+      <label>Data Base</label>
+      <input type="date" [(ngModel)]="dataBase" />
+    </div>
+    <div class="field">
+      <label>Modo</label>
+      <div class="toggle-switch">
+        <button type="button" [class.active]="modo() === 'sintetico'" (click)="setModo('sintetico')">Sintético</button>
+        <button type="button" [class.active]="modo() === 'analitico'" (click)="setModo('analitico')">Analítico</button>
+      </div>
+    </div>
+    <div class="field">
+      <label>Exibir</label>
+      <div class="toggle-switch">
+        <button type="button" [class.active]="exibir() === 'todos'" (click)="setExibir('todos')">Todos</button>
+        <button type="button" [class.active]="exibir() === 'com-valor'" (click)="setExibir('com-valor')">Com valor</button>
+      </div>
+    </div>
+    <div class="field field-actions">
+      <button class="btn-primary" (click)="gerar()" [disabled]="loading()">
+        @if (loading()) {
+          <i class="pi pi-spinner pi-spin"></i>
+        } @else {
+          <i class="pi pi-search"></i>
+        }
+        Gerar
+      </button>
+      @if (gerado() && dados()) {
+        <button class="btn-secondary" (click)="exportarPdf()">
+          <i class="pi pi-file-pdf"></i> PDF
+        </button>
+      }
+    </div>
+  </div>
+</div>
+
+@if (gerado() && dados()) {
+  <div class="balanco-grid">
+    <div class="card balanco-coluna">
+      <table class="balanco-table">
+        <thead>
+          <tr class="balanco-header">
+            <th colspan="2">ATIVO</th>
+            <th class="text-right">VALOR</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (item of dados()!.ativo; track item.codigo + '-' + $index) {
+            <tr class="balanco-linha">
+              <td [style.padding-left.px]="14 + item.nivel * 14">{{ item.codigo }}</td>
+              <td>{{ item.nome }}</td>
+              <td class="text-right" [class.negativo]="item.valor < 0">{{ formatValor(item.valor) }}</td>
+            </tr>
+          }
+          <tr class="balanco-total">
+            <td colspan="2"><strong>TOTAL ATIVO</strong></td>
+            <td class="text-right" [class.negativo]="dados()!.totalAtivo < 0"><strong>{{ formatValor(dados()!.totalAtivo) }}</strong></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="card balanco-coluna">
+      <table class="balanco-table">
+        <thead>
+          <tr class="balanco-header">
+            <th colspan="2">PASSIVO + PATRIMÔNIO LÍQUIDO</th>
+            <th class="text-right">VALOR</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (item of dados()!.passivoPL; track item.codigo + '-' + $index) {
+            <tr class="balanco-linha" [class.balanco-calculado]="item.isCalculado">
+              <td [style.padding-left.px]="14 + item.nivel * 14">{{ item.codigo }}</td>
+              <td>
+                @if (item.isCalculado) {
+                  <em>{{ item.nome }}</em>
+                } @else {
+                  {{ item.nome }}
+                }
+              </td>
+              <td class="text-right" [class.negativo]="item.valor < 0">{{ formatValor(item.valor) }}</td>
+            </tr>
+          }
+          <tr class="balanco-total">
+            <td colspan="2"><strong>TOTAL PASSIVO + PL</strong></td>
+            <td class="text-right" [class.negativo]="dados()!.totalPassivoPL < 0"><strong>{{ formatValor(dados()!.totalPassivoPL) }}</strong></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+}

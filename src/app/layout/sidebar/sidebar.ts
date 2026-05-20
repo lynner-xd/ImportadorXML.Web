@@ -30,6 +30,8 @@ export class SidebarComponent {
             { label: 'Balancete', icon: 'pi pi-list', route: '/admin/relatorios/balancete' },
             { label: 'Analítico', icon: 'pi pi-search', route: '/admin/relatorios/analitico' },
             { label: 'Sintético', icon: 'pi pi-table', route: '/admin/relatorios/sintetico' },
+            { label: 'DRE', icon: 'pi pi-chart-line', route: '/admin/relatorios/dre' },
+            { label: 'Balanço Patrimonial', icon: 'pi pi-wallet', route: '/admin/relatorios/balanco-patrimonial' },
           ]
         },
         { label: 'Usuários', icon: 'pi pi-users', route: '/admin/usuarios' },
@@ -59,6 +61,8 @@ export class SidebarComponent {
           { label: 'Balancete', icon: 'pi pi-list', route: '/relatorios/balancete' },
           { label: 'Analítico', icon: 'pi pi-search', route: '/relatorios/analitico' },
           { label: 'Sintético', icon: 'pi pi-table', route: '/relatorios/sintetico' },
+          { label: 'DRE', icon: 'pi pi-chart-line', route: '/relatorios/dre' },
+          { label: 'Balanço Patrimonial', icon: 'pi pi-wallet', route: '/relatorios/balanco-patrimonial' },
         ]
       },
     ];
