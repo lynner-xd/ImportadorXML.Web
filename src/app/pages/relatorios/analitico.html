@@ -117,7 +117,7 @@
         <tbody>
           @for (item of dados(); track $index) {
             <tr>
-              <td>{{ item.data | date:'dd/MM/yyyy' }}</td>
+              <td>{{ item.data | date:'dd/MM/yyyy':'UTC' }}</td>
               <td>{{ item.descricao }}</td>
               <td class="text-right">{{ item.debito | number:'1.2-2' }}</td>
               <td class="text-right">{{ item.credito | number:'1.2-2' }}</td>

@@ -27,14 +27,40 @@
       <input type="date" [(ngModel)]="dataFim" />
     </div>
     <div class="field">
-      <label>Modo</label>
-      <div class="toggle-switch">
-        <button type="button" [class.active]="modo() === 'sintetico'" (click)="setModo('sintetico')">Sintético</button>
-        <button type="button" [class.active]="modo() === 'analitico'" (click)="setModo('analitico')">Analítico</button>
+      <label>Níveis exibidos</label>
+      <div class="dropdown-multiselect" [class.open]="niveisOpen()">
+        <button type="button" class="dropdown-trigger" (click)="toggleNiveisOpen()">
+          <span class="dropdown-label">{{ niveisLabel() }}</span>
+          <i class="pi" [class.pi-chevron-down]="!niveisOpen()" [class.pi-chevron-up]="niveisOpen()"></i>
+        </button>
+        @if (niveisOpen()) {
+          <div class="dropdown-panel">
+            @for (n of niveisDisponiveis; track n) {
+              <label class="dropdown-option">
+                <input type="checkbox" [checked]="isNivelSelecionado(n)" (change)="toggleNivel(n)" />
+                <span>Nível {{ n }}</span>
+              </label>
+            }
+          </div>
+        }
       </div>
     </div>
+    <div class="field field-toggles">
+      <label class="toggle-row">
+        <span>Exibir classificação</span>
+        <span class="toggle-input" [class.on]="exibirClassificacao()" (click)="exibirClassificacao.set(!exibirClassificacao())">
+          <span class="toggle-knob"></span>
+        </span>
+      </label>
+      <label class="toggle-row">
+        <span>Exibir assinaturas (PDF)</span>
+        <span class="toggle-input" [class.on]="exibirAssinaturas()" (click)="exibirAssinaturas.set(!exibirAssinaturas())">
+          <span class="toggle-knob"></span>
+        </span>
+      </label>
+    </div>
     <div class="field field-actions">
-      <button class="btn-primary" (click)="gerar()" [disabled]="loading()">
+      <button class="btn-primary" (click)="gerar()" [disabled]="loading() || niveis().length === 0">
         @if (loading()) {
           <i class="pi pi-spinner pi-spin"></i>
         } @else {
@@ -57,7 +83,11 @@
       <tbody>
         @for (sec of dados()!.secoes; track sec.tipo) {
           <tr class="dre-secao-header" [class.dre-subtotal]="sec.ehSubtotal">
-            <td colspan="2"><strong>{{ sec.titulo }}</strong></td>
+            @if (exibirClassificacao()) {
+              <td colspan="2"><strong>{{ sec.titulo }}</strong></td>
+            } @else {
+              <td><strong>{{ sec.titulo }}</strong></td>
+            }
             <td class="text-right">
               @if (sec.ehSubtotal) {
                 <strong [class.negativo]="sec.total < 0">{{ formatValor(sec.total) }}</strong>
@@ -67,8 +97,12 @@
           @if (!sec.ehSubtotal) {
             @for (item of sec.contas; track item.codigo) {
               <tr class="dre-detalhe">
-                <td [style.padding-left.px]="14 + item.nivel * 14">{{ item.codigo }}</td>
-                <td>{{ item.nome }}</td>
+                @if (exibirClassificacao()) {
+                  <td [style.padding-left.px]="14 + item.nivel * 14">{{ item.codigo }}</td>
+                  <td>{{ item.nome }}</td>
+                } @else {
+                  <td [style.padding-left.px]="14 + item.nivel * 14">{{ item.nome }}</td>
+                }
                 <td class="text-right" [class.negativo]="sec.sinal === '-'">
                   {{ formatValorComSinal(item.valor, sec.sinal) }}
                 </td>
@@ -76,7 +110,11 @@
             }
             @if (sec.contas.length > 0) {
               <tr class="dre-total-secao">
-                <td colspan="2"><em>Total {{ sec.titulo }}</em></td>
+                @if (exibirClassificacao()) {
+                  <td colspan="2"><em>Total {{ sec.titulo }}</em></td>
+                } @else {
+                  <td><em>Total {{ sec.titulo }}</em></td>
+                }
                 <td class="text-right" [class.negativo]="sec.sinal === '-'">
                   <em>{{ formatValorComSinal(sec.total, sec.sinal) }}</em>
                 </td>

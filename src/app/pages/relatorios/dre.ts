@@ -1,30 +1,44 @@
-import { Component, Input, OnInit, signal } from '@angular/core';
+import { Component, ElementRef, HostListener, Input, OnInit, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ApiService } from '../../core/services/api.service';
 import { AuthService } from '../../core/services/auth.service';
 import { DreResponse, EmpresaOption } from '../../core/models/relatorio.models';
 
+const NIVEIS_DISPONIVEIS = [1, 2, 3, 4, 5] as const;
+
 @Component({
   selector: 'app-dre',
   standalone: true,
   imports: [CommonModule, FormsModule],
   templateUrl: './dre.html',
-  styleUrl: './relatorios.scss'
+  styleUrls: ['./relatorios.scss', './filtros.scss']
 })
 export class DreComponent implements OnInit {
   @Input() isAdmin = false;
+
+  readonly niveisDisponiveis = NIVEIS_DISPONIVEIS;
 
   empresas = signal<EmpresaOption[]>([]);
   empresaId = '';
   dataInicio = '';
   dataFim = '';
-  modo = signal<'sintetico' | 'analitico'>('sintetico');
+  niveis = signal<number[]>([4, 5]);
+  exibirAssinaturas = signal(true);
+  exibirClassificacao = signal(true);
   dados = signal<DreResponse | null>(null);
   loading = signal(false);
   gerado = signal(false);
+  niveisOpen = signal(false);
 
-  constructor(private api: ApiService, public auth: AuthService) {}
+  niveisLabel = computed(() => {
+    const n = this.niveis().slice().sort((a, b) => a - b);
+    if (n.length === 0) return 'Selecione...';
+    if (n.length === 5) return 'Todos os níveis';
+    return n.map(x => `Nível ${x}`).join(', ');
+  });
+
+  constructor(private api: ApiService, public auth: AuthService, private el: ElementRef) {}
 
   ngOnInit(): void {
     const now = new Date();
@@ -36,20 +50,40 @@ export class DreComponent implements OnInit {
     }
   }
 
-  setModo(m: 'sintetico' | 'analitico'): void {
-    if (this.modo() === m) return;
-    this.modo.set(m);
+  @HostListener('document:click', ['$event.target'])
+  onDocClick(target: EventTarget | null): void {
+    if (!this.niveisOpen()) return;
+    const root = this.el.nativeElement.querySelector('.dropdown-multiselect');
+    if (root && target instanceof Node && !root.contains(target)) this.niveisOpen.set(false);
+  }
+
+  toggleNiveisOpen(): void {
+    this.niveisOpen.update(v => !v);
+  }
+
+  toggleNivel(nivel: number): void {
+    const atuais = this.niveis();
+    if (atuais.includes(nivel)) {
+      this.niveis.set(atuais.filter(n => n !== nivel));
+    } else {
+      this.niveis.set([...atuais, nivel].sort((a, b) => a - b));
+    }
     if (this.gerado()) this.gerar();
+  }
+
+  isNivelSelecionado(nivel: number): boolean {
+    return this.niveis().includes(nivel);
   }
 
   gerar(): void {
     if (!this.dataInicio || !this.dataFim) return;
     if (this.isAdmin && !this.empresaId) return;
+    if (this.niveis().length === 0) return;
 
     this.loading.set(true);
     const obs = this.isAdmin
-      ? this.api.getAdminDre(this.empresaId, this.dataInicio, this.dataFim, this.modo())
-      : this.api.getDre(this.dataInicio, this.dataFim, this.modo());
+      ? this.api.getAdminDre(this.empresaId, this.dataInicio, this.dataFim, this.niveis())
+      : this.api.getDre(this.dataInicio, this.dataFim, this.niveis());
 
     obs.subscribe({
       next: (data) => { this.dados.set(data); this.loading.set(false); this.gerado.set(true); },
@@ -58,7 +92,11 @@ export class DreComponent implements OnInit {
   }
 
   exportarPdf(): void {
-    const extra: Record<string, string> = { modo: this.modo() };
+    const extra: Record<string, string> = {
+      niveis: this.niveis().join(','),
+      assinaturas: this.exibirAssinaturas() ? 'true' : 'false',
+      classificacao: this.exibirClassificacao() ? 'true' : 'false'
+    };
     const obs = this.isAdmin
       ? this.api.downloadAdminRelatorioPdf('dre', this.empresaId, this.dataInicio, this.dataFim, extra)
       : this.api.downloadRelatorioPdf('dre', this.dataInicio, this.dataFim, extra);

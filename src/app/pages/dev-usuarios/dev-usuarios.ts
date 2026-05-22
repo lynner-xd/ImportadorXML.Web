@@ -22,7 +22,15 @@ export class DevUsuariosComponent implements OnInit {
   error = signal('');
   successMsg = signal('');
 
-  form: { email: string; razaoSocial: string; cnpj: string } = { email: '', razaoSocial: '', cnpj: '' };
+  form: {
+    email: string;
+    razaoSocial: string;
+    cnpj: string;
+    socioNome: string;
+    socioCpfCnpj: string;
+    contadorNome: string;
+    contadorCrc: string;
+  } = { email: '', razaoSocial: '', cnpj: '', socioNome: '', socioCpfCnpj: '', contadorNome: '', contadorCrc: '' };
 
   isEmpresaForm = computed(() =>
     this.dialogMode() === 'novo-empresa' ||
@@ -51,8 +59,12 @@ export class DevUsuariosComponent implements OnInit {
     });
   }
 
+  private formInicial() {
+    return { email: '', razaoSocial: '', cnpj: '', socioNome: '', socioCpfCnpj: '', contadorNome: '', contadorCrc: '' };
+  }
+
   abrirNovoContador(): void {
-    this.form = { email: '', razaoSocial: '', cnpj: '' };
+    this.form = this.formInicial();
     this.editando.set(null);
     this.dialogMode.set('novo-contador');
     this.error.set('');
@@ -60,7 +72,7 @@ export class DevUsuariosComponent implements OnInit {
   }
 
   abrirNovaEmpresa(): void {
-    this.form = { email: '', razaoSocial: '', cnpj: '' };
+    this.form = this.formInicial();
     this.editando.set(null);
     this.dialogMode.set('novo-empresa');
     this.error.set('');
@@ -71,7 +83,11 @@ export class DevUsuariosComponent implements OnInit {
     this.form = {
       email: u.email,
       razaoSocial: u.empresa?.razaoSocial ?? '',
-      cnpj: u.empresa?.cnpj ?? ''
+      cnpj: u.empresa?.cnpj ?? '',
+      socioNome: u.empresa?.socioNome ?? '',
+      socioCpfCnpj: u.empresa?.socioCpfCnpj ?? '',
+      contadorNome: u.empresa?.contadorNome ?? '',
+      contadorCrc: u.empresa?.contadorCrc ?? ''
     };
     this.editando.set(u);
     this.dialogMode.set('editar');
@@ -93,9 +109,9 @@ export class DevUsuariosComponent implements OnInit {
 
     if (mode === 'novo-empresa') {
       if (!this.form.email || !this.form.razaoSocial || !this.form.cnpj) {
-        this.error.set('Preencha todos os campos.'); return;
+        this.error.set('Preencha email, razão social e CNPJ.'); return;
       }
-      const req: CriarUsuarioRequest = { email: this.form.email, razaoSocial: this.form.razaoSocial, cnpj: this.form.cnpj };
+      const req: CriarUsuarioRequest = this.buildEmpresaPayload();
       this.api.devCriarEmpresa(req).subscribe({
         next: () => { this.showDialog.set(false); this.carregar(); this.showSuccess('Empresa criada. Credenciais enviadas por email.'); },
         error: (err) => this.error.set(err.error?.message || 'Erro ao criar empresa.')
@@ -105,11 +121,23 @@ export class DevUsuariosComponent implements OnInit {
 
     const edit = this.editando()!;
     if (!this.form.email) { this.error.set('Preencha o email.'); return; }
-    const req: EditarUsuarioRequest = { email: this.form.email, razaoSocial: this.form.razaoSocial, cnpj: this.form.cnpj };
+    const req: EditarUsuarioRequest = this.buildEmpresaPayload();
     this.api.devEditarUsuario(edit.id, req).subscribe({
       next: () => { this.showDialog.set(false); this.carregar(); this.showSuccess('Usuário atualizado com sucesso.'); },
       error: (err) => this.error.set(err.error?.message || 'Erro ao atualizar.')
     });
+  }
+
+  private buildEmpresaPayload(): CriarUsuarioRequest {
+    return {
+      email: this.form.email,
+      razaoSocial: this.form.razaoSocial,
+      cnpj: this.form.cnpj,
+      socioNome: this.form.socioNome || null,
+      socioCpfCnpj: this.form.socioCpfCnpj || null,
+      contadorNome: this.form.contadorNome || null,
+      contadorCrc: this.form.contadorCrc || null
+    };
   }
 
   alterarStatus(u: UsuarioResponse): void {

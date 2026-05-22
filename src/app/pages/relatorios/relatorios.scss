@@ -37,7 +37,7 @@
     outline: none;
 
     &::placeholder { color: var(--text-muted); }
-    &:focus { border-color: var(--focus-ring); box-shadow: 0 0 0 2px rgba(47, 128, 237, 0.2); }
+    &:focus { border-color: var(--focus-ring); box-shadow: 0 0 0 2px rgba(var(--accent-primary-rgb), 0.2); }
     option { background: var(--bg-card); color: var(--text-primary); }
   }
 
@@ -110,7 +110,7 @@
     border-bottom: 1px solid var(--divider);
   }
 
-  tr:hover td { background: var(--bg-hover); }
+  tr:hover td { background: var(--row-hover); }
   .text-right { text-align: right; }
 }
 
@@ -227,7 +227,7 @@
   }
 
   .dre-detalhe td { background: var(--bg-card); color: var(--text-primary); }
-  .dre-detalhe:hover td { background: var(--bg-hover); }
+  .dre-detalhe:hover td { background: var(--row-hover); }
 
   .dre-total-secao td {
     background: var(--bg-hover);
@@ -277,7 +277,7 @@
   }
 
   .balanco-linha td { background: var(--bg-card); color: var(--text-primary); }
-  .balanco-linha:hover td { background: var(--bg-hover); }
+  .balanco-linha:hover td { background: var(--row-hover); }
 
   .balanco-calculado td {
     background: var(--bg-hover);
@@ -285,8 +285,8 @@
   }
 
   .balanco-total td {
-    background: #E3F2FD;
-    color: #000;
+    background: var(--bg-hover);
+    color: var(--text-primary);
     border-top: 2px solid var(--accent-primary);
     font-weight: 700;
   }

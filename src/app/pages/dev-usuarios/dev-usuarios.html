@@ -89,6 +89,28 @@
             <label>CNPJ</label>
             <input type="text" [(ngModel)]="form.cnpj" placeholder="00.000.000/0000-00" />
           </div>
+
+          <div class="section-divider"><span>Dados para assinatura (opcional)</span></div>
+          <p class="section-hint">
+            Se preenchidos, esses dados aparecerão nos relatórios DRE e Balanço Patrimonial em PDF.
+          </p>
+
+          <div class="field">
+            <label>Nome do Sócio</label>
+            <input type="text" [(ngModel)]="form.socioNome" placeholder="Nome completo do sócio responsável" />
+          </div>
+          <div class="field">
+            <label>CPF/CNPJ do Sócio</label>
+            <input type="text" [(ngModel)]="form.socioCpfCnpj" placeholder="000.000.000-00" />
+          </div>
+          <div class="field">
+            <label>Nome do Contador</label>
+            <input type="text" [(ngModel)]="form.contadorNome" placeholder="Nome completo do contador responsável" />
+          </div>
+          <div class="field">
+            <label>CRC do Contador</label>
+            <input type="text" [(ngModel)]="form.contadorCrc" placeholder="Ex.: CRC/SP 123456/O-7" />
+          </div>
         }
         @if (dialogMode() !== 'editar') {
           <div class="info-msg">

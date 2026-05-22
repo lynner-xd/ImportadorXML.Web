@@ -10,16 +10,21 @@ import { BalancoPatrimonialResponse, EmpresaOption } from '../../core/models/rel
   standalone: true,
   imports: [CommonModule, FormsModule],
   templateUrl: './balanco-patrimonial.html',
-  styleUrl: './relatorios.scss'
+  styleUrls: ['./relatorios.scss', './filtros.scss']
 })
 export class BalancoPatrimonialComponent implements OnInit {
   @Input() isAdmin = false;
 
   empresas = signal<EmpresaOption[]>([]);
   empresaId = '';
-  dataBase = '';
+  dataInicio = '';
+  dataFim = '';
   modo = signal<'sintetico' | 'analitico'>('sintetico');
   exibir = signal<'todos' | 'com-valor'>('todos');
+  exibirAssinaturas = signal(true);
+  exibirSaldoAnterior = signal(true);
+  exibirClassificacao = signal(true);
+  orientacao = signal<'retrato' | 'paisagem'>('paisagem');
   dados = signal<BalancoPatrimonialResponse | null>(null);
   loading = signal(false);
   gerado = signal(false);
@@ -27,7 +32,9 @@ export class BalancoPatrimonialComponent implements OnInit {
   constructor(private api: ApiService, public auth: AuthService) {}
 
   ngOnInit(): void {
-    this.dataBase = new Date().toISOString().split('T')[0];
+    const now = new Date();
+    this.dataInicio = new Date(now.getFullYear(), now.getMonth(), 1).toISOString().split('T')[0];
+    this.dataFim = now.toISOString().split('T')[0];
 
     if (this.isAdmin) {
       this.api.listarEmpresas().subscribe({ next: (e) => this.empresas.set(e) });
@@ -47,13 +54,13 @@ export class BalancoPatrimonialComponent implements OnInit {
   }
 
   gerar(): void {
-    if (!this.dataBase) return;
+    if (!this.dataInicio || !this.dataFim) return;
     if (this.isAdmin && !this.empresaId) return;
 
     this.loading.set(true);
     const obs = this.isAdmin
-      ? this.api.getAdminBalancoPatrimonial(this.empresaId, this.dataBase, this.modo(), this.exibir())
-      : this.api.getBalancoPatrimonial(this.dataBase, this.modo(), this.exibir());
+      ? this.api.getAdminBalancoPatrimonial(this.empresaId, this.dataInicio, this.dataFim, this.modo(), this.exibir())
+      : this.api.getBalancoPatrimonial(this.dataInicio, this.dataFim, this.modo(), this.exibir());
 
     obs.subscribe({
       next: (data) => { this.dados.set(data); this.loading.set(false); this.gerado.set(true); },
@@ -62,9 +69,15 @@ export class BalancoPatrimonialComponent implements OnInit {
   }
 
   exportarPdf(): void {
+    const extra: Record<string, string> = {
+      assinaturas: this.exibirAssinaturas() ? 'true' : 'false',
+      saldoAnterior: this.exibirSaldoAnterior() ? 'true' : 'false',
+      classificacao: this.exibirClassificacao() ? 'true' : 'false',
+      orientacao: this.orientacao()
+    };
     const obs = this.isAdmin
-      ? this.api.downloadAdminBalancoPdf(this.empresaId, this.dataBase, this.modo(), this.exibir())
-      : this.api.downloadBalancoPdf(this.dataBase, this.modo(), this.exibir());
+      ? this.api.downloadAdminBalancoPdf(this.empresaId, this.dataInicio, this.dataFim, this.modo(), this.exibir(), extra)
+      : this.api.downloadBalancoPdf(this.dataInicio, this.dataFim, this.modo(), this.exibir(), extra);
 
     obs.subscribe({ next: (blob) => this.downloadBlob(blob, this.nomeArquivo('balanco-patrimonial')) });
   }
@@ -73,6 +86,10 @@ export class BalancoPatrimonialComponent implements OnInit {
     if (v === 0) return '-';
     const abs = Math.abs(v).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
     return v < 0 ? `(R$ ${abs})` : `R$ ${abs}`;
+  }
+
+  isLinhaNegrito(nivel: number, isCalculado: boolean): boolean {
+    return isCalculado || nivel <= 2;
   }
 
   private nomeArquivo(relatorio: string): string {

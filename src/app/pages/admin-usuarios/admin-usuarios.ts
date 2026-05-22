@@ -19,7 +19,15 @@ export class AdminUsuariosComponent implements OnInit {
   error = signal('');
   successMsg = signal('');
 
-  form: CriarUsuarioRequest = { email: '', razaoSocial: '', cnpj: '' };
+  form: CriarUsuarioRequest = {
+    email: '',
+    razaoSocial: '',
+    cnpj: '',
+    socioNome: '',
+    socioCpfCnpj: '',
+    contadorNome: '',
+    contadorCrc: ''
+  };
 
   constructor(private api: ApiService) {}
 
@@ -36,7 +44,15 @@ export class AdminUsuariosComponent implements OnInit {
   }
 
   abrirNovo(): void {
-    this.form = { email: '', razaoSocial: '', cnpj: '' };
+    this.form = {
+      email: '',
+      razaoSocial: '',
+      cnpj: '',
+      socioNome: '',
+      socioCpfCnpj: '',
+      contadorNome: '',
+      contadorCrc: ''
+    };
     this.editando.set(null);
     this.error.set('');
     this.showDialog.set(true);
@@ -46,7 +62,11 @@ export class AdminUsuariosComponent implements OnInit {
     this.form = {
       email: u.email,
       razaoSocial: u.empresa?.razaoSocial ?? '',
-      cnpj: u.empresa?.cnpj ?? ''
+      cnpj: u.empresa?.cnpj ?? '',
+      socioNome: u.empresa?.socioNome ?? '',
+      socioCpfCnpj: u.empresa?.socioCpfCnpj ?? '',
+      contadorNome: u.empresa?.contadorNome ?? '',
+      contadorCrc: u.empresa?.contadorCrc ?? ''
     };
     this.editando.set(u);
     this.error.set('');
@@ -55,19 +75,28 @@ export class AdminUsuariosComponent implements OnInit {
 
   salvar(): void {
     if (!this.form.email || !this.form.razaoSocial || !this.form.cnpj) {
-      this.error.set('Preencha todos os campos.');
+      this.error.set('Preencha email, razão social e CNPJ.');
       return;
     }
 
+    const payload: CriarUsuarioRequest = {
+      email: this.form.email,
+      razaoSocial: this.form.razaoSocial,
+      cnpj: this.form.cnpj,
+      socioNome: this.form.socioNome || null,
+      socioCpfCnpj: this.form.socioCpfCnpj || null,
+      contadorNome: this.form.contadorNome || null,
+      contadorCrc: this.form.contadorCrc || null
+    };
+
     const edit = this.editando();
     if (edit) {
-      const req: EditarUsuarioRequest = { email: this.form.email, razaoSocial: this.form.razaoSocial, cnpj: this.form.cnpj };
-      this.api.editarUsuario(edit.id, req).subscribe({
+      this.api.editarUsuario(edit.id, payload as EditarUsuarioRequest).subscribe({
         next: () => { this.showDialog.set(false); this.carregar(); this.showSuccess('Usuário atualizado com sucesso.'); },
         error: (err) => this.error.set(err.error?.message || 'Erro ao atualizar.')
       });
     } else {
-      this.api.criarUsuario(this.form).subscribe({
+      this.api.criarUsuario(payload).subscribe({
         next: () => { this.showDialog.set(false); this.carregar(); this.showSuccess('Usuário criado. Credenciais enviadas por email.'); },
         error: (err) => this.error.set(err.error?.message || 'Erro ao criar usuário.')
       });

@@ -2,29 +2,31 @@
 
 :root {
   // Cores principais
-  --primary-dark: #0A1F44;
-  --primary-base: #123A7A;
-  --accent-primary: #2F80ED;
-  --accent-secondary: #56A3FF;
+  --primary-dark: #8B6F1F;
+  --primary-base: #A8862A;
+  --accent-primary: #D4AF37;
+  --accent-secondary: #E5BF4F;
+  --accent-primary-rgb: 212, 175, 55;
 
   // Fundos
-  --bg-app: #0B0F1A;
-  --bg-section: #111827;
-  --bg-card: #1A2236;
-  --bg-hover: #222C44;
-  --bg-input: #0F172A;
+  --bg-app: #0E0E10;
+  --bg-section: #16161A;
+  --bg-card: #1A1A1D;
+  --bg-hover: #232326;
+  --row-hover: rgba(212, 175, 55, 0.08);
+  --bg-input: #121214;
 
   // Tipografia
   --text-primary: #E6EAF2;
-  --text-secondary: #AAB3C5;
+  --text-secondary: #A0A4AE;
   --text-muted: #6B7280;
-  --text-on-primary: #FFFFFF;
+  --text-on-primary: #1A1A1D;
 
   // Bordas
-  --border-default: #2A344D;
-  --border-strong: #34415E;
-  --divider: #1F2937;
-  --focus-ring: #2F80ED;
+  --border-default: #2A2A2E;
+  --border-strong: #3A3A3F;
+  --divider: #1F1F22;
+  --focus-ring: #D4AF37;
 
   // Feedback
   --success: #22C55E;
@@ -61,8 +63,19 @@ a {
 // Native date/time inputs — force browser's native picker to use dark theme
 input[type="date"],
 input[type="datetime-local"],
-input[type="month"] {
+input[type="month"],
+input[type="time"] {
   color-scheme: dark;
+}
+
+input[type="date"],
+input[type="datetime-local"],
+input[type="month"],
+input[type="time"],
+input[type="checkbox"],
+input[type="radio"],
+input[type="range"] {
+  accent-color: var(--accent-primary);
 }
 
 // ===== PrimeNG Dark Theme Overrides =====
@@ -87,7 +100,7 @@ input[type="month"] {
 
   &:enabled:focus {
     border-color: var(--focus-ring) !important;
-    box-shadow: 0 0 0 2px rgba(47, 128, 237, 0.2) !important;
+    box-shadow: 0 0 0 2px rgba(var(--accent-primary-rgb), 0.2) !important;
   }
 }
 
@@ -106,7 +119,7 @@ input[type="month"] {
 
   &.p-focus {
     border-color: var(--focus-ring) !important;
-    box-shadow: 0 0 0 2px rgba(47, 128, 237, 0.2) !important;
+    box-shadow: 0 0 0 2px rgba(var(--accent-primary-rgb), 0.2) !important;
     outline: none !important;
   }
 
@@ -166,7 +179,7 @@ input[type="month"] {
   }
 
   &.p-select-option-selected {
-    background: rgba(47, 128, 237, 0.12) !important;
+    background: rgba(var(--accent-primary-rgb), 0.12) !important;
     color: var(--accent-primary) !important;
   }
 }
@@ -253,7 +266,7 @@ input[type="month"] {
     border-bottom: 1px solid var(--divider) !important;
 
     &:hover {
-      background: var(--bg-hover) !important;
+      background: var(--row-hover) !important;
     }
 
     > td {

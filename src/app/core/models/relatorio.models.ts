@@ -56,24 +56,29 @@ export interface DreSecao {
 export interface DreResponse {
   dataInicio: string;
   dataFim: string;
-  modo: 'sintetico' | 'analitico';
+  niveisExibidos: number[];
   secoes: DreSecao[];
 }
 
 export interface BalancoContaItem {
   codigo: string;
   nome: string;
+  saldoAnterior: number;
   valor: number;
   isCalculado: boolean;
   nivel: number;
 }
 
 export interface BalancoPatrimonialResponse {
-  dataBase: string;
+  dataInicio: string;
+  dataFim: string;
   modo: 'sintetico' | 'analitico';
   ativo: BalancoContaItem[];
   passivoPL: BalancoContaItem[];
+  totalAtivoAnterior: number;
   totalAtivo: number;
+  totalPassivoPLAnterior: number;
   totalPassivoPL: number;
+  resultadoExercicioAnterior: number;
   resultadoExercicio: number;
 }

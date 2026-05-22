@@ -56,7 +56,7 @@
 .resultado-table { width: 100%; border-collapse: collapse;
   th { text-align: left; padding: 0.65rem 1rem; font-size: 0.75rem; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.03em; border-bottom: 1px solid var(--border-default); white-space: nowrap; }
   td { padding: 0.65rem 1rem; font-size: 0.8125rem; border-bottom: 1px solid var(--divider); font-family: 'Fira Code', 'Consolas', monospace; color: var(--text-secondary); white-space: nowrap; }
-  tr:hover td { background: var(--bg-hover); }
+  tr:hover td { background: var(--row-hover); }
 }
 
 @media (max-width: 900px) {

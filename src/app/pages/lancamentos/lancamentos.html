@@ -73,12 +73,15 @@
       <tbody>
         @for (l of lancamentosFiltrados; track l.id) {
           <tr>
-            <td>{{ l.data | date:'dd/MM/yyyy' }}</td>
+            <td>{{ l.data | date:'dd/MM/yyyy':'UTC' }}</td>
             <td>{{ l.descricao }}</td>
             <td>{{ l.contaDebito }}</td>
             <td>{{ l.contaCredito }}</td>
             <td class="text-right">{{ l.valor | number:'1.2-2' }}</td>
             <td class="text-center">
+              <button class="btn-icon" (click)="abrirDialogEdicao(l)" title="Editar">
+                <i class="pi pi-pencil"></i>
+              </button>
               <button class="btn-icon danger" (click)="excluir(l.id)" title="Excluir">
                 <i class="pi pi-trash"></i>
               </button>
@@ -92,11 +95,11 @@
 
 <!-- Dialog Novo Lançamento -->
 @if (showDialog()) {
-  <div class="dialog-overlay" (click)="showDialog.set(false)">
+  <div class="dialog-overlay" (click)="fecharDialog()">
     <div class="dialog" (click)="$event.stopPropagation()">
       <div class="dialog-header">
-        <h2>Novo Lançamento</h2>
-        <button class="btn-icon" (click)="showDialog.set(false)"><i class="pi pi-times"></i></button>
+        <h2>{{ modoEdicao() ? 'Editar Lançamento' : 'Novo Lançamento' }}</h2>
+        <button class="btn-icon" (click)="fecharDialog()"><i class="pi pi-times"></i></button>
       </div>
       <div class="dialog-content">
         <div class="form-grid">
@@ -141,8 +144,8 @@
         }
       </div>
       <div class="dialog-footer">
-        <button class="btn-secondary" (click)="showDialog.set(false)">Cancelar</button>
-        <button class="btn-primary" (click)="salvar()">Salvar</button>
+        <button class="btn-secondary" (click)="fecharDialog()">Cancelar</button>
+        <button class="btn-primary" (click)="salvar()">{{ modoEdicao() ? 'Atualizar' : 'Salvar' }}</button>
       </div>
     </div>
   </div>
