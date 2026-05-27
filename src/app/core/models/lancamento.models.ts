@@ -10,6 +10,7 @@ export interface LancamentoResponse {
   observacao?: string;
   observacaoContador?: string;
   origem: string;
+  dataCriacao: string;
 }
 
 export interface CriarLancamentoRequest {

@@ -12,24 +12,24 @@
   <div class="filtros">
     <div class="field">
       <label>Data Início</label>
-      <input type="date" [(ngModel)]="filtroDataInicio" />
+      <input type="date" [(ngModel)]="filtroDataInicio" (ngModelChange)="aoMudarFiltroData()" />
     </div>
     <div class="field">
       <label>Data Fim</label>
-      <input type="date" [(ngModel)]="filtroDataFim" />
+      <input type="date" [(ngModel)]="filtroDataFim" (ngModelChange)="aoMudarFiltroData()" />
     </div>
     <div class="field field-search">
       <label>Conta Débito</label>
       <div class="search-wrap">
         <i class="pi pi-search"></i>
-        <input type="text" [(ngModel)]="filtroDebito" placeholder="Código ou nome..." />
+        <input type="text" [(ngModel)]="filtroDebito" (ngModelChange)="aoDigitarFiltroTexto()" placeholder="Código ou nome..." />
       </div>
     </div>
     <div class="field field-search">
       <label>Conta Crédito</label>
       <div class="search-wrap">
         <i class="pi pi-search"></i>
-        <input type="text" [(ngModel)]="filtroCredito" placeholder="Código ou nome..." />
+        <input type="text" [(ngModel)]="filtroCredito" (ngModelChange)="aoDigitarFiltroTexto()" placeholder="Código ou nome..." />
       </div>
     </div>
     @if (temFiltroAtivo) {
@@ -45,19 +45,19 @@
 <div class="card" style="margin-top: 1rem;">
   @if (loading()) {
     <div class="loading"><i class="pi pi-spinner pi-spin"></i> Carregando...</div>
-  } @else if (lancamentos().length === 0) {
+  } @else if (totalLancamentos() === 0 && !temFiltroAtivo) {
     <div class="empty">
       <i class="pi pi-inbox"></i>
       <p>Nenhum lançamento manual encontrado.</p>
     </div>
-  } @else if (lancamentosFiltrados.length === 0) {
+  } @else if (totalLancamentos() === 0 && temFiltroAtivo) {
     <div class="empty">
       <i class="pi pi-filter-slash"></i>
       <p>Nenhum lançamento corresponde aos filtros aplicados.</p>
     </div>
   } @else {
     <div class="table-meta">
-      <span>{{ lancamentosFiltrados.length }} de {{ lancamentos().length }} lançamentos</span>
+      <span>Mostrando {{ lancamentos().length }} de {{ totalLancamentos() }} lançamentos</span>
     </div>
     <table class="data-table">
       <thead>
@@ -71,7 +71,7 @@
         </tr>
       </thead>
       <tbody>
-        @for (l of lancamentosFiltrados; track l.id) {
+        @for (l of lancamentos(); track l.id) {
           <tr>
             <td>{{ l.data | date:'dd/MM/yyyy':'UTC' }}</td>
             <td>{{ l.descricao }}</td>
@@ -90,10 +90,28 @@
         }
       </tbody>
     </table>
+
+    <div class="paginacao">
+      <span class="paginacao-info">
+        Página {{ pagina() }} de {{ totalPaginas() }} ({{ lancamentos().length }} de {{ totalLancamentos() }} lançamentos)
+      </span>
+      <div class="paginacao-botoes">
+        <button class="btn-secondary"
+                [disabled]="pagina() === 1"
+                (click)="paginaAnterior()">
+          <i class="pi pi-chevron-left"></i> Página anterior
+        </button>
+        <button class="btn-secondary"
+                [disabled]="pagina() >= totalPaginas()"
+                (click)="proximaPagina()">
+          Próxima página <i class="pi pi-chevron-right"></i>
+        </button>
+      </div>
+    </div>
   }
 </div>
 
-<!-- Dialog Novo Lançamento -->
+<!-- Dialog Novo / Editar Lançamento -->
 @if (showDialog()) {
   <div class="dialog-overlay" (click)="fecharDialog()">
     <div class="dialog" (click)="$event.stopPropagation()">
@@ -109,12 +127,27 @@
           </div>
           <div class="field">
             <label>Valor (R$)</label>
-            <input type="text" [ngModel]="valorFormatado" (ngModelChange)="onValorInput($event)" placeholder="0,00" />
+            <input #valorInput type="text" [ngModel]="valorFormatado" (ngModelChange)="onValorInput($event)" placeholder="0,00" />
           </div>
         </div>
         <div class="field">
           <label>Descrição</label>
-          <input type="text" [(ngModel)]="form.descricao" placeholder="Descrição do lançamento" />
+          <div class="autocomplete-wrap">
+            <input type="text"
+                   [(ngModel)]="form.descricao"
+                   (focus)="onDescricaoFocus()"
+                   (input)="onDescricaoFocus()"
+                   (blur)="onDescricaoBlur()"
+                   (keydown.escape)="mostrarSugestoes.set(false)"
+                   placeholder="Descrição do lançamento" />
+            @if (mostrarSugestoes() && sugestoesFiltradas().length > 0) {
+              <ul class="autocomplete-list">
+                @for (s of sugestoesFiltradas(); track s) {
+                  <li (mousedown)="selecionarSugestao(s)">{{ s }}</li>
+                }
+              </ul>
+            }
+          </div>
         </div>
         <div class="field">
           <label>Observação</label>

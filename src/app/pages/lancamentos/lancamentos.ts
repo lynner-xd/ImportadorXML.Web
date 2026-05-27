@@ -1,6 +1,8 @@
-import { Component, OnInit, computed, signal } from '@angular/core';
+import { Component, ElementRef, OnDestroy, OnInit, ViewChild, computed, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { Subject } from 'rxjs';
+import { debounceTime, takeUntil } from 'rxjs/operators';
 import { ApiService } from '../../core/services/api.service';
 import { LancamentoResponse, CriarLancamentoRequest, AtualizarLancamentoRequest } from '../../core/models/lancamento.models';
 import { PlanoContaResponse } from '../../core/models/plano-conta.models';
@@ -12,7 +14,7 @@ import { PlanoContaResponse } from '../../core/models/plano-conta.models';
   templateUrl: './lancamentos.html',
   styleUrl: './lancamentos.scss'
 })
-export class LancamentosComponent implements OnInit {
+export class LancamentosComponent implements OnInit, OnDestroy {
   lancamentos = signal<LancamentoResponse[]>([]);
   contas = signal<PlanoContaResponse[]>([]);
   loading = signal(false);
@@ -20,6 +22,22 @@ export class LancamentosComponent implements OnInit {
   error = signal('');
   lancamentoEditandoId = signal<string | null>(null);
   modoEdicao = computed(() => this.lancamentoEditandoId() !== null);
+
+  // Paginação
+  pagina = signal(1);
+  readonly pageSize = 50;
+  totalLancamentos = signal(0);
+  totalPaginas = computed(() => Math.max(1, Math.ceil(this.totalLancamentos() / this.pageSize)));
+
+  // Autocomplete descrição
+  descricoesSalvas = signal<string[]>([]);
+  mostrarSugestoes = signal(false);
+
+  sugestoesFiltradas(): string[] {
+    return this.filtrarDescricoes(this.form.descricao, this.descricoesSalvas());
+  }
+
+  @ViewChild('valorInput') valorInputRef?: ElementRef<HTMLInputElement>;
 
   form: CriarLancamentoRequest = {
     data: new Date().toISOString().split('T')[0],
@@ -37,21 +55,76 @@ export class LancamentosComponent implements OnInit {
   filtroDebito = '';
   filtroCredito = '';
 
-  get lancamentosFiltrados(): LancamentoResponse[] {
-    return this.lancamentos()
-      .filter(l => {
-        const data = l.data.substring(0, 10);
-        if (this.filtroDataInicio && data < this.filtroDataInicio) return false;
-        if (this.filtroDataFim && data > this.filtroDataFim) return false;
-        if (this.filtroDebito && !l.contaDebito.toLowerCase().includes(this.filtroDebito.toLowerCase())) return false;
-        if (this.filtroCredito && !l.contaCredito.toLowerCase().includes(this.filtroCredito.toLowerCase())) return false;
-        return true;
-      })
-      .sort((a, b) => b.data.localeCompare(a.data));
+  private filtroTexto$ = new Subject<void>();
+  private destroy$ = new Subject<void>();
+
+  constructor(private api: ApiService) {}
+
+  ngOnInit(): void {
+    this.filtroTexto$
+      .pipe(debounceTime(400), takeUntil(this.destroy$))
+      .subscribe(() => this.aoMudarFiltro());
+
+    this.carregarPagina();
+    this.carregarDescricoes();
+    this.api.listarPlanoContas().subscribe({
+      next: (data) => this.contas.set(data)
+    });
+  }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 
   get temFiltroAtivo(): boolean {
     return !!(this.filtroDataInicio || this.filtroDataFim || this.filtroDebito || this.filtroCredito);
+  }
+
+  carregarPagina(): void {
+    this.loading.set(true);
+    this.api.listarLancamentos({
+      page: this.pagina(),
+      pageSize: this.pageSize,
+      dataInicio: this.filtroDataInicio || undefined,
+      dataFim: this.filtroDataFim || undefined,
+      debito: this.filtroDebito || undefined,
+      credito: this.filtroCredito || undefined
+    }).subscribe({
+      next: (res) => {
+        this.lancamentos.set(res.items);
+        this.totalLancamentos.set(res.total);
+        // Se a página atual ficou além do total após filtro/exclusão, volta para 1
+        if (this.pagina() > this.totalPaginas()) {
+          this.pagina.set(1);
+          this.carregarPagina();
+          return;
+        }
+        this.loading.set(false);
+      },
+      error: () => this.loading.set(false)
+    });
+  }
+
+  carregarDescricoes(): void {
+    this.api.listarDescricoes().subscribe({
+      next: (lista) => this.descricoesSalvas.set(lista)
+    });
+  }
+
+  // ===== Filtros =====
+  aoMudarFiltroData(): void {
+    this.pagina.set(1);
+    this.carregarPagina();
+  }
+
+  aoDigitarFiltroTexto(): void {
+    this.filtroTexto$.next();
+  }
+
+  private aoMudarFiltro(): void {
+    this.pagina.set(1);
+    this.carregarPagina();
   }
 
   limparFiltros(): void {
@@ -59,10 +132,26 @@ export class LancamentosComponent implements OnInit {
     this.filtroDataFim = '';
     this.filtroDebito = '';
     this.filtroCredito = '';
+    this.pagina.set(1);
+    this.carregarPagina();
   }
 
-  constructor(private api: ApiService) {}
+  // ===== Paginação =====
+  paginaAnterior(): void {
+    if (this.pagina() > 1) {
+      this.pagina.update(p => p - 1);
+      this.carregarPagina();
+    }
+  }
 
+  proximaPagina(): void {
+    if (this.pagina() < this.totalPaginas()) {
+      this.pagina.update(p => p + 1);
+      this.carregarPagina();
+    }
+  }
+
+  // ===== Valor formatado =====
   onValorInput(value: string): void {
     const apenasNumeros = value.replace(/\D/g, '');
     const centavos = parseInt(apenasNumeros || '0', 10);
@@ -78,33 +167,22 @@ export class LancamentosComponent implements OnInit {
     return `${reaisStr},${cents.toString().padStart(2, '0')}`;
   }
 
-  ngOnInit(): void {
-    this.carregarDados();
-  }
-
-  carregarDados(): void {
-    this.loading.set(true);
-    this.api.listarLancamentos().subscribe({
-      next: (data) => { this.lancamentos.set(data); this.loading.set(false); },
-      error: () => this.loading.set(false)
-    });
-    this.api.listarPlanoContas().subscribe({
-      next: (data) => this.contas.set(data)
-    });
-  }
-
+  // ===== Dialog =====
   abrirDialog(): void {
     this.lancamentoEditandoId.set(null);
     this.form = {
       data: new Date().toISOString().split('T')[0],
       descricao: '',
+      observacao: '',
       contaDebitoId: '',
       contaCreditoId: '',
       valor: 0
     };
     this.valorFormatado = '';
     this.error.set('');
+    this.mostrarSugestoes.set(false);
     this.showDialog.set(true);
+    setTimeout(() => this.valorInputRef?.nativeElement.focus(), 0);
   }
 
   abrirDialogEdicao(l: LancamentoResponse): void {
@@ -120,12 +198,14 @@ export class LancamentosComponent implements OnInit {
     const centavos = Math.round(l.valor * 100);
     this.valorFormatado = this.formatarMoeda(centavos);
     this.error.set('');
+    this.mostrarSugestoes.set(false);
     this.showDialog.set(true);
   }
 
   fecharDialog(): void {
     this.showDialog.set(false);
     this.lancamentoEditandoId.set(null);
+    this.mostrarSugestoes.set(false);
   }
 
   salvar(): void {
@@ -141,8 +221,26 @@ export class LancamentosComponent implements OnInit {
 
     obs$.subscribe({
       next: () => {
-        this.fecharDialog();
-        this.carregarDados();
+        if (editandoId) {
+          this.fecharDialog();
+          this.carregarPagina();
+        } else {
+          // Modo criação: NÃO fecha. Limpa campos exceto data, foca em Valor.
+          this.form = {
+            data: this.form.data,
+            descricao: '',
+            observacao: '',
+            contaDebitoId: '',
+            contaCreditoId: '',
+            valor: 0
+          };
+          this.valorFormatado = '';
+          this.error.set('');
+          this.mostrarSugestoes.set(false);
+          this.carregarPagina();
+          this.carregarDescricoes();
+          setTimeout(() => this.valorInputRef?.nativeElement.focus(), 0);
+        }
       },
       error: (err) => this.error.set(err.error?.message || (editandoId ? 'Erro ao atualizar lançamento.' : 'Erro ao criar lançamento.'))
     });
@@ -151,12 +249,46 @@ export class LancamentosComponent implements OnInit {
   excluir(id: string): void {
     if (confirm('Deseja excluir este lançamento?')) {
       this.api.excluirLancamento(id).subscribe({
-        next: () => this.carregarDados()
+        next: () => this.carregarPagina()
       });
     }
   }
 
   contasAnaliticas(): PlanoContaResponse[] {
     return this.contas().filter(c => c.codigo.split('.').length === 5);
+  }
+
+  // ===== Autocomplete =====
+  private normalizar(s: string): string {
+    // Remove marcas diacríticas (range U+0300..U+036F) e lowercase
+    return s.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
+  }
+
+  private filtrarDescricoes(termo: string, todas: readonly string[]): string[] {
+    const t = this.normalizar((termo ?? '').trim());
+    if (!t) return [];
+    const matches = todas
+      .map(d => ({ d, n: this.normalizar(d) }))
+      .filter(x => x.n.includes(t));
+    matches.sort((a, b) => {
+      const aPref = a.n.startsWith(t) ? 0 : 1;
+      const bPref = b.n.startsWith(t) ? 0 : 1;
+      return aPref - bPref;
+    });
+    return matches.slice(0, 10).map(x => x.d);
+  }
+
+  selecionarSugestao(d: string): void {
+    this.form.descricao = d;
+    this.mostrarSugestoes.set(false);
+  }
+
+  onDescricaoFocus(): void {
+    this.mostrarSugestoes.set(true);
+  }
+
+  onDescricaoBlur(): void {
+    // Pequeno delay para permitir click/mousedown nas sugestões antes do blur fechar a lista
+    setTimeout(() => this.mostrarSugestoes.set(false), 150);
   }
 }

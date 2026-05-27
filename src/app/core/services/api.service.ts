@@ -51,8 +51,27 @@ export class ApiService {
   }
 
   // ===== Lançamentos =====
-  listarLancamentos(): Observable<LancamentoResponse[]> {
-    return this.http.get<LancamentoResponse[]>(`${this.api}/lancamentos`);
+  listarLancamentos(params: {
+    page: number;
+    pageSize: number;
+    dataInicio?: string;
+    dataFim?: string;
+    debito?: string;
+    credito?: string;
+  }): Observable<PagedResult<LancamentoResponse>> {
+    let httpParams = new HttpParams()
+      .set('page', params.page.toString())
+      .set('pageSize', params.pageSize.toString());
+    if (params.dataInicio) httpParams = httpParams.set('dataInicio', params.dataInicio);
+    if (params.dataFim) httpParams = httpParams.set('dataFim', params.dataFim);
+    if (params.debito) httpParams = httpParams.set('debito', params.debito);
+    if (params.credito) httpParams = httpParams.set('credito', params.credito);
+    return this.http.get<PagedResult<LancamentoResponse>>(
+      `${this.api}/lancamentos`, { params: httpParams });
+  }
+
+  listarDescricoes(): Observable<string[]> {
+    return this.http.get<string[]>(`${this.api}/lancamentos/descricoes`);
   }
 
   criarLancamento(req: CriarLancamentoRequest): Observable<LancamentoResponse> {
