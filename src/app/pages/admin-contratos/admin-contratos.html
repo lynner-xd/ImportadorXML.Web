@@ -1,0 +1,94 @@
+<div class="page-header">
+  <div>
+    <h1>Geração de Contrato</h1>
+    <p>Preencha os dados e gere o Contrato de Direito ao Uso do Sistema Select em PDF</p>
+  </div>
+</div>
+
+<div class="card" style="margin-bottom: 1rem;">
+  <h2 class="section-title">Empresa</h2>
+  <div class="field">
+    <label>Empresa cadastrada</label>
+    <select [(ngModel)]="empresaSelecionadaId" (change)="aoMudarEmpresa()" class="input-select">
+      <option value="">Selecione...</option>
+      @for (e of empresas(); track e.id) {
+        <option [value]="e.id">{{ e.razaoSocial }} — {{ e.cnpj }}</option>
+      }
+    </select>
+    <small class="hint">Selecionar uma empresa preenche automaticamente o nome e CPF/CNPJ. Os demais campos seguem para preenchimento manual.</small>
+  </div>
+</div>
+
+<div class="card" style="margin-bottom: 1rem;">
+  <h2 class="section-title">Dados pessoais</h2>
+  <div class="form-grid-2">
+    <div class="field">
+      <label>Nome da Empresa/Pessoa</label>
+      <input type="text" [(ngModel)]="form.nome" placeholder="Nome completo ou razão social" />
+    </div>
+    <div class="field">
+      <label>CPF/CNPJ</label>
+      <input type="text" [ngModel]="cpfCnpjFormatado" (ngModelChange)="onCpfCnpjInput($event)" placeholder="000.000.000-00 ou 00.000.000/0000-00" />
+    </div>
+    <div class="field">
+      <label>Nacionalidade</label>
+      <input type="text" [(ngModel)]="form.nacionalidade" placeholder="brasileiro(a)" />
+    </div>
+    <div class="field">
+      <label>Estado Civil</label>
+      <input type="text" [(ngModel)]="form.estadoCivil" placeholder="solteiro(a), casado(a)..." />
+    </div>
+    <div class="field">
+      <label>Profissão</label>
+      <input type="text" [(ngModel)]="form.profissao" placeholder="Profissão" />
+    </div>
+    <div class="field">
+      <label>RG</label>
+      <input type="text" [(ngModel)]="form.rg" placeholder="Número do RG" />
+    </div>
+  </div>
+  <div class="field">
+    <label>Endereço completo</label>
+    <textarea [(ngModel)]="form.endereco" rows="2" placeholder="Rua, número, bairro, cidade, UF, CEP"></textarea>
+  </div>
+</div>
+
+<div class="card" style="margin-bottom: 1rem;">
+  <h2 class="section-title">Valores e cláusulas</h2>
+  <div class="form-grid-2">
+    <div class="field">
+      <label>Valor mensal (R$)</label>
+      <input type="text" [ngModel]="valorFormatado" (ngModelChange)="onValorInput($event)" placeholder="0,00" />
+    </div>
+    <div class="field">
+      <label>Dia do vencimento</label>
+      <input type="number" min="1" max="31" [(ngModel)]="form.diaVencimento" />
+    </div>
+    <div class="field" style="grid-column: 1 / -1;">
+      <label>Valor por extenso</label>
+      <input type="text" [(ngModel)]="form.valorPorExtenso" placeholder="ex: mil duzentos reais" />
+    </div>
+    <div class="field">
+      <label>Cidade – UF</label>
+      <input type="text" [(ngModel)]="form.cidadeUf" placeholder="Goiânia – GO" />
+    </div>
+    <div class="field">
+      <label>Data do contrato</label>
+      <input type="date" [(ngModel)]="form.dataContrato" />
+    </div>
+  </div>
+</div>
+
+@if (error()) {
+  <div class="error-msg" style="margin-bottom: 1rem;"><i class="pi pi-exclamation-circle"></i> {{ error() }}</div>
+}
+
+<div class="actions-footer">
+  <button class="btn-primary" [disabled]="loading()" (click)="gerar()">
+    @if (loading()) {
+      <i class="pi pi-spinner pi-spin"></i> Gerando...
+    } @else {
+      <i class="pi pi-file-export"></i> Gerar Contrato (PDF)
+    }
+  </button>
+</div>

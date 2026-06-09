@@ -34,6 +34,7 @@ export class SidebarComponent {
             { label: 'Balanço Patrimonial', icon: 'pi pi-wallet', route: '/admin/relatorios/balanco-patrimonial' },
           ]
         },
+        { label: 'Contratos', icon: 'pi pi-file-edit', route: '/admin/contratos' },
         { label: 'Usuários', icon: 'pi pi-users', route: '/admin/usuarios' },
         {
           label: 'Configurações', icon: 'pi pi-cog', children: [

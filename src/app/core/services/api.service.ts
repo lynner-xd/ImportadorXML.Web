@@ -11,6 +11,7 @@ import { ConfiguracaoEmailRequest, ConfiguracaoEmailResponse } from '../models/e
 import { ImportacaoResultado } from '../models/importacao.models';
 import { ScriptResultadoResponse, ScriptHistoricoResponse } from '../models/script.models';
 import { DocumentoFiscal, PagedResult } from '../models/documento.models';
+import { ContratoRequest, DadosEmpresaContrato } from '../models/contrato.models';
 
 @Injectable({ providedIn: 'root' })
 export class ApiService {
@@ -187,6 +188,15 @@ export class ApiService {
 
   listarEmpresas(): Observable<EmpresaOption[]> {
     return this.http.get<EmpresaOption[]>(`${this.api}/admin/relatorios/empresas`);
+  }
+
+  // ===== Admin - Contratos =====
+  obterDadosEmpresaContrato(empresaId: string): Observable<DadosEmpresaContrato> {
+    return this.http.get<DadosEmpresaContrato>(`${this.api}/admin/contratos/empresa/${empresaId}/dados`);
+  }
+
+  gerarContratoPdf(req: ContratoRequest): Observable<Blob> {
+    return this.http.post(`${this.api}/admin/contratos/pdf`, req, { responseType: 'blob' });
   }
 
   // ===== Admin - Usuários =====

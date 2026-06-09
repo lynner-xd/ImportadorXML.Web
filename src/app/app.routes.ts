@@ -34,6 +34,7 @@ export const routes: Routes = [
       { path: 'admin/relatorios/sintetico', canActivate: [contadorGuard], loadComponent: () => import('./pages/admin-relatorios/admin-sintetico').then(m => m.AdminSinteticoComponent) },
       { path: 'admin/relatorios/dre', canActivate: [contadorGuard], loadComponent: () => import('./pages/admin-relatorios/admin-dre').then(m => m.AdminDreComponent) },
       { path: 'admin/relatorios/balanco-patrimonial', canActivate: [contadorGuard], loadComponent: () => import('./pages/admin-relatorios/admin-balanco-patrimonial').then(m => m.AdminBalancoPatrimonialComponent) },
+      { path: 'admin/contratos', canActivate: [contadorGuard], loadComponent: () => import('./pages/admin-contratos/admin-contratos').then(m => m.AdminContratosComponent) },
       { path: 'admin/usuarios', canActivate: [contadorGuard], loadComponent: () => import('./pages/admin-usuarios/admin-usuarios').then(m => m.AdminUsuariosComponent) },
       { path: 'admin/email', canActivate: [contadorGuard], loadComponent: () => import('./pages/admin-email/admin-email').then(m => m.AdminEmailComponent) },
 
