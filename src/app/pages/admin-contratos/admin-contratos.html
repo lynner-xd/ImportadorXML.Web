@@ -20,7 +20,7 @@
 </div>
 
 <div class="card" style="margin-bottom: 1rem;">
-  <h2 class="section-title">Dados pessoais</h2>
+  <h2 class="section-title">Contratante</h2>
   <div class="form-grid-2">
     <div class="field">
       <label>Nome da Empresa/Pessoa</label>
@@ -29,6 +29,20 @@
     <div class="field">
       <label>CPF/CNPJ</label>
       <input type="text" [ngModel]="cpfCnpjFormatado" (ngModelChange)="onCpfCnpjInput($event)" placeholder="000.000.000-00 ou 00.000.000/0000-00" />
+    </div>
+  </div>
+</div>
+
+<div class="card" style="margin-bottom: 1rem;">
+  <h2 class="section-title">Sócio representante</h2>
+  <div class="form-grid-2">
+    <div class="field">
+      <label>Nome do sócio</label>
+      <input type="text" [(ngModel)]="form.nomeSocio" placeholder="Nome completo do sócio representante" />
+    </div>
+    <div class="field">
+      <label>CPF do sócio</label>
+      <input type="text" [ngModel]="cpfSocioFormatado" (ngModelChange)="onCpfSocioInput($event)" placeholder="000.000.000-00" />
     </div>
     <div class="field">
       <label>Nacionalidade</label>

@@ -22,11 +22,13 @@ export class AdminContratosComponent implements OnInit {
   form: ContratoRequest = {
     empresaId: undefined,
     nome: '',
+    cpfCnpj: '',
+    nomeSocio: '',
+    cpfSocio: '',
     nacionalidade: '',
     estadoCivil: '',
     profissao: '',
     rg: '',
-    cpfCnpj: '',
     endereco: '',
     valor: 0,
     valorPorExtenso: '',
@@ -37,6 +39,7 @@ export class AdminContratosComponent implements OnInit {
 
   valorFormatado = '';
   cpfCnpjFormatado = '';
+  cpfSocioFormatado = '';
 
   constructor(private api: ApiService) {}
 
@@ -86,6 +89,12 @@ export class AdminContratosComponent implements OnInit {
     this.cpfCnpjFormatado = this.formatarCpfCnpj(digitos);
   }
 
+  onCpfSocioInput(value: string): void {
+    const digitos = value.replace(/\D/g, '').slice(0, 11);
+    this.form.cpfSocio = digitos;
+    this.cpfSocioFormatado = this.formatarCpfCnpj(digitos);
+  }
+
   private formatarCpfCnpj(digitos: string): string {
     const d = digitos.replace(/\D/g, '');
     if (d.length <= 11) {
@@ -104,12 +113,15 @@ export class AdminContratosComponent implements OnInit {
   private validar(): string | null {
     const f = this.form;
     if (!f.nome.trim()) return 'Nome é obrigatório.';
+    const digitos = f.cpfCnpj.replace(/\D/g, '');
+    if (digitos.length !== 11 && digitos.length !== 14) return 'CPF/CNPJ inválido (11 ou 14 dígitos).';
+    if (!f.nomeSocio.trim()) return 'Nome do sócio é obrigatório.';
+    const digitosSocio = f.cpfSocio.replace(/\D/g, '');
+    if (digitosSocio.length !== 11) return 'CPF do sócio inválido (11 dígitos).';
     if (!f.nacionalidade.trim()) return 'Nacionalidade é obrigatória.';
     if (!f.estadoCivil.trim()) return 'Estado civil é obrigatório.';
     if (!f.profissao.trim()) return 'Profissão é obrigatória.';
     if (!f.rg.trim()) return 'RG é obrigatório.';
-    const digitos = f.cpfCnpj.replace(/\D/g, '');
-    if (digitos.length !== 11 && digitos.length !== 14) return 'CPF/CNPJ inválido (11 ou 14 dígitos).';
     if (!f.endereco.trim()) return 'Endereço é obrigatório.';
     if (f.valor <= 0) return 'Valor deve ser maior que zero.';
     if (!f.valorPorExtenso.trim()) return 'Valor por extenso é obrigatório.';
