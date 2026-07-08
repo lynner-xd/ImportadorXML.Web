@@ -1,0 +1,54 @@
+<div class="dialog-overlay" (click)="fechar.emit()">
+  <div class="dialog" (click)="$event.stopPropagation()">
+    <div class="dialog-header">
+      <h2>{{ modoEdicao ? 'Editar' : 'Nova' }} regra</h2>
+      <button class="btn-icon" (click)="fechar.emit()"><i class="pi pi-times"></i></button>
+    </div>
+    <div class="dialog-content">
+      <div class="field">
+        <label>Condição</label>
+        <select [(ngModel)]="form.condicao">
+          <option value="IniciaCom">Inicia com</option>
+          <option value="Contem">Contém</option>
+          <option value="EmBranco">Em branco</option>
+          <option value="Todos">Todos</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Texto</label>
+        <input type="text"
+               [(ngModel)]="form.texto"
+               [disabled]="textoDesabilitado()"
+               placeholder="Texto para comparar..." />
+        @if (!textoDesabilitado()) {
+          <span class="field-hint">
+            Use ; para separar vários textos. A regra aplica se o histórico atender
+            a qualquer um deles (ex.: pix enviado; debito boleto).
+          </span>
+        }
+      </div>
+      <div class="field">
+        <label>Conta débito</label>
+        <select [(ngModel)]="form.contaDebitoId">
+          <option value="">—</option>
+          @for (c of analiticas(); track c.id) {
+            <option [value]="c.id">{{ c.codigo }} — {{ c.nome }}</option>
+          }
+        </select>
+      </div>
+
+      @if (erro()) {
+        <div class="error-msg"><i class="pi pi-exclamation-circle"></i> {{ erro() }}</div>
+      }
+    </div>
+    <div class="dialog-footer">
+      <button class="btn-secondary" (click)="fechar.emit()">Cancelar</button>
+      <button class="btn-primary" (click)="salvar()" [disabled]="salvando()">
+        @if (salvando()) {
+          <i class="pi pi-spinner pi-spin"></i>
+        }
+        Salvar
+      </button>
+    </div>
+  </div>
+</div>

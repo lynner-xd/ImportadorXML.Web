@@ -1,0 +1,136 @@
+<div class="page-header ic-header">
+  <div>
+    <h1>Configuração de Importação</h1>
+    <p>Defina contas padrão e regras para importação de extratos bancários</p>
+  </div>
+  <button class="btn-secondary" (click)="voltar()">
+    <i class="pi pi-arrow-left"></i> Voltar
+  </button>
+</div>
+
+@if (loading()) {
+  <div class="ic-loading">
+    <i class="pi pi-spinner pi-spin"></i> Carregando...
+  </div>
+} @else {
+  <div class="card">
+    <h2 class="section-title">Contas padrão</h2>
+
+    <div class="form-grid">
+      <div class="field">
+        <label>Positivo — Débito (banco)</label>
+        <select [(ngModel)]="configForm.contaDebitoPositivoId">
+          <option [ngValue]="undefined">—</option>
+          @for (c of contas1112(); track c.id) {
+            <option [ngValue]="c.id">{{ c.codigo }} — {{ c.nome }}</option>
+          }
+        </select>
+      </div>
+
+      <div class="field">
+        <label>Positivo — Crédito</label>
+        <select [(ngModel)]="configForm.contaCreditoPositivoId">
+          <option [ngValue]="undefined">—</option>
+          @for (c of contas1121(); track c.id) {
+            <option [ngValue]="c.id">{{ c.codigo }} — {{ c.nome }}</option>
+          }
+        </select>
+      </div>
+
+      <div class="field">
+        <label>Negativo — Crédito (banco)</label>
+        <select [(ngModel)]="configForm.contaCreditoNegativoId">
+          <option [ngValue]="undefined">—</option>
+          @for (c of contas1112(); track c.id) {
+            <option [ngValue]="c.id">{{ c.codigo }} — {{ c.nome }}</option>
+          }
+        </select>
+      </div>
+    </div>
+
+    <div class="card-actions">
+      <button class="btn-primary" (click)="salvarContas()" [disabled]="salvando()">
+        @if (salvando()) {
+          <i class="pi pi-spinner pi-spin"></i>
+        }
+        Salvar contas
+      </button>
+    </div>
+  </div>
+
+  <div class="card" style="margin-top: 1rem;">
+    <div class="card-head">
+      <div class="head-titulo">
+        <h2 class="section-title">Regras de débito (valores negativos)</h2>
+        @if (regras().length > 1) {
+          <span class="head-hint">
+            @if (salvandoOrdem()) {
+              <i class="pi pi-spinner pi-spin"></i> Salvando ordem...
+            } @else {
+              <i class="pi pi-info-circle"></i> Arraste pelo ícone <i class="pi pi-bars"></i> para reordenar — a primeira regra que casar é aplicada.
+            }
+          </span>
+        }
+      </div>
+      <button class="btn-primary" (click)="abrirNovaRegra()">
+        <i class="pi pi-plus"></i> Nova regra
+      </button>
+    </div>
+
+    @if (regras().length === 0) {
+      <div class="ic-empty">
+        <i class="pi pi-list"></i>
+        <p>Nenhuma regra configurada. Clique em "Nova regra" para adicionar.</p>
+      </div>
+    } @else {
+      @if (erroOrdem()) {
+        <div class="error-msg"><i class="pi pi-exclamation-circle"></i> {{ erroOrdem() }}</div>
+      }
+      <table class="data-table reorder-table">
+        <thead>
+          <tr>
+            <th class="col-drag"></th>
+            <th>Condição</th>
+            <th>Texto</th>
+            <th>Conta débito</th>
+            <th class="text-center">Ações</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (r of regras(); track r.id; let i = $index) {
+            <tr pDraggable="regras" [dragHandle]="'.drag-handle'"
+                pDroppable="regras"
+                (onDragStart)="onDragStart(i)"
+                (onDrop)="onDrop(i)"
+                (onDragEnter)="onDragEnter(i)"
+                (onDragLeave)="onDragLeave()"
+                [class.drag-over]="dragOverIndex() === i">
+              <td class="col-drag">
+                <i class="pi pi-bars drag-handle" title="Arraste para reordenar"></i>
+              </td>
+              <td>{{ r.condicao }}</td>
+              <td>{{ r.texto }}</td>
+              <td>{{ r.contaDebitoLabel }}</td>
+              <td class="text-center">
+                <button class="btn-icon" (click)="editarRegra(r)" title="Editar">
+                  <i class="pi pi-pencil"></i>
+                </button>
+                <button class="btn-icon danger" (click)="excluirRegra(r)" title="Excluir">
+                  <i class="pi pi-trash"></i>
+                </button>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    }
+  </div>
+}
+
+@if (showRegra()) {
+  <app-regra-importacao-modal
+    [contas]="contas()"
+    [regra]="regraSelecionada()"
+    (salvo)="onRegraSalva()"
+    (fechar)="showRegra.set(false)" />
+}

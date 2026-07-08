@@ -1,0 +1,155 @@
+<div class="page-header ie-header">
+  <div>
+    <h1>Importação de Extrato</h1>
+    <p>Importe extratos bancários (.ofx, .xlsx, .pdf) e gere lançamentos contábeis</p>
+  </div>
+</div>
+
+@if (!preview()) {
+  <div class="card">
+    <h2 class="section-title">Selecionar arquivo</h2>
+
+    <div class="upload-area">
+      <div class="field">
+        <label>Arquivo de extrato</label>
+        <input type="file" accept=".ofx,.xlsx,.pdf" (change)="onArquivo($event)" class="file-input" />
+        <span class="file-hint">.ofx, .xlsx ou .pdf</span>
+      </div>
+
+      <div class="upload-actions">
+        <button class="btn-primary" (click)="analisar()" [disabled]="!arquivo() || carregando()">
+          @if (carregando()) {
+            <i class="pi pi-spinner pi-spin"></i>
+          } @else {
+            <i class="pi pi-search"></i>
+          }
+          Analisar
+        </button>
+      </div>
+    </div>
+
+    @if (erro()) {
+      <div class="error-msg"><i class="pi pi-exclamation-circle"></i> {{ erro() }}</div>
+    }
+  </div>
+} @else {
+  <div class="card">
+    <div class="ie-topo">
+      <div class="field banco-field">
+        <label>Banco detectado</label>
+        <select [ngModel]="preview()!.bancoCodigo" (ngModelChange)="trocarBanco($event)">
+          @for (b of preview()!.bancos; track b.codigo) {
+            <option [value]="b.codigo">{{ b.nome }}</option>
+          }
+        </select>
+      </div>
+      <button class="btn-secondary" (click)="reprocessar()" [disabled]="carregando()">
+        @if (carregando()) {
+          <i class="pi pi-spinner pi-spin"></i>
+        } @else {
+          <i class="pi pi-refresh"></i>
+        }
+        Reprocessar
+      </button>
+      <button class="btn-secondary" (click)="abrirNovaRegra()" [disabled]="carregando()"
+              title="Criar nova regra de classificação">
+        <i class="pi pi-cog"></i> Nova regra
+      </button>
+      <button class="btn-secondary" (click)="limpar()" [disabled]="carregando()">
+        <i class="pi pi-undo"></i> Limpar
+      </button>
+    </div>
+
+    @if (erro()) {
+      <div class="error-msg"><i class="pi pi-exclamation-circle"></i> {{ erro() }}</div>
+    }
+
+    @if (carregando()) {
+      <div class="ie-loading">
+        <i class="pi pi-spinner pi-spin"></i> Processando...
+      </div>
+    } @else {
+      <div class="table-wrapper">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th class="col-status"></th>
+              <th>Data</th>
+              <th class="text-right">Valor</th>
+              <th>Histórico</th>
+              <th>Conta Débito</th>
+              <th>Conta Crédito</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (l of linhas(); track l.indice) {
+              <tr [class.linha-atencao]="!l.ok && !l.duplicada" [class.linha-dup]="l.duplicada">
+                <td class="col-status">
+                  @if (l.duplicada) {
+                    <span class="badge-dup" title="Duplicada">D</span>
+                  } @else if (l.ok) {
+                    <i class="pi pi-check status-ok"></i>
+                  } @else {
+                    <i class="pi pi-exclamation-triangle status-warn"></i>
+                  }
+                </td>
+                <td>{{ l.data | date:'dd/MM/yyyy':'UTC' }}</td>
+                <td class="text-right" [class.valor-neg]="l.valor < 0">
+                  {{ l.valor | number:'1.2-2' }}
+                </td>
+                <td class="col-historico">{{ l.historico }}</td>
+                <td>
+                  <select [ngModel]="l.contaDebitoId" (ngModelChange)="ajustarDebito(l, $event)" class="select-conta">
+                    <option [ngValue]="undefined">—</option>
+                    @for (c of analiticas(); track c.id) {
+                      <option [ngValue]="c.id">{{ c.codigo }} — {{ c.nome }}</option>
+                    }
+                  </select>
+                </td>
+                <td>
+                  <select [ngModel]="l.contaCreditoId" (ngModelChange)="ajustarCredito(l, $event)" class="select-conta">
+                    <option [ngValue]="undefined">—</option>
+                    @for (c of analiticas(); track c.id) {
+                      <option [ngValue]="c.id">{{ c.codigo }} — {{ c.nome }}</option>
+                    }
+                  </select>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+
+      <div class="resumo">
+        <span>{{ linhas().length }} transações &bull; {{ pendentes() }} pendentes</span>
+      </div>
+    }
+
+    <div class="ie-rodape">
+      <div class="rodape-esq">
+        <button class="btn-secondary" (click)="limpar()">
+          <i class="pi pi-undo"></i> Limpar
+        </button>
+        <button class="btn-secondary" (click)="cancelar()">
+          <i class="pi pi-times"></i> Cancelar
+        </button>
+      </div>
+      <button class="btn-primary" (click)="salvar()" [disabled]="!tudoOk() || salvando()">
+        @if (salvando()) {
+          <i class="pi pi-spinner pi-spin"></i>
+        } @else {
+          <i class="pi pi-save"></i>
+        }
+        Salvar lançamentos
+      </button>
+    </div>
+  </div>
+}
+
+@if (showRegra()) {
+  <app-regra-importacao-modal
+    [contas]="contas()"
+    [regra]="regraSelecionada()"
+    (salvo)="onRegraSalva()"
+    (fechar)="showRegra.set(false)" />
+}

@@ -11,6 +11,7 @@ export interface LancamentoResponse {
   observacaoContador?: string;
   origem: string;
   dataCriacao: string;
+  importado: boolean;
 }
 
 export interface CriarLancamentoRequest {

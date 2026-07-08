@@ -3,9 +3,17 @@
     <h1>Lançamentos Manuais</h1>
     <p>Gerencie os lançamentos contábeis manuais</p>
   </div>
-  <button class="btn-primary" (click)="abrirDialog()">
-    <i class="pi pi-plus"></i> Novo Lançamento
-  </button>
+  <div class="header-actions">
+    <a class="btn-secondary" routerLink="/importacao-extrato">
+      <i class="pi pi-upload"></i> Importação
+    </a>
+    <a class="btn-secondary" routerLink="/importacao-config">
+      <i class="pi pi-cog"></i> Configuração
+    </a>
+    <button class="btn-primary" (click)="abrirDialog()">
+      <i class="pi pi-plus"></i> Novo Lançamento
+    </button>
+  </div>
 </div>
 
 <div class="card filtros-card">
@@ -31,6 +39,14 @@
         <i class="pi pi-search"></i>
         <input type="text" [(ngModel)]="filtroCredito" (ngModelChange)="aoDigitarFiltroTexto()" placeholder="Código ou nome..." />
       </div>
+    </div>
+    <div class="field">
+      <label>Exibir</label>
+      <select [ngModel]="exibir()" (ngModelChange)="onExibirChange($event)">
+        <option value="todos">Todos</option>
+        <option value="importado">Importado</option>
+        <option value="manual">Manual</option>
+      </select>
     </div>
     @if (temFiltroAtivo) {
       <div class="field field-actions">
@@ -67,6 +83,7 @@
           <th>Débito</th>
           <th>Crédito</th>
           <th class="text-right">Valor</th>
+          <th class="text-center">Importado</th>
           <th class="text-center">Ações</th>
         </tr>
       </thead>
@@ -78,6 +95,13 @@
             <td>{{ l.contaDebito }}</td>
             <td>{{ l.contaCredito }}</td>
             <td class="text-right">{{ l.valor | number:'1.2-2' }}</td>
+            <td class="text-center">
+              @if (l.importado) {
+                <span class="badge-importado">Importado</span>
+              } @else {
+                <span class="badge-manual">Manual</span>
+              }
+            </td>
             <td class="text-center">
               <button class="btn-icon" (click)="abrirDialogEdicao(l)" title="Editar">
                 <i class="pi pi-pencil"></i>

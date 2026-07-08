@@ -21,6 +21,8 @@ export const routes: Routes = [
       { path: 'importacao/entrada', canActivate: [empresaGuard], canDeactivate: [CanDeactivateGuard], data: { tipo: 'Entrada' }, loadComponent: () => import('./pages/importacao/importacao-form/importacao-form').then(m => m.ImportacaoFormComponent) },
       { path: 'importacao/saida', canActivate: [empresaGuard], canDeactivate: [CanDeactivateGuard], data: { tipo: 'Saida' }, loadComponent: () => import('./pages/importacao/importacao-form/importacao-form').then(m => m.ImportacaoFormComponent) },
       { path: 'lancamentos', canActivate: [empresaGuard], loadComponent: () => import('./pages/lancamentos/lancamentos').then(m => m.LancamentosComponent) },
+      { path: 'importacao-config', canActivate: [empresaGuard], loadComponent: () => import('./pages/importacao-config/importacao-config').then(m => m.ImportacaoConfigComponent) },
+      { path: 'importacao-extrato', canActivate: [empresaGuard], loadComponent: () => import('./pages/importacao-extrato/importacao-extrato').then(m => m.ImportacaoExtratoComponent) },
       { path: 'plano-contas', canActivate: [empresaGuard], loadComponent: () => import('./pages/plano-contas/plano-contas').then(m => m.PlanoContasComponent) },
       { path: 'relatorios/balancete', canActivate: [empresaGuard], loadComponent: () => import('./pages/relatorios/balancete').then(m => m.BalanceteComponent) },
       { path: 'relatorios/analitico', canActivate: [empresaGuard], loadComponent: () => import('./pages/relatorios/analitico').then(m => m.AnaliticoComponent) },

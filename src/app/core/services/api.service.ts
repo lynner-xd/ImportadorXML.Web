@@ -8,7 +8,7 @@ import { PlanoContaResponse, CriarContaRequest, AtualizarContaRequest } from '..
 import { LancamentoResponse, CriarLancamentoRequest, AtualizarLancamentoRequest } from '../models/lancamento.models';
 import { BalanceteItem, AnaliticoItem, EmpresaOption, DreResponse, BalancoPatrimonialResponse } from '../models/relatorio.models';
 import { ConfiguracaoEmailRequest, ConfiguracaoEmailResponse } from '../models/email-config.models';
-import { ImportacaoResultado } from '../models/importacao.models';
+import { ImportacaoResultado, ConfiguracaoImportacao, RegraImportacao, RegraImportacaoRequest, ImportarPreview } from '../models/importacao.models';
 import { ScriptResultadoResponse, ScriptHistoricoResponse } from '../models/script.models';
 import { DocumentoFiscal, PagedResult } from '../models/documento.models';
 import { ContratoRequest, DadosEmpresaContrato } from '../models/contrato.models';
@@ -20,6 +20,45 @@ export class ApiService {
   constructor(private http: HttpClient) {}
 
   // ===== Importação =====
+  obterConfiguracaoImportacao(): Observable<ConfiguracaoImportacao> {
+    return this.http.get<ConfiguracaoImportacao>(`${this.api}/importacao/configuracao`);
+  }
+
+  salvarConfiguracaoImportacao(dto: ConfiguracaoImportacao): Observable<void> {
+    return this.http.put<void>(`${this.api}/importacao/configuracao`, dto);
+  }
+
+  criarRegraImportacao(dto: RegraImportacaoRequest): Observable<RegraImportacao> {
+    return this.http.post<RegraImportacao>(`${this.api}/importacao/regras`, dto);
+  }
+
+  atualizarRegraImportacao(id: string, dto: RegraImportacaoRequest): Observable<void> {
+    return this.http.put<void>(`${this.api}/importacao/regras/${id}`, dto);
+  }
+
+  excluirRegraImportacao(id: string): Observable<void> {
+    return this.http.delete<void>(`${this.api}/importacao/regras/${id}`);
+  }
+
+  reordenarRegrasImportacao(ids: string[]): Observable<void> {
+    return this.http.put<void>(`${this.api}/importacao/regras/ordem`, { ids });
+  }
+
+  previewImportacao(arquivo: File, bancoOverride?: string): Observable<ImportarPreview> {
+    const form = new FormData();
+    form.append('arquivo', arquivo);
+    if (bancoOverride) form.append('bancoOverride', bancoOverride);
+    return this.http.post<ImportarPreview>(`${this.api}/importacao/preview`, form);
+  }
+
+  reprocessarImportacao(req: { bancoCodigo: string; transacoes: any[] }): Observable<ImportarPreview> {
+    return this.http.post<ImportarPreview>(`${this.api}/importacao/reprocessar`, req);
+  }
+
+  confirmarImportacao(req: { linhas: any[] }): Observable<{ criados: number }> {
+    return this.http.post<{ criados: number }>(`${this.api}/importacao/confirmar`, req);
+  }
+
   importarXml(formData: FormData): Observable<ImportacaoResultado> {
     return this.http.post<ImportacaoResultado>(`${this.api}/importacao`, formData);
   }
@@ -59,6 +98,7 @@ export class ApiService {
     dataFim?: string;
     debito?: string;
     credito?: string;
+    importado?: boolean;
   }): Observable<PagedResult<LancamentoResponse>> {
     let httpParams = new HttpParams()
       .set('page', params.page.toString())
@@ -67,6 +107,9 @@ export class ApiService {
     if (params.dataFim) httpParams = httpParams.set('dataFim', params.dataFim);
     if (params.debito) httpParams = httpParams.set('debito', params.debito);
     if (params.credito) httpParams = httpParams.set('credito', params.credito);
+    if (params.importado !== undefined && params.importado !== null) {
+      httpParams = httpParams.set('importado', String(params.importado));
+    }
     return this.http.get<PagedResult<LancamentoResponse>>(
       `${this.api}/lancamentos`, { params: httpParams });
   }

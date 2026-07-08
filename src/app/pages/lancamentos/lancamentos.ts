@@ -1,6 +1,7 @@
 import { Component, ElementRef, OnDestroy, OnInit, ViewChild, computed, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { RouterLink } from '@angular/router';
 import { Subject } from 'rxjs';
 import { debounceTime, takeUntil } from 'rxjs/operators';
 import { ApiService } from '../../core/services/api.service';
@@ -10,7 +11,7 @@ import { PlanoContaResponse } from '../../core/models/plano-conta.models';
 @Component({
   selector: 'app-lancamentos',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, RouterLink],
   templateUrl: './lancamentos.html',
   styleUrl: './lancamentos.scss'
 })
@@ -54,6 +55,7 @@ export class LancamentosComponent implements OnInit, OnDestroy {
   filtroDataFim = '';
   filtroDebito = '';
   filtroCredito = '';
+  exibir = signal<'todos' | 'importado' | 'manual'>('todos');
 
   private filtroTexto$ = new Subject<void>();
   private destroy$ = new Subject<void>();
@@ -78,18 +80,21 @@ export class LancamentosComponent implements OnInit, OnDestroy {
   }
 
   get temFiltroAtivo(): boolean {
-    return !!(this.filtroDataInicio || this.filtroDataFim || this.filtroDebito || this.filtroCredito);
+    return !!(this.filtroDataInicio || this.filtroDataFim || this.filtroDebito || this.filtroCredito || this.exibir() !== 'todos');
   }
 
   carregarPagina(): void {
     this.loading.set(true);
+    const exibirSel = this.exibir();
+    const importado = exibirSel === 'todos' ? undefined : exibirSel === 'importado';
     this.api.listarLancamentos({
       page: this.pagina(),
       pageSize: this.pageSize,
       dataInicio: this.filtroDataInicio || undefined,
       dataFim: this.filtroDataFim || undefined,
       debito: this.filtroDebito || undefined,
-      credito: this.filtroCredito || undefined
+      credito: this.filtroCredito || undefined,
+      importado
     }).subscribe({
       next: (res) => {
         this.lancamentos.set(res.items);
@@ -132,6 +137,13 @@ export class LancamentosComponent implements OnInit, OnDestroy {
     this.filtroDataFim = '';
     this.filtroDebito = '';
     this.filtroCredito = '';
+    this.exibir.set('todos');
+    this.pagina.set(1);
+    this.carregarPagina();
+  }
+
+  onExibirChange(valor: 'todos' | 'importado' | 'manual'): void {
+    this.exibir.set(valor);
     this.pagina.set(1);
     this.carregarPagina();
   }
