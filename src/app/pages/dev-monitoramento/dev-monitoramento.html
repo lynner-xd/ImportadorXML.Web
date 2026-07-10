@@ -1,0 +1,158 @@
+<div class="page-header">
+  <div>
+    <h1>Monitoramento</h1>
+    <p>Atividades e erros de todas as empresas</p>
+  </div>
+</div>
+
+<div class="abas">
+  <button [class.ativa]="aba() === 'atividades'" (click)="selecionarAba('atividades')">
+    <i class="pi pi-history"></i> Atividades
+  </button>
+  <button [class.ativa]="aba() === 'erros'" (click)="selecionarAba('erros')">
+    <i class="pi pi-exclamation-triangle"></i> Erros
+  </button>
+</div>
+
+<div class="card filtros-card">
+  <div class="filtros">
+    <div class="field">
+      <label>Empresa</label>
+      <select class="input-select" [(ngModel)]="filtroEmpresa" (ngModelChange)="onFiltroChange()">
+        <option value="">Todas</option>
+        @for (e of empresas(); track e.id) {
+          <option [value]="e.id">{{ e.razaoSocial }}</option>
+        }
+      </select>
+    </div>
+    @if (aba() === 'atividades') {
+      <div class="field">
+        <label>Ação</label>
+        <select class="input-select" [(ngModel)]="filtroAcao" (ngModelChange)="onFiltroChange()">
+          <option value="">Todas</option>
+          @for (a of acoes; track a) {
+            <option [value]="a">{{ a }}</option>
+          }
+        </select>
+      </div>
+    } @else {
+      <div class="field">
+        <label>Origem</label>
+        <select class="input-select" [(ngModel)]="filtroOrigem" (ngModelChange)="onFiltroChange()">
+          <option value="">Todas</option>
+          @for (o of origens; track o) {
+            <option [value]="o">{{ labelOrigem(o) }}</option>
+          }
+        </select>
+      </div>
+    }
+    <div class="field">
+      <label>De</label>
+      <input type="date" [(ngModel)]="filtroDe" (ngModelChange)="onFiltroChange()" />
+    </div>
+    <div class="field">
+      <label>Até</label>
+      <input type="date" [(ngModel)]="filtroAte" (ngModelChange)="onFiltroChange()" />
+    </div>
+    @if (temFiltroAtivo) {
+      <div class="field field-actions">
+        <button class="btn-secondary btn-limpar" (click)="limparFiltros()">
+          <i class="pi pi-times"></i> Limpar
+        </button>
+      </div>
+    }
+  </div>
+</div>
+
+@if (error()) {
+  <div class="error-global">{{ error() }}</div>
+}
+
+<div class="card" style="margin-top: 1rem;">
+  @if (loading()) {
+    <div class="loading"><i class="pi pi-spinner pi-spin"></i> Carregando...</div>
+  } @else if (aba() === 'atividades') {
+    @if (atividades().length === 0) {
+      <div class="empty"><i class="pi pi-inbox"></i><p>Nenhuma atividade encontrada.</p></div>
+    } @else {
+      <div class="tabela-wrapper">
+        <table>
+          <thead>
+            <tr>
+              <th>Data/Hora</th>
+              <th>Empresa</th>
+              <th>Usuário</th>
+              <th>Ação</th>
+              <th>Descrição</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (a of atividades(); track a.id) {
+              <tr>
+                <td>{{ a.dataHora | date:'dd/MM/yyyy HH:mm':'UTC' }}</td>
+                <td>{{ a.empresaNome ?? '-' }}</td>
+                <td>{{ a.usuarioEmail ?? '-' }}</td>
+                <td><span class="tag tag-acao">{{ a.acao }}</span></td>
+                <td>{{ a.descricao }}</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+  } @else {
+    @if (erros().length === 0) {
+      <div class="empty"><i class="pi pi-check-circle"></i><p>Nenhum erro encontrado.</p></div>
+    } @else {
+      <div class="tabela-wrapper">
+        <table>
+          <thead>
+            <tr>
+              <th>Data/Hora</th>
+              <th>Empresa</th>
+              <th>Usuário</th>
+              <th>Origem</th>
+              <th>Mensagem</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (e of erros(); track e.id) {
+              <tr>
+                <td>{{ e.dataHora | date:'dd/MM/yyyy HH:mm':'UTC' }}</td>
+                <td>{{ e.empresaNome ?? '-' }}</td>
+                <td>{{ e.usuarioEmail ?? '-' }}</td>
+                <td><span class="tag" [class]="'tag ' + classeOrigem(e.origem)">{{ labelOrigem(e.origem) }}</span></td>
+                <td>{{ e.mensagem }}</td>
+                <td>
+                  @if (e.detalhes) {
+                    <button class="btn-icon" (click)="toggleDetalhe(e.id)" title="Detalhes">
+                      <i class="pi" [class.pi-chevron-down]="detalheExpandido() !== e.id" [class.pi-chevron-up]="detalheExpandido() === e.id"></i>
+                    </button>
+                  }
+                </td>
+              </tr>
+              @if (detalheExpandido() === e.id) {
+                <tr class="linha-detalhe">
+                  <td colspan="6"><pre>{{ formatarDetalhes(e.detalhes) }}</pre></td>
+                </tr>
+              }
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+  }
+
+  @if (!loading() && totalPaginas() > 1) {
+    <div class="paginacao">
+      <button class="btn-secondary" [disabled]="pagina() === 1" (click)="irParaPagina(pagina() - 1)">
+        <i class="pi pi-chevron-left"></i>
+      </button>
+      <span>Página {{ pagina() }} de {{ totalPaginas() }} ({{ total() }} registros)</span>
+      <button class="btn-secondary" [disabled]="pagina() === totalPaginas()" (click)="irParaPagina(pagina() + 1)">
+        <i class="pi pi-chevron-right"></i>
+      </button>
+    </div>
+  }
+</div>

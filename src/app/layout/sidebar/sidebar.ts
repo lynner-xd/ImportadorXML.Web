@@ -49,6 +49,7 @@ export class SidebarComponent {
         { label: 'Home', icon: 'pi pi-home', route: '/home' },
         { label: 'Usuários', icon: 'pi pi-users', route: '/dev/usuarios' },
         { label: 'Scripts', icon: 'pi pi-code', route: '/dev/script' },
+        { label: 'Monitoramento', icon: 'pi pi-chart-line', route: '/dev/monitoramento' },
       ];
     }
 

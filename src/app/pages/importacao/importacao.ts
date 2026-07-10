@@ -1,7 +1,9 @@
-import { Component, computed, signal, OnInit } from '@angular/core';
+import { Component, computed, signal, OnDestroy, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
+import { Subject } from 'rxjs';
+import { debounceTime, takeUntil } from 'rxjs/operators';
 import { ApiService } from '../../core/services/api.service';
 import { DocumentoFiscal } from '../../core/models/documento.models';
 
@@ -12,7 +14,7 @@ import { DocumentoFiscal } from '../../core/models/documento.models';
   templateUrl: './importacao.html',
   styleUrl: './importacao.scss'
 })
-export class ImportacaoComponent implements OnInit {
+export class ImportacaoComponent implements OnInit, OnDestroy {
   readonly PAGE_SIZE = 50;
 
   documentos = signal<DocumentoFiscal[]>([]);
@@ -24,6 +26,10 @@ export class ImportacaoComponent implements OnInit {
   filtroTipo = '';
   filtroDataInicio = '';
   filtroDataFim = '';
+  filtroNumero = '';
+
+  private filtroNumero$ = new Subject<void>();
+  private destroy$ = new Subject<void>();
 
   confirmandoExclusao = signal<string | null>(null);
   confirmandoExclusaoEmMassa = signal(false);
@@ -33,7 +39,7 @@ export class ImportacaoComponent implements OnInit {
   totalPaginas = computed(() => Math.ceil(this.totalDocumentos() / this.PAGE_SIZE));
 
   get temFiltroAtivo(): boolean {
-    return !!(this.filtroTipo || this.filtroDataInicio || this.filtroDataFim);
+    return !!(this.filtroTipo || this.filtroDataInicio || this.filtroDataFim || this.filtroNumero);
   }
 
   todosSelecionados = computed(() => {
@@ -46,7 +52,16 @@ export class ImportacaoComponent implements OnInit {
   constructor(private api: ApiService, private router: Router) {}
 
   ngOnInit(): void {
+    this.filtroNumero$
+      .pipe(debounceTime(400), takeUntil(this.destroy$))
+      .subscribe(() => this.onFiltroChange());
+
     this.carregar();
+  }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 
   carregar(): void {
@@ -56,7 +71,9 @@ export class ImportacaoComponent implements OnInit {
       this.filtroTipo || undefined,
       this.filtroDataInicio || undefined,
       this.filtroDataFim || undefined,
-      this.paginaAtual()
+      this.paginaAtual(),
+      this.PAGE_SIZE,
+      this.filtroNumero.trim() || undefined
     ).subscribe({
       next: (result) => {
         this.documentos.set(result.items);
@@ -80,10 +97,15 @@ export class ImportacaoComponent implements OnInit {
     this.carregar();
   }
 
+  onFiltroNumeroChange(): void {
+    this.filtroNumero$.next();
+  }
+
   limparFiltros(): void {
     this.filtroTipo = '';
     this.filtroDataInicio = '';
     this.filtroDataFim = '';
+    this.filtroNumero = '';
     this.paginaAtual.set(1);
     this.selecionados.set(new Set());
     this.carregar();

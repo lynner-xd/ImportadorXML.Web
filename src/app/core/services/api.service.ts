@@ -12,6 +12,7 @@ import { ImportacaoResultado, ConfiguracaoImportacao, RegraImportacao, RegraImpo
 import { ScriptResultadoResponse, ScriptHistoricoResponse } from '../models/script.models';
 import { DocumentoFiscal, PagedResult } from '../models/documento.models';
 import { ContratoRequest, DadosEmpresaContrato } from '../models/contrato.models';
+import { AtividadeMonitor, ErroMonitor, EmpresaMonitorOption } from '../models/monitoramento.models';
 
 @Injectable({ providedIn: 'root' })
 export class ApiService {
@@ -72,13 +73,14 @@ export class ApiService {
   }
 
   // ===== Documentos =====
-  listarDocumentos(tipo?: string, dataInicio?: string, dataFim?: string, page = 1, pageSize = 50): Observable<PagedResult<DocumentoFiscal>> {
+  listarDocumentos(tipo?: string, dataInicio?: string, dataFim?: string, page = 1, pageSize = 50, numero?: string): Observable<PagedResult<DocumentoFiscal>> {
     let params = new HttpParams()
       .set('page', page.toString())
       .set('pageSize', pageSize.toString());
     if (tipo) params = params.set('tipo', tipo);
     if (dataInicio) params = params.set('dataInicio', dataInicio);
     if (dataFim) params = params.set('dataFim', dataFim);
+    if (numero) params = params.set('numero', numero);
     return this.http.get<PagedResult<DocumentoFiscal>>(`${this.api}/documentos`, { params });
   }
 
@@ -88,6 +90,29 @@ export class ApiService {
 
   excluirDocumentos(ids: string[]): Observable<void> {
     return this.http.delete<void>(`${this.api}/documentos`, { body: { ids } });
+  }
+
+  // ===== Monitoramento (dev) =====
+  listarMonitoramentoAtividades(f: { empresaId?: string; acao?: string; de?: string; ate?: string; page: number }): Observable<PagedResult<AtividadeMonitor>> {
+    let params = new HttpParams().set('page', f.page.toString()).set('pageSize', '50');
+    if (f.empresaId) params = params.set('empresaId', f.empresaId);
+    if (f.acao) params = params.set('acao', f.acao);
+    if (f.de) params = params.set('de', f.de);
+    if (f.ate) params = params.set('ate', f.ate);
+    return this.http.get<PagedResult<AtividadeMonitor>>(`${this.api}/dev/monitoramento/atividades`, { params });
+  }
+
+  listarMonitoramentoErros(f: { empresaId?: string; origem?: string; de?: string; ate?: string; page: number }): Observable<PagedResult<ErroMonitor>> {
+    let params = new HttpParams().set('page', f.page.toString()).set('pageSize', '50');
+    if (f.empresaId) params = params.set('empresaId', f.empresaId);
+    if (f.origem) params = params.set('origem', f.origem);
+    if (f.de) params = params.set('de', f.de);
+    if (f.ate) params = params.set('ate', f.ate);
+    return this.http.get<PagedResult<ErroMonitor>>(`${this.api}/dev/monitoramento/erros`, { params });
+  }
+
+  listarMonitoramentoEmpresas(): Observable<EmpresaMonitorOption[]> {
+    return this.http.get<EmpresaMonitorOption[]>(`${this.api}/dev/monitoramento/empresas`);
   }
 
   // ===== Lançamentos =====

@@ -24,6 +24,10 @@
       </select>
     </div>
     <div class="field">
+      <label>Nº NF</label>
+      <input type="text" placeholder="Número da nota" [(ngModel)]="filtroNumero" (ngModelChange)="onFiltroNumeroChange()" />
+    </div>
+    <div class="field">
       <label>Importado de</label>
       <input type="date" [(ngModel)]="filtroDataInicio" (ngModelChange)="onFiltroChange()" />
     </div>

@@ -43,6 +43,7 @@ export const routes: Routes = [
       // Desenvolvedor
       { path: 'dev/usuarios', canActivate: [desenvolvedorGuard], loadComponent: () => import('./pages/dev-usuarios/dev-usuarios').then(m => m.DevUsuariosComponent) },
       { path: 'dev/script', canActivate: [desenvolvedorGuard], loadComponent: () => import('./pages/dev-script/dev-script').then(m => m.DevScriptComponent) },
+      { path: 'dev/monitoramento', canActivate: [desenvolvedorGuard], loadComponent: () => import('./pages/dev-monitoramento/dev-monitoramento').then(m => m.DevMonitoramentoComponent) },
     ]
   },
   { path: '**', redirectTo: 'login' }
