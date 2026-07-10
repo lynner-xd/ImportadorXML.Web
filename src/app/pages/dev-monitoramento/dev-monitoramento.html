@@ -89,7 +89,7 @@
           <tbody>
             @for (a of atividades(); track a.id) {
               <tr>
-                <td>{{ a.dataHora | date:'dd/MM/yyyy HH:mm':'UTC' }}</td>
+                <td>{{ a.dataHora | date:'dd/MM/yyyy HH:mm' }}</td>
                 <td>{{ a.empresaNome ?? '-' }}</td>
                 <td>{{ a.usuarioEmail ?? '-' }}</td>
                 <td><span class="tag tag-acao">{{ a.acao }}</span></td>
@@ -119,7 +119,7 @@
           <tbody>
             @for (e of erros(); track e.id) {
               <tr>
-                <td>{{ e.dataHora | date:'dd/MM/yyyy HH:mm':'UTC' }}</td>
+                <td>{{ e.dataHora | date:'dd/MM/yyyy HH:mm' }}</td>
                 <td>{{ e.empresaNome ?? '-' }}</td>
                 <td>{{ e.usuarioEmail ?? '-' }}</td>
                 <td><span class="tag" [class]="'tag ' + classeOrigem(e.origem)">{{ labelOrigem(e.origem) }}</span></td>
