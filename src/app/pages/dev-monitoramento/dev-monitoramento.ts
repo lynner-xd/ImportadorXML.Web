@@ -110,16 +110,62 @@ export class DevMonitoramentoComponent implements OnInit {
     this.carregar();
   }
 
-  toggleDetalhe(id: string): void {
-    this.detalheExpandido.set(this.detalheExpandido() === id ? null : id);
+  detalheRota = signal<string | null>(null);
+  detalheMensagem = signal('');
+  detalheCampos = signal<{ chave: string; valor: string }[]>([]);
+  detalheStack = signal<string | null>(null);
+
+  private static readonly LABELS_DETALHE: Record<string, string> = {
+    Arquivo: 'Arquivo',
+    Exception: 'Tipo de exceção',
+    CausaRaiz: 'Causa raiz',
+    MensagemOriginal: 'Mensagem original',
+    SqlState: 'SQLSTATE',
+    Tabela: 'Tabela',
+    Constraint: 'Constraint',
+    Coluna: 'Coluna',
+    DetalheBanco: 'Detalhe do banco'
+  };
+
+  toggleDetalhe(e: ErroMonitor): void {
+    if (this.detalheExpandido() === e.id) {
+      this.detalheExpandido.set(null);
+      return;
+    }
+
+    const det = this.parseDetalhes(e.detalhes);
+
+    const metodo = det['Metodo'] ?? '';
+    const path = det['Path'] ?? '';
+    this.detalheRota.set(metodo || path ? `${metodo} ${path}`.trim() : null);
+
+    this.detalheMensagem.set(det['MensagemCompleta'] ?? e.mensagem);
+    this.detalheStack.set(det['StackTrace'] ?? null);
+
+    const ocultos = ['Metodo', 'Path', 'StackTrace', 'MensagemCompleta'];
+    this.detalheCampos.set(
+      Object.entries(det)
+        .filter(([chave]) => !ocultos.includes(chave))
+        .map(([chave, valor]) => ({
+          chave: DevMonitoramentoComponent.LABELS_DETALHE[chave] ?? chave,
+          valor
+        }))
+    );
+
+    this.detalheExpandido.set(e.id);
   }
 
-  formatarDetalhes(detalhes: string | null): string {
-    if (!detalhes) return '';
+  private parseDetalhes(detalhes: string | null): Record<string, string> {
+    if (!detalhes) return {};
     try {
-      return JSON.stringify(JSON.parse(detalhes), null, 2);
+      const obj = JSON.parse(detalhes);
+      const out: Record<string, string> = {};
+      for (const [chave, valor] of Object.entries(obj)) {
+        if (valor !== null && valor !== undefined && valor !== '') out[chave] = String(valor);
+      }
+      return out;
     } catch {
-      return detalhes;
+      return {};
     }
   }
 

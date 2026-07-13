@@ -76,7 +76,12 @@
             </tbody>
           </table>
         </div>
-        <div class="resultado-info">{{ resultado()!.rows?.length ?? 0 }} linha(s) retornada(s)</div>
+        <div class="resultado-info">
+          <span>{{ resultado()!.rows?.length ?? 0 }} linha(s) retornada(s)</span>
+          <button class="btn-export" (click)="exportarCsv()" title="Exportar resultado completo em CSV">
+            <i class="pi pi-download"></i> Exportar CSV
+          </button>
+        </div>
       }
     } @else if (resultado()!.type === 'dml') {
       <div class="resultado-sucesso">

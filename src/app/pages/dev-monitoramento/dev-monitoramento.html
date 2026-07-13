@@ -118,23 +118,51 @@
           </thead>
           <tbody>
             @for (e of erros(); track e.id) {
-              <tr>
+              <tr class="linha-erro" [class.expandida]="detalheExpandido() === e.id" (click)="toggleDetalhe(e)">
                 <td>{{ e.dataHora | date:'dd/MM/yyyy HH:mm' }}</td>
                 <td>{{ e.empresaNome ?? '-' }}</td>
                 <td>{{ e.usuarioEmail ?? '-' }}</td>
                 <td><span class="tag" [class]="'tag ' + classeOrigem(e.origem)">{{ labelOrigem(e.origem) }}</span></td>
-                <td>{{ e.mensagem }}</td>
+                <td class="col-mensagem">{{ e.mensagem }}</td>
                 <td>
-                  @if (e.detalhes) {
-                    <button class="btn-icon" (click)="toggleDetalhe(e.id)" title="Detalhes">
-                      <i class="pi" [class.pi-chevron-down]="detalheExpandido() !== e.id" [class.pi-chevron-up]="detalheExpandido() === e.id"></i>
-                    </button>
-                  }
+                  <button class="btn-icon" title="Detalhes">
+                    <i class="pi" [class.pi-chevron-down]="detalheExpandido() !== e.id" [class.pi-chevron-up]="detalheExpandido() === e.id"></i>
+                  </button>
                 </td>
               </tr>
               @if (detalheExpandido() === e.id) {
                 <tr class="linha-detalhe">
-                  <td colspan="6"><pre>{{ formatarDetalhes(e.detalhes) }}</pre></td>
+                  <td colspan="6">
+                    <div class="detalhe-painel">
+                      @if (detalheRota()) {
+                        <div class="detalhe-secao">
+                          <span class="detalhe-titulo">Rota</span>
+                          <div class="detalhe-valor mono">{{ detalheRota() }}</div>
+                        </div>
+                      }
+                      <div class="detalhe-secao">
+                        <span class="detalhe-titulo">Mensagem</span>
+                        <div class="detalhe-valor">{{ detalheMensagem() }}</div>
+                      </div>
+                      @if (detalheCampos().length > 0) {
+                        <div class="detalhe-secao">
+                          <span class="detalhe-titulo">Detalhes</span>
+                          <div class="detalhe-grid">
+                            @for (c of detalheCampos(); track c.chave) {
+                              <div class="detalhe-chave">{{ c.chave }}</div>
+                              <div class="detalhe-valor">{{ c.valor }}</div>
+                            }
+                          </div>
+                        </div>
+                      }
+                      @if (detalheStack()) {
+                        <div class="detalhe-secao">
+                          <span class="detalhe-titulo">Stack trace</span>
+                          <pre class="detalhe-stack">{{ detalheStack() }}</pre>
+                        </div>
+                      }
+                    </div>
+                  </td>
                 </tr>
               }
             }

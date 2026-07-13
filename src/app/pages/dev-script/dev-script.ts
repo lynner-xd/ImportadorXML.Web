@@ -74,4 +74,29 @@ export class DevScriptComponent implements OnInit {
     const d = new Date(iso);
     return d.toLocaleDateString('pt-BR') + ' ' + d.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
   }
+
+  exportarCsv(): void {
+    const res = this.resultado();
+    if (!res || res.type !== 'select' || !res.rows?.length) return;
+
+    // ';' como separador e BOM UTF-8 para abrir direto no Excel pt-BR; valores completos, sem truncar.
+    const escapar = (v: unknown): string => {
+      const s = v === null || v === undefined ? '' : String(v);
+      return /[";\n\r]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s;
+    };
+
+    const cols = res.columns ?? [];
+    const linhas = [
+      cols.map(escapar).join(';'),
+      ...res.rows.map(r => r.map(escapar).join(';'))
+    ];
+
+    const blob = new Blob(['\uFEFF' + linhas.join('\r\n')], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `consulta_${new Date().toISOString().slice(0, 19).replace(/[:T]/g, '-')}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  }
 }

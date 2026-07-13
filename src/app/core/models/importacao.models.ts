@@ -72,4 +72,7 @@ export interface ItemProcessado {
 export interface ImportacaoErro {
   arquivo: string;
   mensagem: string;
+  tipoExcecao?: string | null;
+  mensagemCompleta?: string | null;
+  stackTrace?: string | null;
 }

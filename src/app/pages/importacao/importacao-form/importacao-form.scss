@@ -200,9 +200,82 @@
   padding: 0.5rem 0;
   border-bottom: 1px solid var(--divider);
   font-size: 0.8125rem;
+  cursor: pointer;
 
   strong { color: var(--text-primary); }
   span { color: var(--text-muted); }
+
+  &:hover .error-item-head i { color: var(--text-primary); }
+}
+
+.error-item-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+
+  i {
+    color: var(--text-muted);
+    font-size: 0.75rem;
+    flex-shrink: 0;
+    transition: color 0.15s ease;
+  }
+}
+
+.error-item-textos {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  min-width: 0;
+
+  span { word-break: break-word; }
+}
+
+.error-item-detalhe {
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+  margin-top: 0.65rem;
+  padding: 0.75rem 1rem;
+  background: var(--bg-app);
+  border-left: 3px solid var(--error);
+  border-radius: var(--radius-xs);
+  cursor: default;
+}
+
+.erro-campo {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.erro-campo-label {
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.error-item .erro-campo-valor {
+  color: var(--text-primary);
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.erro-stack {
+  margin: 0;
+  padding: 0.75rem 0.85rem;
+  background: var(--bg-input);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-xs);
+  font-size: 0.7rem;
+  font-family: 'Fira Code', 'Consolas', monospace;
+  color: var(--text-secondary);
+  white-space: pre-wrap;
+  word-break: break-word;
+  max-height: 240px;
+  overflow-y: auto;
 }
 
 .result-actions {

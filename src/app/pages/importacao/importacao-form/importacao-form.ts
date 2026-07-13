@@ -27,6 +27,7 @@ export class ImportacaoFormComponent implements OnInit, CanDeactivateComponent {
   faseUpload = signal<'chunks' | 'processando'>('chunks');
   cancelando = signal(false);
   confirmandoSaida = signal(false);
+  erroExpandido = signal<number | null>(null);
 
   private isCancelled = false;
   private cancel$ = new Subject<void>();
@@ -120,6 +121,7 @@ export class ImportacaoFormComponent implements OnInit, CanDeactivateComponent {
     this.loading.set(true);
     this.error.set('');
     this.resultado.set(null);
+    this.erroExpandido.set(null);
     this.progressoChunk.set(0);
     this.arquivoAtual.set('');
     this.faseUpload.set('chunks');
@@ -225,6 +227,11 @@ export class ImportacaoFormComponent implements OnInit, CanDeactivateComponent {
     this.arquivos.set([]);
     this.resultado.set(null);
     this.error.set('');
+    this.erroExpandido.set(null);
+  }
+
+  toggleErro(index: number): void {
+    this.erroExpandido.set(this.erroExpandido() === index ? null : index);
   }
 
   sair(): void {

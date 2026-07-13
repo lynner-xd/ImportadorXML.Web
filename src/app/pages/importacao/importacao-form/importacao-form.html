@@ -170,10 +170,35 @@
       @if (res.erros.length > 0) {
         <div class="errors-section">
           <h4><i class="pi pi-exclamation-triangle"></i> Detalhes dos erros</h4>
-          @for (e of res.erros; track e.arquivo) {
-            <div class="error-item">
-              <strong>{{ e.arquivo }}</strong>
-              <span>{{ e.mensagem }}</span>
+          @for (e of res.erros; track $index) {
+            <div class="error-item" [class.expandido]="erroExpandido() === $index" (click)="toggleErro($index)">
+              <div class="error-item-head">
+                <div class="error-item-textos">
+                  <strong>{{ e.arquivo }}</strong>
+                  <span>{{ e.mensagem }}</span>
+                </div>
+                <i class="pi" [class.pi-chevron-down]="erroExpandido() !== $index" [class.pi-chevron-up]="erroExpandido() === $index"></i>
+              </div>
+              @if (erroExpandido() === $index) {
+                <div class="error-item-detalhe">
+                  @if (e.tipoExcecao) {
+                    <div class="erro-campo">
+                      <span class="erro-campo-label">Tipo de exceção</span>
+                      <span class="erro-campo-valor">{{ e.tipoExcecao }}</span>
+                    </div>
+                  }
+                  <div class="erro-campo">
+                    <span class="erro-campo-label">Mensagem completa</span>
+                    <span class="erro-campo-valor">{{ e.mensagemCompleta || e.mensagem }}</span>
+                  </div>
+                  @if (e.stackTrace) {
+                    <div class="erro-campo">
+                      <span class="erro-campo-label">Stack trace</span>
+                      <pre class="erro-stack">{{ e.stackTrace }}</pre>
+                    </div>
+                  }
+                </div>
+              }
             </div>
           }
         </div>
