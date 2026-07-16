@@ -21,6 +21,7 @@
       <thead>
         <tr>
           <th>Código</th>
+          <th>Classificação</th>
           <th>Nome</th>
           <th>Tipo</th>
           <th class="text-center">Ações</th>
@@ -29,6 +30,7 @@
       <tbody>
         @for (c of contas(); track c.id; let i = $index) {
           <tr [class]="getRowClass(c, i)">
+            <td>{{ c.codigoReduzido }}</td>
             <td><strong>{{ c.codigo }}</strong></td>
             <td>{{ c.nome }}</td>
             <td><span [class]="'tag tag-' + c.tipo.toLowerCase()">{{ c.tipo }}</span></td>
@@ -67,13 +69,13 @@
           </div>
           @if (codigoGerado()) {
             <div class="codigo-preview">
-              <span class="codigo-label">Código gerado:</span>
+              <span class="codigo-label">Classificação gerada:</span>
               <span class="codigo-valor">{{ codigoGerado() }}</span>
             </div>
           }
         } @else {
           <div class="codigo-preview">
-            <span class="codigo-label">Código:</span>
+            <span class="codigo-label">Classificação:</span>
             <span class="codigo-valor">{{ form.codigo }}</span>
           </div>
         }

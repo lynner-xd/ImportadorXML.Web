@@ -1,6 +1,7 @@
 export interface PlanoContaResponse {
   id: string;
   codigo: string;
+  codigoReduzido: number;
   nome: string;
   tipo: string;
   empresaId: string;

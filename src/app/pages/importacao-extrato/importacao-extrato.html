@@ -73,6 +73,7 @@
         <table class="data-table">
           <thead>
             <tr>
+              <th class="col-acao"></th>
               <th class="col-status"></th>
               <th>Data</th>
               <th class="text-right">Valor</th>
@@ -84,6 +85,11 @@
           <tbody>
             @for (l of linhas(); track l.indice) {
               <tr [class.linha-atencao]="!l.ok && !l.duplicada" [class.linha-dup]="l.duplicada">
+                <td class="col-acao">
+                  <button class="btn-icon danger" (click)="removerLinha(l)" title="Remover linha">
+                    <i class="pi pi-trash"></i>
+                  </button>
+                </td>
                 <td class="col-status">
                   @if (l.duplicada) {
                     <span class="badge-dup" title="Duplicada">D</span>

@@ -109,6 +109,7 @@
           <tr>
             <th>Data</th>
             <th>Descrição</th>
+            <th>Contrapartida</th>
             <th class="text-right">Débito</th>
             <th class="text-right">Crédito</th>
             <th class="text-right">Saldo Atual</th>
@@ -119,6 +120,7 @@
             <tr>
               <td>{{ item.data | date:'dd/MM/yyyy':'UTC' }}</td>
               <td>{{ item.descricao }}</td>
+              <td>{{ item.contrapartida }}</td>
               <td class="text-right">{{ item.debito | number:'1.2-2' }}</td>
               <td class="text-right">{{ item.credito | number:'1.2-2' }}</td>
               <td class="text-right"><strong>{{ item.saldoAtual | number:'1.2-2' }}</strong></td>

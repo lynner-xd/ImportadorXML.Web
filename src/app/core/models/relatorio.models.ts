@@ -15,6 +15,7 @@ export interface BalanceteItem {
 export interface AnaliticoItem {
   data: string;
   descricao: string;
+  contrapartida: string;
   saldoAnterior: number;
   debito: number;
   credito: number;

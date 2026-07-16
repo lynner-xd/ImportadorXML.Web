@@ -66,10 +66,6 @@ export class ImportacaoConfigComponent implements OnInit {
     return this.analiticas().filter(c => c.codigo.startsWith('1.1.1.2'));
   }
 
-  contas1121(): PlanoContaResponse[] {
-    return this.analiticas().filter(c => c.codigo.startsWith('1.1.2.1'));
-  }
-
   salvarContas(): void {
     this.salvando.set(true);
     const dto: ConfiguracaoImportacao = {

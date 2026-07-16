@@ -31,7 +31,7 @@
         <label>Positivo — Crédito</label>
         <select [(ngModel)]="configForm.contaCreditoPositivoId">
           <option [ngValue]="undefined">—</option>
-          @for (c of contas1121(); track c.id) {
+          @for (c of analiticas(); track c.id) {
             <option [ngValue]="c.id">{{ c.codigo }} — {{ c.nome }}</option>
           }
         </select>

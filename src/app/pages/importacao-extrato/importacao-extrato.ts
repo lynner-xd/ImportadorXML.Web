@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { ApiService } from '../../core/services/api.service';
+import { ConfirmService } from '../../core/services/confirm.service';
 import { ImportarPreview, PreviewLinha, RegraImportacao, CondicaoRegra } from '../../core/models/importacao.models';
 import { PlanoContaResponse } from '../../core/models/plano-conta.models';
 import { RegraImportacaoModalComponent } from '../../shared/regra-importacao-modal/regra-importacao-modal';
@@ -17,6 +18,7 @@ import { RegraImportacaoModalComponent } from '../../shared/regra-importacao-mod
 export class ImportacaoExtratoComponent {
   private api = inject(ApiService);
   private router = inject(Router);
+  private confirmService = inject(ConfirmService);
 
   arquivo = signal<File | null>(null);
   preview = signal<ImportarPreview | null>(null);
@@ -143,6 +145,18 @@ export class ImportacaoExtratoComponent {
       return merged;
     });
     this.preview.set({ ...p, linhas });
+  }
+
+  async removerLinha(l: PreviewLinha): Promise<void> {
+    const ok = await this.confirmService.confirmar({
+      mensagem: 'Remover esta linha da importação? Para recuperá-la será preciso reprocessar o arquivo.',
+      perigo: true,
+      textoConfirmar: 'Remover'
+    });
+    if (!ok) return;
+    const p = this.preview();
+    if (!p) return;
+    this.preview.set({ ...p, linhas: p.linhas.filter(x => x.indice !== l.indice) });
   }
 
   limpar(): void {
