@@ -14,7 +14,7 @@
   gap: 0.5rem;
 }
 
-.btn-primary, .btn-secondary {
+.btn-primary, .btn-secondary, .btn-danger {
   display: inline-flex;
   align-items: center;
   gap: 0.5rem;
@@ -53,6 +53,23 @@
   &:hover { background: var(--bg-hover); color: var(--text-primary); }
   &.danger:hover { color: var(--error); }
 }
+
+.col-check{width:40px;text-align:center}
+.row-selected td{background:rgba(var(--accent-primary-rgb),.12)!important}
+.bulk-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+  background: rgba(var(--accent-primary-rgb), 0.08);
+  border: 1px solid rgba(var(--accent-primary-rgb), 0.22);
+  border-radius: var(--radius-xs);
+  margin-bottom: 0.75rem;
+
+  span { font-weight: 600; color: var(--text-primary); }
+}
+.btn-danger{background:rgba(220,53,69,.85);color:#fff;padding:.4rem .9rem;
+  &:hover{background:#dc3545}}
 
 .data-table {
   width: 100%;
@@ -126,6 +143,27 @@
     outline: none;
 
     &:focus { border-color: var(--focus-ring); box-shadow: 0 0 0 2px rgba(var(--accent-primary-rgb), 0.2); }
+  }
+
+  input, select, textarea {
+    background: var(--bg-input);
+    border: 1px solid var(--border-default);
+    border-radius: var(--radius-xs);
+    color: var(--text-primary);
+    padding: 0.65rem 0.85rem;
+    font-size: 0.875rem;
+    font-family: 'Inter', sans-serif;
+    outline: none;
+
+    &::placeholder { color: var(--text-muted); }
+    &:focus { border-color: var(--focus-ring); box-shadow: 0 0 0 2px rgba(var(--accent-primary-rgb), 0.2); }
+
+    option { background: var(--bg-card); color: var(--text-primary); }
+  }
+
+  textarea {
+    resize: vertical;
+    min-height: 60px;
   }
 
   &.field-search { min-width: 220px; }
@@ -227,39 +265,6 @@
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 1rem;
-}
-
-.field {
-  display: flex;
-  flex-direction: column;
-  gap: 0.4rem;
-
-  label {
-    font-size: 0.8125rem;
-    font-weight: 600;
-    color: var(--text-secondary);
-  }
-
-  input, select, textarea {
-    background: var(--bg-input);
-    border: 1px solid var(--border-default);
-    border-radius: var(--radius-xs);
-    color: var(--text-primary);
-    padding: 0.65rem 0.85rem;
-    font-size: 0.875rem;
-    font-family: 'Inter', sans-serif;
-    outline: none;
-
-    &::placeholder { color: var(--text-muted); }
-    &:focus { border-color: var(--focus-ring); box-shadow: 0 0 0 2px rgba(var(--accent-primary-rgb), 0.2); }
-
-    option { background: var(--bg-card); color: var(--text-primary); }
-  }
-
-  textarea {
-    resize: vertical;
-    min-height: 60px;
-  }
 }
 
 .search-wrap input {
@@ -379,20 +384,9 @@
   position: relative;
   width: 100%;
 
-  input {
-    width: 100%;
-    background: var(--bg-input);
-    border: 1px solid var(--border-default);
-    border-radius: var(--radius-xs);
-    color: var(--text-primary);
-    padding: 0.65rem 0.85rem;
-    font-size: 0.875rem;
-    font-family: 'Inter', sans-serif;
-    outline: none;
-
-    &::placeholder { color: var(--text-muted); }
-    &:focus { border-color: var(--focus-ring); box-shadow: 0 0 0 2px rgba(var(--accent-primary-rgb), 0.2); }
-  }
+  // input styling (background, border, padding, focus, placeholder) inherited
+  // from ".field input, select, textarea" — this element is always nested in .field.
+  input { width: 100%; }
 }
 
 .autocomplete-list {
@@ -423,7 +417,8 @@
 }
 
 .badge-importado,
-.badge-manual {
+.badge-manual,
+.badge-integracao {
   display: inline-block;
   padding: 0.2rem 0.6rem;
   border-radius: 999px;
@@ -443,4 +438,10 @@
   background: rgba(255, 255, 255, 0.06);
   color: var(--text-muted);
   border: 1px solid var(--border-default);
+}
+
+.badge-integracao {
+  background: rgba(56, 189, 248, 0.12);
+  color: var(--info);
+  border: 1px solid rgba(56, 189, 248, 0.35);
 }

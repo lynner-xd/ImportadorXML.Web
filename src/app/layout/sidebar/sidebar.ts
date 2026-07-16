@@ -39,6 +39,7 @@ export class SidebarComponent {
         {
           label: 'Configurações', icon: 'pi pi-cog', children: [
             { label: 'Email SMTP', icon: 'pi pi-envelope', route: '/admin/email' },
+            { label: 'Integração', icon: 'pi pi-key', route: '/admin/integracao' },
           ]
         },
       ];

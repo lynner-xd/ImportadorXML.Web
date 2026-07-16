@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { Draggable, Droppable } from 'primeng/dragdrop';
 import { ApiService } from '../../core/services/api.service';
+import { ConfirmService } from '../../core/services/confirm.service';
 import { ConfiguracaoImportacao, RegraImportacao, CondicaoRegra } from '../../core/models/importacao.models';
 import { PlanoContaResponse } from '../../core/models/plano-conta.models';
 import { RegraImportacaoModalComponent } from '../../shared/regra-importacao-modal/regra-importacao-modal';
@@ -18,6 +19,7 @@ import { RegraImportacaoModalComponent } from '../../shared/regra-importacao-mod
 export class ImportacaoConfigComponent implements OnInit {
   private api = inject(ApiService);
   private router = inject(Router);
+  private confirmService = inject(ConfirmService);
 
   contas = signal<PlanoContaResponse[]>([]);
   regras = signal<RegraImportacao[]>([]);
@@ -139,8 +141,8 @@ export class ImportacaoConfigComponent implements OnInit {
     });
   }
 
-  excluirRegra(r: RegraImportacao): void {
-    if (!confirm('Excluir esta regra?')) return;
+  async excluirRegra(r: RegraImportacao): Promise<void> {
+    if (!(await this.confirmService.confirmar({ mensagem: 'Excluir esta regra?', perigo: true, textoConfirmar: 'Excluir' }))) return;
     this.api.excluirRegraImportacao(r.id).subscribe({
       next: () => this.recarregarRegras()
     });

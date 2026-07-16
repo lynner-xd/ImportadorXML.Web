@@ -2,6 +2,7 @@ import { Component, OnInit, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ApiService } from '../../core/services/api.service';
+import { ConfirmService } from '../../core/services/confirm.service';
 import { PlanoContaResponse } from '../../core/models/plano-conta.models';
 
 interface ContaPai {
@@ -38,7 +39,7 @@ export class PlanoContasComponent implements OnInit {
       }));
   });
 
-  constructor(private api: ApiService) {}
+  constructor(private api: ApiService, private confirmService: ConfirmService) {}
 
   ngOnInit(): void {
     this.carregar();
@@ -147,12 +148,11 @@ export class PlanoContasComponent implements OnInit {
     return index % 2 === 1 ? 'row-zebra' : '';
   }
 
-  excluir(id: string): void {
-    if (confirm('Deseja excluir esta conta?')) {
-      this.api.excluirConta(id).subscribe({
-        next: () => this.carregar(),
-        error: (err) => this.error.set(err.error?.message || err.error?.error || 'Erro ao excluir conta.')
-      });
-    }
+  async excluir(id: string): Promise<void> {
+    if (!(await this.confirmService.confirmar({ mensagem: 'Deseja excluir esta conta?', perigo: true, textoConfirmar: 'Excluir' }))) return;
+    this.api.excluirConta(id).subscribe({
+      next: () => this.carregar(),
+      error: (err) => this.error.set(err.error?.message || err.error?.error || 'Erro ao excluir conta.')
+    });
   }
 }

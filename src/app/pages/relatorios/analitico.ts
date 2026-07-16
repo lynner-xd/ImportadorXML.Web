@@ -74,8 +74,20 @@ export class AnaliticoComponent implements OnInit {
 
     if (this.isAdmin) {
       this.api.listarEmpresas().subscribe({ next: (e) => this.empresas.set(e) });
+    } else {
+      this.api.listarPlanoContas().subscribe({ next: (c) => this.contas.set(c) });
     }
-    this.api.listarPlanoContas().subscribe({ next: (c) => this.contas.set(c) });
+  }
+
+  onEmpresaChange(): void {
+    this.contas.set([]);
+    this.filtroNivel1 = '';
+    this.filtroNivel2 = '';
+    this.filtroNivel3 = '';
+    this.filtroNivel4 = '';
+    this.contaId = '';
+    if (!this.empresaId) return;
+    this.api.getAdminPlanoContas(this.empresaId).subscribe({ next: (c) => this.contas.set(c) });
   }
 
   onNivel1Change(): void {

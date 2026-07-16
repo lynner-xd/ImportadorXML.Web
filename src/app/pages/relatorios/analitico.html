@@ -17,7 +17,7 @@
     @if (isAdmin) {
       <div class="field">
         <label>Empresa</label>
-        <select [(ngModel)]="empresaId" class="input-select">
+        <select [(ngModel)]="empresaId" (ngModelChange)="onEmpresaChange()" class="input-select">
           <option value="">Selecione a empresa...</option>
           @for (e of empresas(); track e.id) {
             <option [value]="e.id">{{ e.razaoSocial }} - {{ e.cnpj }}</option>

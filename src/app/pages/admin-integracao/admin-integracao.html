@@ -1,0 +1,109 @@
+<div class="page-header">
+  <div>
+    <h1>Integração</h1>
+    <p>Gere e controle os tokens de acesso à API pública de integração</p>
+  </div>
+  <a class="btn-secondary" routerLink="/docs-api" target="_blank">
+    <i class="pi pi-book"></i> Documentação da API
+  </a>
+</div>
+
+@if (successMsg()) {
+  <div class="success-msg"><i class="pi pi-check-circle"></i> {{ successMsg() }}</div>
+}
+@if (errorMsg()) {
+  <div class="error-msg"><i class="pi pi-exclamation-circle"></i> {{ errorMsg() }}</div>
+}
+
+<div class="card">
+  @if (loading()) {
+    <div class="loading"><i class="pi pi-spinner pi-spin"></i> Carregando...</div>
+  } @else if (empresas().length === 0) {
+    <div class="empty"><i class="pi pi-key"></i><p>Nenhuma empresa cadastrada.</p></div>
+  } @else {
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Empresa</th>
+          <th>CNPJ</th>
+          <th>Token</th>
+          <th>Último uso</th>
+          <th class="text-center">Status</th>
+          <th class="text-center">Ações</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (e of empresas(); track e.empresaId) {
+          <tr>
+            <td>{{ e.razaoSocial }}</td>
+            <td>{{ e.cnpj }}</td>
+            <td>
+              @if (e.possuiToken) {
+                <span class="token-prefixo">{{ e.prefixo }}••••</span>
+              } @else {
+                <span class="sem-token">—</span>
+              }
+            </td>
+            <td>
+              @if (e.dataUltimoUso) {
+                {{ e.dataUltimoUso | date:'dd/MM/yyyy HH:mm' }}
+              } @else {
+                <span class="sem-token">Nunca usado</span>
+              }
+            </td>
+            <td class="text-center">
+              @if (!e.possuiToken) {
+                <span class="tag tag-neutral">Sem token</span>
+              } @else if (e.tokenAtivo) {
+                <span class="tag tag-success">Ativo</span>
+              } @else {
+                <span class="tag tag-danger">Inativo</span>
+              }
+            </td>
+            <td class="text-center actions-cell">
+              <button class="btn-icon" (click)="gerar(e)" [title]="e.possuiToken ? 'Gerar novo token' : 'Gerar token'">
+                <i [class]="e.possuiToken ? 'pi pi-refresh' : 'pi pi-key'"></i>
+              </button>
+              @if (e.possuiToken) {
+                <button class="btn-icon" (click)="alterarStatus(e)" [title]="e.tokenAtivo ? 'Inativar' : 'Ativar'">
+                  <i [class]="e.tokenAtivo ? 'pi pi-ban' : 'pi pi-check'"></i>
+                </button>
+              }
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  }
+</div>
+
+@if (showChaveDialog()) {
+  <div class="dialog-overlay" (click)="fecharDialog()">
+    <div class="dialog" (click)="$event.stopPropagation()">
+      <div class="dialog-header">
+        <h2>Token gerado — {{ empresaChave() }}</h2>
+        <button class="btn-icon" (click)="fecharDialog()"><i class="pi pi-times"></i></button>
+      </div>
+      <div class="dialog-content">
+        <div class="warning-msg">
+          <i class="pi pi-exclamation-triangle"></i>
+          Esta é a única vez que o token completo será exibido. Copie e guarde em local seguro.
+        </div>
+        <div class="chave-box">
+          <code>{{ chaveGerada() }}</code>
+          <button class="btn-secondary" (click)="copiarChave()">
+            <i [class]="chaveCopiada() ? 'pi pi-check' : 'pi pi-copy'"></i>
+            {{ chaveCopiada() ? 'Copiado!' : 'Copiar' }}
+          </button>
+        </div>
+        <p class="section-hint">
+          A empresa deve enviar o token no header <code>X-Api-Key</code> em cada chamada.
+          Consulte a <a routerLink="/docs-api" target="_blank">documentação da API</a>.
+        </p>
+      </div>
+      <div class="dialog-footer">
+        <button class="btn-primary" (click)="fecharDialog()">Concluir</button>
+      </div>
+    </div>
+  </div>
+}

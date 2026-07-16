@@ -1,0 +1,94 @@
+<div class="docs-container">
+  <aside class="docs-nav">
+    <img src="logo-brasao-semfundo.png" alt="Select" class="docs-logo" />
+    <span class="docs-title">API de Integração</span>
+    <nav>
+      <a (click)="scrollTo('introducao')">Introdução</a>
+      <a (click)="scrollTo('autenticacao')">Autenticação</a>
+      <a (click)="scrollTo('erros')">Erros</a>
+      @for (ep of endpoints; track ep.id) {
+        <a (click)="scrollTo(ep.id)">{{ ep.titulo }}</a>
+      }
+    </nav>
+  </aside>
+
+  <main class="docs-content">
+    <section id="introducao" class="docs-section">
+      <h1>API Pública de Integração</h1>
+      <p>
+        A API de integração do Select Contábil permite que o sistema da sua empresa importe
+        XMLs fiscais, crie e consulte lançamentos contábeis e obtenha os relatórios contábeis
+        em JSON ou PDF.
+      </p>
+      <p>URL base:</p>
+      <pre class="code-block"><code>{{ baseUrl }}</code></pre>
+    </section>
+
+    <section id="autenticacao" class="docs-section">
+      <h2>Autenticação</h2>
+      <p>
+        Todas as chamadas exigem o header <code>X-Api-Key</code> com o token fornecido pelo
+        seu contador. O token identifica a sua empresa — todos os dados consultados e criados
+        pertencem exclusivamente a ela.
+      </p>
+      <pre class="code-block"><code>X-Api-Key: sk_live_SUA_CHAVE</code></pre>
+      <p>
+        Chamadas sem token, com token inválido ou com token inativado pelo contador retornam
+        <code>401 Unauthorized</code>.
+      </p>
+    </section>
+
+    <section id="erros" class="docs-section">
+      <h2>Formato de erros</h2>
+      <p>Erros retornam JSON com a mensagem no campo <code>message</code>:</p>
+      <pre class="code-block"><code>{{ '{' }} "message": "Conta de debito '9.9.99' nao encontrada no plano de contas da empresa." {{ '}' }}</code></pre>
+      <table class="params-table">
+        <thead><tr><th>Código</th><th>Significado</th></tr></thead>
+        <tbody>
+          <tr><td><code>400</code></td><td>Requisição inválida (parâmetro faltando, conta inexistente, arquivo não-XML...)</td></tr>
+          <tr><td><code>401</code></td><td>Token ausente, inválido ou inativo</td></tr>
+          <tr><td><code>404</code></td><td>Recurso não encontrado</td></tr>
+          <tr><td><code>500</code></td><td>Erro interno — contate o suporte</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    @for (ep of endpoints; track ep.id) {
+      <section [id]="ep.id" class="docs-section">
+        <h2>{{ ep.titulo }}</h2>
+        <div class="endpoint-line">
+          <span class="metodo" [class.metodo-post]="ep.metodo === 'POST'">{{ ep.metodo }}</span>
+          <code>{{ ep.rota }}</code>
+        </div>
+        <p>{{ ep.descricao }}</p>
+
+        @if (ep.params.length > 0) {
+          <h3>Parâmetros</h3>
+          <table class="params-table">
+            <thead>
+              <tr><th>Nome</th><th>Tipo</th><th>Obrigatório</th><th>Descrição</th></tr>
+            </thead>
+            <tbody>
+              @for (p of ep.params; track p.nome) {
+                <tr>
+                  <td><code>{{ p.nome }}</code></td>
+                  <td>{{ p.tipo }}</td>
+                  <td>{{ p.obrigatorio ? 'Sim' : 'Não' }}</td>
+                  <td>{{ p.descricao }}</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        }
+
+        <h3>Exemplo de requisição</h3>
+        <pre class="code-block"><code>{{ ep.exemploRequest }}</code></pre>
+
+        @if (ep.exemploResposta) {
+          <h3>Exemplo de resposta</h3>
+          <pre class="code-block"><code>{{ ep.exemploResposta }}</code></pre>
+        }
+      </section>
+    }
+  </main>
+</div>

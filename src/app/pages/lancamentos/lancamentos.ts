@@ -5,6 +5,7 @@ import { RouterLink } from '@angular/router';
 import { Subject } from 'rxjs';
 import { debounceTime, takeUntil } from 'rxjs/operators';
 import { ApiService } from '../../core/services/api.service';
+import { ConfirmService } from '../../core/services/confirm.service';
 import { LancamentoResponse, CriarLancamentoRequest, AtualizarLancamentoRequest } from '../../core/models/lancamento.models';
 import { PlanoContaResponse } from '../../core/models/plano-conta.models';
 
@@ -29,6 +30,16 @@ export class LancamentosComponent implements OnInit, OnDestroy {
   readonly pageSize = 50;
   totalLancamentos = signal(0);
   totalPaginas = computed(() => Math.max(1, Math.ceil(this.totalLancamentos() / this.pageSize)));
+
+  // Seleção múltipla
+  selecionados = signal<Set<string>>(new Set());
+
+  todosSelecionados = computed(() => {
+    const itens = this.lancamentos();
+    if (itens.length === 0) return false;
+    const sel = this.selecionados();
+    return itens.every(l => sel.has(l.id));
+  });
 
   // Autocomplete descrição
   descricoesSalvas = signal<string[]>([]);
@@ -55,12 +66,12 @@ export class LancamentosComponent implements OnInit, OnDestroy {
   filtroDataFim = '';
   filtroDebito = '';
   filtroCredito = '';
-  exibir = signal<'todos' | 'importado' | 'manual'>('todos');
+  exibir = signal<'todos' | 'importado' | 'manual' | 'integracao'>('todos');
 
   private filtroTexto$ = new Subject<void>();
   private destroy$ = new Subject<void>();
 
-  constructor(private api: ApiService) {}
+  constructor(private api: ApiService, private confirmService: ConfirmService) {}
 
   ngOnInit(): void {
     this.filtroTexto$
@@ -84,9 +95,19 @@ export class LancamentosComponent implements OnInit, OnDestroy {
   }
 
   carregarPagina(): void {
+    this.selecionados.set(new Set());
     this.loading.set(true);
     const exibirSel = this.exibir();
-    const importado = exibirSel === 'todos' ? undefined : exibirSel === 'importado';
+    let importado: boolean | undefined;
+    let viaIntegracao: boolean | undefined;
+    if (exibirSel === 'importado') {
+      importado = true;
+    } else if (exibirSel === 'integracao') {
+      viaIntegracao = true;
+    } else if (exibirSel === 'manual') {
+      importado = false;
+      viaIntegracao = false;
+    }
     this.api.listarLancamentos({
       page: this.pagina(),
       pageSize: this.pageSize,
@@ -94,7 +115,8 @@ export class LancamentosComponent implements OnInit, OnDestroy {
       dataFim: this.filtroDataFim || undefined,
       debito: this.filtroDebito || undefined,
       credito: this.filtroCredito || undefined,
-      importado
+      importado,
+      viaIntegracao
     }).subscribe({
       next: (res) => {
         this.lancamentos.set(res.items);
@@ -142,7 +164,7 @@ export class LancamentosComponent implements OnInit, OnDestroy {
     this.carregarPagina();
   }
 
-  onExibirChange(valor: 'todos' | 'importado' | 'manual'): void {
+  onExibirChange(valor: 'todos' | 'importado' | 'manual' | 'integracao'): void {
     this.exibir.set(valor);
     this.pagina.set(1);
     this.carregarPagina();
@@ -258,12 +280,42 @@ export class LancamentosComponent implements OnInit, OnDestroy {
     });
   }
 
-  excluir(id: string): void {
-    if (confirm('Deseja excluir este lançamento?')) {
-      this.api.excluirLancamento(id).subscribe({
-        next: () => this.carregarPagina()
-      });
-    }
+  async excluir(id: string): Promise<void> {
+    if (!(await this.confirmService.confirmar({ mensagem: 'Deseja excluir este lançamento?', perigo: true, textoConfirmar: 'Excluir' }))) return;
+    this.api.excluirLancamento(id).subscribe({
+      next: () => this.carregarPagina()
+    });
+  }
+
+  toggleSelecao(id: string): void {
+    const set = new Set(this.selecionados());
+    if (set.has(id)) set.delete(id);
+    else set.add(id);
+    this.selecionados.set(set);
+  }
+
+  selecionarTodos(): void {
+    this.selecionados.set(new Set(this.lancamentos().map(l => l.id)));
+  }
+
+  limparSelecao(): void {
+    this.selecionados.set(new Set());
+  }
+
+  async excluirSelecionados(): Promise<void> {
+    const ids = Array.from(this.selecionados());
+    if (ids.length === 0) return;
+
+    const ok = await this.confirmService.confirmar({
+      mensagem: `Você está prestes a excluir ${ids.length} lançamento(s). Esta ação não pode ser desfeita.`,
+      perigo: true,
+      textoConfirmar: 'Excluir'
+    });
+    if (!ok) return;
+
+    this.api.excluirLancamentos(ids).subscribe({
+      next: () => this.carregarPagina()
+    });
   }
 
   contasAnaliticas(): PlanoContaResponse[] {

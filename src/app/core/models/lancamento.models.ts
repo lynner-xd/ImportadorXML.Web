@@ -12,6 +12,7 @@ export interface LancamentoResponse {
   origem: string;
   dataCriacao: string;
   importado: boolean;
+  viaIntegracao: boolean;
 }
 
 export interface CriarLancamentoRequest {

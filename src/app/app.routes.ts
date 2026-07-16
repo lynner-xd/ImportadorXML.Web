@@ -6,6 +6,7 @@ import { LoginComponent } from './pages/login/login';
 
 export const routes: Routes = [
   { path: 'login', component: LoginComponent },
+  { path: 'docs-api', loadComponent: () => import('./pages/docs-api/docs-api').then(m => m.DocsApiComponent) },
   {
     path: '',
     component: MainLayoutComponent,
@@ -39,6 +40,7 @@ export const routes: Routes = [
       { path: 'admin/contratos', canActivate: [contadorGuard], loadComponent: () => import('./pages/admin-contratos/admin-contratos').then(m => m.AdminContratosComponent) },
       { path: 'admin/usuarios', canActivate: [contadorGuard], loadComponent: () => import('./pages/admin-usuarios/admin-usuarios').then(m => m.AdminUsuariosComponent) },
       { path: 'admin/email', canActivate: [contadorGuard], loadComponent: () => import('./pages/admin-email/admin-email').then(m => m.AdminEmailComponent) },
+      { path: 'admin/integracao', canActivate: [contadorGuard], loadComponent: () => import('./pages/admin-integracao/admin-integracao').then(m => m.AdminIntegracaoComponent) },
 
       // Desenvolvedor
       { path: 'dev/usuarios', canActivate: [desenvolvedorGuard], loadComponent: () => import('./pages/dev-usuarios/dev-usuarios').then(m => m.DevUsuariosComponent) },

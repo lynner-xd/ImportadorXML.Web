@@ -2,6 +2,7 @@ import { Component, OnInit, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ApiService } from '../../core/services/api.service';
+import { ConfirmService } from '../../core/services/confirm.service';
 import { UsuarioResponse, CriarUsuarioRequest, EditarUsuarioRequest } from '../../core/models/usuario.models';
 
 type DialogMode = 'novo-contador' | 'novo-empresa' | 'editar';
@@ -45,7 +46,7 @@ export class DevUsuariosComponent implements OnInit {
     }
   });
 
-  constructor(private api: ApiService) {}
+  constructor(private api: ApiService, private confirmService: ConfirmService) {}
 
   ngOnInit(): void {
     this.carregar();
@@ -140,23 +141,21 @@ export class DevUsuariosComponent implements OnInit {
     };
   }
 
-  alterarStatus(u: UsuarioResponse): void {
+  async alterarStatus(u: UsuarioResponse): Promise<void> {
     const novoStatus = !u.ativo;
     const acao = novoStatus ? 'ativar' : 'inativar';
-    if (confirm(`Deseja ${acao} o usuário ${u.email}?`)) {
-      this.api.devAlterarStatus(u.id, novoStatus).subscribe({
-        next: () => { this.carregar(); this.showSuccess(`Usuário ${novoStatus ? 'ativado' : 'inativado'} com sucesso.`); }
-      });
-    }
+    if (!(await this.confirmService.confirmar({ mensagem: `Deseja ${acao} o usuário ${u.email}?` }))) return;
+    this.api.devAlterarStatus(u.id, novoStatus).subscribe({
+      next: () => { this.carregar(); this.showSuccess(`Usuário ${novoStatus ? 'ativado' : 'inativado'} com sucesso.`); }
+    });
   }
 
-  resetSenha(u: UsuarioResponse): void {
-    if (confirm(`Deseja resetar a senha de ${u.email}? Uma nova senha será enviada por email.`)) {
-      this.api.devResetSenha(u.id).subscribe({
-        next: () => this.showSuccess('Nova senha enviada por email.'),
-        error: (err) => this.error.set(err.error?.message || 'Erro ao resetar senha.')
-      });
-    }
+  async resetSenha(u: UsuarioResponse): Promise<void> {
+    if (!(await this.confirmService.confirmar({ mensagem: `Deseja resetar a senha de ${u.email}? Uma nova senha será enviada por email.` }))) return;
+    this.api.devResetSenha(u.id).subscribe({
+      next: () => this.showSuccess('Nova senha enviada por email.'),
+      error: (err) => this.error.set(err.error?.message || 'Erro ao resetar senha.')
+    });
   }
 
   private showSuccess(msg: string): void {

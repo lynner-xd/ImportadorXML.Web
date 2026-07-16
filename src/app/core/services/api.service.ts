@@ -13,6 +13,7 @@ import { ScriptResultadoResponse, ScriptHistoricoResponse } from '../models/scri
 import { DocumentoFiscal, PagedResult } from '../models/documento.models';
 import { ContratoRequest, DadosEmpresaContrato } from '../models/contrato.models';
 import { AtividadeMonitor, ErroMonitor, EmpresaMonitorOption } from '../models/monitoramento.models';
+import { IntegracaoEmpresaResponse, GerarTokenResponse } from '../models/integracao.models';
 
 @Injectable({ providedIn: 'root' })
 export class ApiService {
@@ -124,6 +125,7 @@ export class ApiService {
     debito?: string;
     credito?: string;
     importado?: boolean;
+    viaIntegracao?: boolean;
   }): Observable<PagedResult<LancamentoResponse>> {
     let httpParams = new HttpParams()
       .set('page', params.page.toString())
@@ -134,6 +136,9 @@ export class ApiService {
     if (params.credito) httpParams = httpParams.set('credito', params.credito);
     if (params.importado !== undefined && params.importado !== null) {
       httpParams = httpParams.set('importado', String(params.importado));
+    }
+    if (params.viaIntegracao !== undefined && params.viaIntegracao !== null) {
+      httpParams = httpParams.set('viaIntegracao', String(params.viaIntegracao));
     }
     return this.http.get<PagedResult<LancamentoResponse>>(
       `${this.api}/lancamentos`, { params: httpParams });
@@ -153,6 +158,10 @@ export class ApiService {
 
   excluirLancamento(id: string): Observable<void> {
     return this.http.delete<void>(`${this.api}/lancamentos/${id}`);
+  }
+
+  excluirLancamentos(ids: string[]): Observable<void> {
+    return this.http.delete<void>(`${this.api}/lancamentos`, { body: { ids } });
   }
 
   // ===== Plano de Contas =====
@@ -219,6 +228,11 @@ export class ApiService {
   getAdminBalancete(empresaId: string, dataInicio: string, dataFim: string): Observable<BalanceteItem[]> {
     const params = new HttpParams().set('empresaId', empresaId).set('dataInicio', dataInicio).set('dataFim', dataFim);
     return this.http.get<BalanceteItem[]>(`${this.api}/admin/relatorios/balancete`, { params });
+  }
+
+  getAdminPlanoContas(empresaId: string): Observable<PlanoContaResponse[]> {
+    const params = new HttpParams().set('empresaId', empresaId);
+    return this.http.get<PlanoContaResponse[]>(`${this.api}/admin/relatorios/plano-contas`, { params });
   }
 
   getAdminAnalitico(empresaId: string, dataInicio: string, dataFim: string, contaId: string): Observable<AnaliticoItem[]> {
@@ -299,6 +313,19 @@ export class ApiService {
 
   testarEmail(): Observable<{ message: string }> {
     return this.http.post<{ message: string }>(`${this.api}/admin/email/testar`, {});
+  }
+
+  // ===== Admin - Integração =====
+  listarIntegracao(): Observable<IntegracaoEmpresaResponse[]> {
+    return this.http.get<IntegracaoEmpresaResponse[]>(`${this.api}/admin/integracao`);
+  }
+
+  gerarTokenIntegracao(empresaId: string): Observable<GerarTokenResponse> {
+    return this.http.post<GerarTokenResponse>(`${this.api}/admin/integracao/${empresaId}/gerar`, {});
+  }
+
+  alterarStatusTokenIntegracao(empresaId: string, ativo: boolean): Observable<void> {
+    return this.http.patch<void>(`${this.api}/admin/integracao/${empresaId}/status`, { ativo });
   }
 
   // ===== Dev - Usuários =====

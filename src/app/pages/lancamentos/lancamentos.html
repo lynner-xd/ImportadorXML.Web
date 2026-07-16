@@ -46,6 +46,7 @@
         <option value="todos">Todos</option>
         <option value="importado">Importado</option>
         <option value="manual">Manual</option>
+        <option value="integracao">Integração</option>
       </select>
     </div>
     @if (temFiltroAtivo) {
@@ -75,28 +76,51 @@
     <div class="table-meta">
       <span>Mostrando {{ lancamentos().length }} de {{ totalLancamentos() }} lançamentos</span>
     </div>
+    @if (selecionados().size > 0) {
+      <div class="bulk-actions">
+        <span>{{ selecionados().size }} selecionado(s)</span>
+        <button class="btn-danger" (click)="excluirSelecionados()">
+          <i class="pi pi-trash"></i> Excluir selecionados
+        </button>
+        <button class="btn-secondary" (click)="limparSelecao()">
+          <i class="pi pi-times"></i> Cancelar seleção
+        </button>
+      </div>
+    }
     <table class="data-table">
       <thead>
         <tr>
+          <th class="col-check">
+            <input type="checkbox"
+                   [checked]="todosSelecionados()"
+                   (change)="todosSelecionados() ? limparSelecao() : selecionarTodos()" />
+          </th>
           <th>Data</th>
           <th>Descrição</th>
           <th>Débito</th>
           <th>Crédito</th>
           <th class="text-right">Valor</th>
-          <th class="text-center">Importado</th>
+          <th class="text-center">Origem</th>
           <th class="text-center">Ações</th>
         </tr>
       </thead>
       <tbody>
         @for (l of lancamentos(); track l.id) {
-          <tr>
+          <tr [class.row-selected]="selecionados().has(l.id)">
+            <td class="col-check">
+              <input type="checkbox"
+                     [checked]="selecionados().has(l.id)"
+                     (change)="toggleSelecao(l.id)" />
+            </td>
             <td>{{ l.data | date:'dd/MM/yyyy':'UTC' }}</td>
             <td>{{ l.descricao }}</td>
             <td>{{ l.contaDebito }}</td>
             <td>{{ l.contaCredito }}</td>
             <td class="text-right">{{ l.valor | number:'1.2-2' }}</td>
             <td class="text-center">
-              @if (l.importado) {
+              @if (l.viaIntegracao) {
+                <span class="badge-integracao">Integração</span>
+              } @else if (l.importado) {
                 <span class="badge-importado">Importado</span>
               } @else {
                 <span class="badge-manual">Manual</span>

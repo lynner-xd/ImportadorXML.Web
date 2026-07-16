@@ -1,0 +1,21 @@
+@if (confirm.visivel()) {
+  <div class="dialog-overlay" (click)="confirm.responder(false)">
+    <div class="dialog" role="dialog" aria-modal="true" aria-labelledby="confirm-titulo" (click)="$event.stopPropagation()">
+      <div class="dialog-header">
+        <h2 id="confirm-titulo">{{ confirm.estado().titulo }}</h2>
+        <button class="btn-icon" (click)="confirm.responder(false)"><i class="pi pi-times"></i></button>
+      </div>
+      <div class="dialog-content">
+        <p>{{ confirm.estado().mensagem }}</p>
+      </div>
+      <div class="dialog-footer">
+        <button class="btn-secondary" (click)="confirm.responder(false)">{{ confirm.estado().textoCancelar }}</button>
+        <button #btnConfirmar
+                [class]="confirm.estado().perigo ? 'btn-danger' : 'btn-primary'"
+                (click)="confirm.responder(true)">
+          {{ confirm.estado().textoConfirmar }}
+        </button>
+      </div>
+    </div>
+  </div>
+}
