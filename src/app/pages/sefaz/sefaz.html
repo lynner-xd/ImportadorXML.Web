@@ -1,0 +1,217 @@
+<div class="page-header">
+  <h1>Integração SEFAZ</h1>
+  <p>Busque as notas fiscais recebidas (NF-e) direto da SEFAZ com o certificado digital A1.</p>
+</div>
+
+@if (isAdmin) {
+  <div class="card empresa-select">
+    <div class="field">
+      <label>Empresa</label>
+      <select [(ngModel)]="empresaId" (ngModelChange)="onEmpresaChange()">
+        <option value="">Selecione a empresa...</option>
+        @for (e of empresas(); track e.id) {
+          <option [value]="e.id">{{ e.razaoSocial }}</option>
+        }
+      </select>
+    </div>
+  </div>
+}
+
+@if (!isAdmin || empresaId) {
+  <!-- ===== Certificado Digital ===== -->
+  <div class="card">
+    <h2><i class="pi pi-shield"></i> Certificado Digital</h2>
+
+    @if (config()?.certificadoConfigurado) {
+      <div class="cert-info">
+        <span><strong>Titular:</strong> {{ config()?.certificadoTitular }}</span>
+        <span>
+          <strong>Validade:</strong> {{ config()?.certificadoValidade | date:'dd/MM/yyyy':'UTC' }}
+          @if (certificadoVencido()) { <span class="badge badge-erro">Vencido</span> }
+          @else if (certificadoVencendo()) { <span class="badge badge-aviso">Vence em breve</span> }
+        </span>
+      </div>
+    } @else {
+      <p class="hint">Nenhum certificado cadastrado. Envie o arquivo .pfx/.p12 (certificado A1) e a senha.
+        Certificados A3 (cartão/token físico) não são suportados.</p>
+    }
+
+    <div class="config-form">
+      <div class="field">
+        <label>Arquivo do certificado (.pfx / .p12)</label>
+        <input type="file" accept=".pfx,.p12" (change)="onArquivoPfx($event)" class="file-input" />
+      </div>
+      <div class="field">
+        <label>Senha do certificado</label>
+        <input type="password" [(ngModel)]="senha" [disabled]="!arquivoPfx()"
+               placeholder="Somente ao enviar novo certificado" autocomplete="new-password" />
+      </div>
+      <div class="field">
+        <label>UF da empresa</label>
+        <select [(ngModel)]="uf">
+          <option value="">Selecione...</option>
+          @for (u of ufs; track u) { <option [value]="u">{{ u }}</option> }
+        </select>
+      </div>
+      <div class="field field-toggle">
+        <label>
+          <input type="checkbox" [(ngModel)]="manifestacaoAutomatica" />
+          Manifestar ciência automaticamente
+        </label>
+        <span class="hint">Registra a "Ciência da Operação" na SEFAZ para liberar o XML completo das notas que chegam só como resumo.</span>
+      </div>
+    </div>
+
+    <div class="actions">
+      <button class="btn-primary" (click)="salvarConfig()" [disabled]="salvandoConfig()">
+        @if (salvandoConfig()) { <i class="pi pi-spinner pi-spin"></i> } @else { <i class="pi pi-save"></i> }
+        Salvar configuração
+      </button>
+    </div>
+    @if (erroConfig()) {
+      <div class="error-msg"><i class="pi pi-exclamation-circle"></i> {{ erroConfig() }}</div>
+    }
+  </div>
+
+  <!-- ===== Busca ===== -->
+  <div class="card">
+    <h2><i class="pi pi-cloud-download"></i> Buscar notas na SEFAZ</h2>
+    <div class="busca-row">
+      <button class="btn-primary" (click)="buscar()"
+              [disabled]="buscando() || !config()?.certificadoConfigurado || certificadoVencido()">
+        @if (buscando()) { <i class="pi pi-spinner pi-spin"></i> Consultando... }
+        @else { <i class="pi pi-cloud-download"></i> Buscar notas }
+      </button>
+      @if (config()?.ultimaConsulta) {
+        <span class="hint">Última consulta: {{ config()?.ultimaConsulta | date:'dd/MM/yyyy HH:mm':'UTC' }} (UTC)</span>
+      }
+    </div>
+    @if (resultadoBusca(); as r) {
+      <div class="busca-resultado"><i class="pi pi-check-circle"></i> {{ r.mensagem }}</div>
+    }
+    @if (erroBusca()) {
+      <div class="error-msg"><i class="pi pi-exclamation-circle"></i> {{ erroBusca() }}</div>
+    }
+  </div>
+
+  <!-- ===== Notas pendentes ===== -->
+  <div class="card">
+    <h2><i class="pi pi-inbox"></i> Notas baixadas</h2>
+
+    <div class="filtros">
+      <div class="field">
+        <label>Status</label>
+        <select [(ngModel)]="filtroStatus">
+          <option value="">Todos</option>
+          <option value="Completa">Completa</option>
+          <option value="Resumo">Aguardando XML</option>
+          <option value="Importada">Importada</option>
+          <option value="Ignorada">Ignorada</option>
+          <option value="Cancelada">Cancelada</option>
+          <option value="Erro">Erro</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Emissão de</label>
+        <input type="date" [(ngModel)]="filtroDataInicio" />
+      </div>
+      <div class="field">
+        <label>até</label>
+        <input type="date" [(ngModel)]="filtroDataFim" />
+      </div>
+      <button class="btn-secondary" (click)="filtrar()"><i class="pi pi-filter"></i> Filtrar</button>
+    </div>
+
+    @if (selecionados().size > 0) {
+      <div class="acoes-selecao">
+        <span>{{ selecionados().size }} selecionada(s)</span>
+        <button class="btn-primary" (click)="importarSelecionadas()" [disabled]="processando()">
+          <i class="pi pi-download"></i> Importar selecionadas
+        </button>
+        <button class="btn-secondary" (click)="ignorarSelecionadas()" [disabled]="processando()">
+          <i class="pi pi-ban"></i> Ignorar
+        </button>
+      </div>
+    }
+
+    @if (mensagemSucesso()) {
+      <div class="success-msg"><i class="pi pi-check-circle"></i> {{ mensagemSucesso() }}</div>
+    }
+    @if (erroLista()) {
+      <div class="error-msg"><i class="pi pi-exclamation-circle"></i> {{ erroLista() }}</div>
+    }
+
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>
+            <input type="checkbox" [checked]="todosSelecionados()"
+                   (change)="todosSelecionados() ? limparSelecao() : selecionarTodos()" />
+          </th>
+          <th>Emitente</th>
+          <th>CNPJ</th>
+          <th>Emissão</th>
+          <th class="text-right">Valor</th>
+          <th>Modelo</th>
+          <th>Status</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (n of notas(); track n.id) {
+          <tr [class.row-selected]="selecionados().has(n.id)">
+            <td>
+              @if (n.status === 'Completa') {
+                <input type="checkbox" [checked]="selecionados().has(n.id)"
+                       (change)="toggleSelecao(n.id)" />
+              }
+            </td>
+            <td>{{ n.nomeEmitente || '—' }}</td>
+            <td>{{ n.cnpjEmitente || '—' }}</td>
+            <td>{{ n.dataEmissao ? (n.dataEmissao | date:'dd/MM/yyyy':'UTC') : '—' }}</td>
+            <td class="text-right">{{ n.valorTotal != null ? (n.valorTotal | currency:'BRL') : '—' }}</td>
+            <td>{{ n.modelo || '—' }}</td>
+            <td>
+              <span class="badge" [class]="'badge badge-' + n.status.toLowerCase()">{{ statusLabel(n.status) }}</span>
+              @if (n.mensagemErro) {
+                <button class="btn-icon aviso-icon" (click)="toggleMensagem(n.id)"
+                        title="Ver detalhes do aviso">
+                  <i class="pi pi-exclamation-triangle"></i>
+                </button>
+              }
+            </td>
+            <td>
+              @if (n.status === 'Resumo') {
+                <button class="btn-icon" (click)="manifestar(n)" [disabled]="processando()"
+                        title="Dar ciência e liberar o XML completo">
+                  <i class="pi pi-check-square"></i>
+                </button>
+              }
+            </td>
+          </tr>
+          @if (mensagemVisivel() === n.id && n.mensagemErro) {
+            <tr class="linha-detalhe">
+              <td colspan="8">
+                <i class="pi pi-exclamation-triangle"></i> {{ n.mensagemErro }}
+              </td>
+            </tr>
+          }
+        } @empty {
+          <tr><td colspan="8" class="vazio">Nenhuma nota baixada. Use "Buscar notas" acima.</td></tr>
+        }
+      </tbody>
+    </table>
+
+    @if (totalPaginas() > 1) {
+      <div class="paginacao">
+        <button class="btn-icon" (click)="irPara(page() - 1)" [disabled]="page() === 1">
+          <i class="pi pi-chevron-left"></i>
+        </button>
+        <span>Página {{ page() }} de {{ totalPaginas() }} — {{ total() }} nota(s)</span>
+        <button class="btn-icon" (click)="irPara(page() + 1)" [disabled]="page() === totalPaginas()">
+          <i class="pi pi-chevron-right"></i>
+        </button>
+      </div>
+    }
+  </div>
+}

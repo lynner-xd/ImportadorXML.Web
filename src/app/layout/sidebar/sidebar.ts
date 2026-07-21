@@ -36,6 +36,7 @@ export class SidebarComponent {
         },
         { label: 'Contratos', icon: 'pi pi-file-edit', route: '/admin/contratos' },
         { label: 'Usuários', icon: 'pi pi-users', route: '/admin/usuarios' },
+        { label: 'Integração SEFAZ', icon: 'pi pi-cloud-download', route: '/admin/sefaz' },
         {
           label: 'Configurações', icon: 'pi pi-cog', children: [
             { label: 'Email SMTP', icon: 'pi pi-envelope', route: '/admin/email' },
@@ -57,6 +58,7 @@ export class SidebarComponent {
     return [
       { label: 'Home', icon: 'pi pi-home', route: '/home' },
       { label: 'Importar XML', icon: 'pi pi-upload', route: '/importacao' },
+      { label: 'Integração SEFAZ', icon: 'pi pi-cloud-download', route: '/sefaz' },
       { label: 'Lançamentos', icon: 'pi pi-pencil', route: '/lancamentos' },
       { label: 'Plano de Contas', icon: 'pi pi-sitemap', route: '/plano-contas' },
       {

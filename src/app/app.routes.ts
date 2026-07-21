@@ -25,6 +25,7 @@ export const routes: Routes = [
       { path: 'importacao-config', canActivate: [empresaGuard], loadComponent: () => import('./pages/importacao-config/importacao-config').then(m => m.ImportacaoConfigComponent) },
       { path: 'importacao-extrato', canActivate: [empresaGuard], loadComponent: () => import('./pages/importacao-extrato/importacao-extrato').then(m => m.ImportacaoExtratoComponent) },
       { path: 'plano-contas', canActivate: [empresaGuard], loadComponent: () => import('./pages/plano-contas/plano-contas').then(m => m.PlanoContasComponent) },
+      { path: 'sefaz', canActivate: [empresaGuard], loadComponent: () => import('./pages/sefaz/sefaz').then(m => m.SefazComponent) },
       { path: 'relatorios/balancete', canActivate: [empresaGuard], loadComponent: () => import('./pages/relatorios/balancete').then(m => m.BalanceteComponent) },
       { path: 'relatorios/analitico', canActivate: [empresaGuard], loadComponent: () => import('./pages/relatorios/analitico').then(m => m.AnaliticoComponent) },
       { path: 'relatorios/sintetico', canActivate: [empresaGuard], loadComponent: () => import('./pages/relatorios/sintetico').then(m => m.SinteticoComponent) },
@@ -41,6 +42,7 @@ export const routes: Routes = [
       { path: 'admin/usuarios', canActivate: [contadorGuard], loadComponent: () => import('./pages/admin-usuarios/admin-usuarios').then(m => m.AdminUsuariosComponent) },
       { path: 'admin/email', canActivate: [contadorGuard], loadComponent: () => import('./pages/admin-email/admin-email').then(m => m.AdminEmailComponent) },
       { path: 'admin/integracao', canActivate: [contadorGuard], loadComponent: () => import('./pages/admin-integracao/admin-integracao').then(m => m.AdminIntegracaoComponent) },
+      { path: 'admin/sefaz', canActivate: [contadorGuard], loadComponent: () => import('./pages/admin-sefaz/admin-sefaz').then(m => m.AdminSefazComponent) },
 
       // Desenvolvedor
       { path: 'dev/usuarios', canActivate: [desenvolvedorGuard], loadComponent: () => import('./pages/dev-usuarios/dev-usuarios').then(m => m.DevUsuariosComponent) },

@@ -14,6 +14,7 @@ import { DocumentoFiscal, PagedResult } from '../models/documento.models';
 import { ContratoRequest, DadosEmpresaContrato } from '../models/contrato.models';
 import { AtividadeMonitor, ErroMonitor, EmpresaMonitorOption } from '../models/monitoramento.models';
 import { IntegracaoEmpresaResponse, GerarTokenResponse } from '../models/integracao.models';
+import { ConfiguracaoSefaz, SefazBuscaResultado, NotasPendentesPaged } from '../models/sefaz.models';
 
 @Injectable({ providedIn: 'root' })
 export class ApiService {
@@ -360,5 +361,55 @@ export class ApiService {
 
   devHistoricoScripts(): Observable<ScriptHistoricoResponse[]> {
     return this.http.get<ScriptHistoricoResponse[]>(`${this.api}/dev/script/historico`);
+  }
+
+  // ===== SEFAZ (DFe) =====
+  private sefazBase(empresaId?: string): { url: string; params: HttpParams } {
+    const url = empresaId ? `${this.api}/admin/sefaz` : `${this.api}/sefaz`;
+    let params = new HttpParams();
+    if (empresaId) params = params.set('empresaId', empresaId);
+    return { url, params };
+  }
+
+  getSefazConfiguracao(empresaId?: string): Observable<ConfiguracaoSefaz> {
+    const { url, params } = this.sefazBase(empresaId);
+    return this.http.get<ConfiguracaoSefaz>(`${url}/configuracao`, { params });
+  }
+
+  salvarSefazConfiguracao(form: FormData, empresaId?: string): Observable<ConfiguracaoSefaz> {
+    const { url, params } = this.sefazBase(empresaId);
+    return this.http.put<ConfiguracaoSefaz>(`${url}/configuracao`, form, { params });
+  }
+
+  buscarNotasSefaz(empresaId?: string): Observable<SefazBuscaResultado> {
+    const { url, params } = this.sefazBase(empresaId);
+    return this.http.post<SefazBuscaResultado>(`${url}/buscar`, {}, { params });
+  }
+
+  listarNotasSefaz(
+    filtros: { status?: string; dataInicio?: string; dataFim?: string; page: number; pageSize: number },
+    empresaId?: string
+  ): Observable<NotasPendentesPaged> {
+    const { url, params } = this.sefazBase(empresaId);
+    let p = params.set('page', filtros.page.toString()).set('pageSize', filtros.pageSize.toString());
+    if (filtros.status) p = p.set('status', filtros.status);
+    if (filtros.dataInicio) p = p.set('dataInicio', filtros.dataInicio);
+    if (filtros.dataFim) p = p.set('dataFim', filtros.dataFim);
+    return this.http.get<NotasPendentesPaged>(`${url}/pendentes`, { params: p });
+  }
+
+  importarNotasSefaz(ids: string[], empresaId?: string): Observable<ImportacaoResultado> {
+    const { url, params } = this.sefazBase(empresaId);
+    return this.http.post<ImportacaoResultado>(`${url}/pendentes/importar`, { ids }, { params });
+  }
+
+  ignorarNotasSefaz(ids: string[], empresaId?: string): Observable<void> {
+    const { url, params } = this.sefazBase(empresaId);
+    return this.http.post<void>(`${url}/pendentes/ignorar`, { ids }, { params });
+  }
+
+  manifestarNotaSefaz(id: string, empresaId?: string): Observable<void> {
+    const { url, params } = this.sefazBase(empresaId);
+    return this.http.post<void>(`${url}/pendentes/${id}/manifestar`, {}, { params });
   }
 }
