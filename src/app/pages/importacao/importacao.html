@@ -24,6 +24,14 @@
       </select>
     </div>
     <div class="field">
+      <label>Origem</label>
+      <select class="input-select" [(ngModel)]="filtroOrigem" (ngModelChange)="onFiltroChange()">
+        <option value="">Todas</option>
+        <option value="Manual">Manual</option>
+        <option value="Sefaz">SEFAZ</option>
+      </select>
+    </div>
+    <div class="field">
       <label>Nº NF</label>
       <input type="text" placeholder="Número da nota" [(ngModel)]="filtroNumero" (ngModelChange)="onFiltroNumeroChange()" />
     </div>
@@ -91,6 +99,7 @@
                    (change)="todosSelecionados() ? limparSelecao() : selecionarTodos()" />
           </th>
           <th>Tipo</th>
+          <th>Origem</th>
           <th>Nº NF</th>
           <th>Emitente / Destinatário</th>
           <th class="text-right">Valor</th>
@@ -112,6 +121,11 @@
                 {{ doc.tipo === 'Entrada' ? 'Entrada' : 'Saída' }}
               </span>
             </td>
+            <td>
+              <span class="badge" [class.badge-sefaz]="doc.origem === 'Sefaz'" [class.badge-manual]="doc.origem !== 'Sefaz'">
+                {{ doc.origem === 'Sefaz' ? 'SEFAZ' : 'Manual' }}
+              </span>
+            </td>
             <td>{{ doc.numero ?? '-' }}</td>
             <td>{{ nomeParticipante(doc) }}</td>
             <td class="text-right">{{ doc.valorTotal | number:'1.2-2' }}</td>
@@ -120,7 +134,7 @@
             <td class="text-center">
               @if (confirmandoExclusao() === doc.id) {
                 <span class="confirm-row">
-                  <span class="confirm-label">Confirmar?</span>
+                  <span class="confirm-label">{{ docSefaz(doc.id) ? 'Nota da SEFAZ — confirmar?' : 'Confirmar?' }}</span>
                   <button class="btn-icon danger" (click)="confirmarExclusao(doc.id)" title="Confirmar exclusão">
                     <i class="pi pi-check"></i>
                   </button>
@@ -167,6 +181,11 @@
       </div>
       <div class="dialog-content">
         <p>Você está prestes a excluir <strong>{{ selecionados().size }} documento(s) selecionado(s)</strong>.</p>
+        @if (selecionadosSefaz() > 0) {
+          <p class="dialog-warn-text">
+            Atenção: {{ selecionadosSefaz() }} documento(s) vieram da SEFAZ e não poderão ser reimportados por lá.
+          </p>
+        }
         <p class="dialog-warn-text">Esta ação não pode ser desfeita.</p>
       </div>
       <div class="dialog-footer">

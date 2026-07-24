@@ -1,6 +1,8 @@
 import { CommonModule } from '@angular/common';
-import { Component, Input, OnInit, computed, inject, signal } from '@angular/core';
+import { Component, Input, OnDestroy, OnInit, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { Subject } from 'rxjs';
+import { debounceTime, takeUntil } from 'rxjs/operators';
 import { ApiService } from '../../core/services/api.service';
 import { ConfirmService } from '../../core/services/confirm.service';
 import { ConfiguracaoSefaz, NotaSefazPendente, SefazBuscaResultado } from '../../core/models/sefaz.models';
@@ -16,7 +18,7 @@ const UFS = ['AC','AL','AP','AM','BA','CE','DF','ES','GO','MA','MT','MS','MG','P
   templateUrl: './sefaz.html',
   styleUrl: './sefaz.scss'
 })
-export class SefazComponent implements OnInit {
+export class SefazComponent implements OnInit, OnDestroy {
   @Input() isAdmin = false;
 
   private api = inject(ApiService);
@@ -48,6 +50,11 @@ export class SefazComponent implements OnInit {
   page = signal(1);
   readonly pageSize = 50;
   filtroStatus = '';
+  filtroModelo = '';
+  filtroTipo = '';
+  filtroCnpj = '';
+  private filtroCnpj$ = new Subject<void>();
+  private destroy$ = new Subject<void>();
   filtroDataInicio = '';
   filtroDataFim = '';
   carregando = signal(false);
@@ -77,11 +84,24 @@ export class SefazComponent implements OnInit {
   });
 
   ngOnInit(): void {
+    this.filtroCnpj$
+      .pipe(debounceTime(400), takeUntil(this.destroy$))
+      .subscribe(() => this.filtrar());
+
     if (this.isAdmin) {
       this.api.listarEmpresas().subscribe({ next: e => this.empresas.set(e) });
     } else {
       this.carregarTudo();
     }
+  }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
+
+  onFiltroCnpjChange(): void {
+    this.filtroCnpj$.next();
   }
 
   onEmpresaChange(): void {
@@ -170,6 +190,9 @@ export class SefazComponent implements OnInit {
     this.erroLista.set(null);
     this.api.listarNotasSefaz({
       status: this.filtroStatus || undefined,
+      modelo: this.filtroModelo || undefined,
+      tipo: this.filtroTipo || undefined,
+      cnpj: this.filtroCnpj.trim() || undefined,
       dataInicio: this.filtroDataInicio || undefined,
       dataFim: this.filtroDataFim || undefined,
       page: this.page(),
@@ -293,7 +316,26 @@ export class SefazComponent implements OnInit {
       case 'Ignorada': return 'Ignorada';
       case 'Cancelada': return 'Cancelada';
       case 'Erro': return 'Erro';
+      case 'Excluida': return 'Excluída';
       default: return status;
     }
+  }
+
+  tipoLabel(tipo: string): string {
+    return tipo === 'Saida' ? 'Saída' : 'Entrada';
+  }
+
+  baixarXml(nota: NotaSefazPendente): void {
+    this.api.downloadXmlNotaSefaz(nota.id, this.empresaParam).subscribe({
+      next: blob => {
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `${nota.chaveAcesso}.xml`;
+        a.click();
+        URL.revokeObjectURL(url);
+      },
+      error: () => this.erroLista.set('Falha ao baixar o XML da nota.')
+    });
   }
 }

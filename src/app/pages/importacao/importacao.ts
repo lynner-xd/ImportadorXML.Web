@@ -27,6 +27,7 @@ export class ImportacaoComponent implements OnInit, OnDestroy {
   filtroDataInicio = '';
   filtroDataFim = '';
   filtroNumero = '';
+  filtroOrigem = '';
 
   private filtroNumero$ = new Subject<void>();
   private destroy$ = new Subject<void>();
@@ -39,7 +40,7 @@ export class ImportacaoComponent implements OnInit, OnDestroy {
   totalPaginas = computed(() => Math.ceil(this.totalDocumentos() / this.PAGE_SIZE));
 
   get temFiltroAtivo(): boolean {
-    return !!(this.filtroTipo || this.filtroDataInicio || this.filtroDataFim || this.filtroNumero);
+    return !!(this.filtroTipo || this.filtroDataInicio || this.filtroDataFim || this.filtroNumero || this.filtroOrigem);
   }
 
   todosSelecionados = computed(() => {
@@ -47,6 +48,11 @@ export class ImportacaoComponent implements OnInit, OnDestroy {
     if (docs.length === 0) return false;
     const sel = this.selecionados();
     return docs.every(d => sel.has(d.id));
+  });
+
+  selecionadosSefaz = computed(() => {
+    const sel = this.selecionados();
+    return this.documentos().filter(d => sel.has(d.id) && d.origem === 'Sefaz').length;
   });
 
   constructor(private api: ApiService, private router: Router) {}
@@ -73,7 +79,8 @@ export class ImportacaoComponent implements OnInit, OnDestroy {
       this.filtroDataFim || undefined,
       this.paginaAtual(),
       this.PAGE_SIZE,
-      this.filtroNumero.trim() || undefined
+      this.filtroNumero.trim() || undefined,
+      this.filtroOrigem || undefined
     ).subscribe({
       next: (result) => {
         this.documentos.set(result.items);
@@ -106,6 +113,7 @@ export class ImportacaoComponent implements OnInit, OnDestroy {
     this.filtroDataInicio = '';
     this.filtroDataFim = '';
     this.filtroNumero = '';
+    this.filtroOrigem = '';
     this.paginaAtual.set(1);
     this.selecionados.set(new Set());
     this.carregar();
@@ -185,5 +193,9 @@ export class ImportacaoComponent implements OnInit, OnDestroy {
 
   nomeParticipante(doc: DocumentoFiscal): string {
     return (doc.tipo === 'Entrada' ? doc.nomeEmitente : doc.nomeDestinatario) ?? '-';
+  }
+
+  docSefaz(id: string): boolean {
+    return this.documentos().find(d => d.id === id)?.origem === 'Sefaz';
   }
 }

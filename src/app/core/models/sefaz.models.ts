@@ -17,13 +17,14 @@ export interface SefazBuscaResultado {
   mensagem: string;
 }
 
-export type StatusNotaSefaz = 'Resumo' | 'Completa' | 'Importada' | 'Ignorada' | 'Cancelada' | 'Erro';
+export type StatusNotaSefaz = 'Resumo' | 'Completa' | 'Importada' | 'Ignorada' | 'Cancelada' | 'Erro' | 'Excluida';
 
 export interface NotaSefazPendente {
   id: string;
   chaveAcesso: string;
   nsu: number;
   modelo?: string;
+  tipoOperacao: 'Entrada' | 'Saida';
   status: StatusNotaSefaz;
   cnpjEmitente?: string;
   nomeEmitente?: string;

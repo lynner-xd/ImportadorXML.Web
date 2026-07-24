@@ -1,6 +1,6 @@
 <div class="page-header">
   <h1>Integração SEFAZ</h1>
-  <p>Busque as notas fiscais recebidas (NF-e) direto da SEFAZ com o certificado digital A1.</p>
+  <p>Busque as notas fiscais (NF-e/NFC-e) emitidas e recebidas direto da SEFAZ com o certificado digital A1.</p>
 </div>
 
 @if (isAdmin) {
@@ -109,7 +109,29 @@
           <option value="Ignorada">Ignorada</option>
           <option value="Cancelada">Cancelada</option>
           <option value="Erro">Erro</option>
+          <option value="Excluida">Excluída</option>
         </select>
+      </div>
+      <div class="field">
+        <label>Modelo</label>
+        <select [(ngModel)]="filtroModelo">
+          <option value="">Todos</option>
+          <option value="55">NF-e (55)</option>
+          <option value="65">NFC-e (65)</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Tipo</label>
+        <select [(ngModel)]="filtroTipo">
+          <option value="">Todos</option>
+          <option value="Entrada">Entrada</option>
+          <option value="Saida">Saída</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>CNPJ</label>
+        <input type="text" placeholder="CNPJ do emitente" [(ngModel)]="filtroCnpj"
+               (ngModelChange)="onFiltroCnpjChange()" />
       </div>
       <div class="field">
         <label>Emissão de</label>
@@ -153,6 +175,7 @@
           <th>Emissão</th>
           <th class="text-right">Valor</th>
           <th>Modelo</th>
+          <th>Tipo</th>
           <th>Status</th>
           <th></th>
         </tr>
@@ -172,6 +195,9 @@
             <td class="text-right">{{ n.valorTotal != null ? (n.valorTotal | currency:'BRL') : '—' }}</td>
             <td>{{ n.modelo || '—' }}</td>
             <td>
+              <span class="badge" [class]="'badge badge-' + n.tipoOperacao.toLowerCase()">{{ tipoLabel(n.tipoOperacao) }}</span>
+            </td>
+            <td>
               <span class="badge" [class]="'badge badge-' + n.status.toLowerCase()">{{ statusLabel(n.status) }}</span>
               @if (n.mensagemErro) {
                 <button class="btn-icon aviso-icon" (click)="toggleMensagem(n.id)"
@@ -181,6 +207,12 @@
               }
             </td>
             <td>
+              @if (n.status === 'Completa') {
+                <button class="btn-icon" (click)="baixarXml(n)" [disabled]="processando()"
+                        title="Baixar o XML da nota">
+                  <i class="pi pi-download"></i>
+                </button>
+              }
               @if (n.status === 'Resumo') {
                 <button class="btn-icon" (click)="manifestar(n)" [disabled]="processando()"
                         title="Dar ciência e liberar o XML completo">
@@ -191,13 +223,13 @@
           </tr>
           @if (mensagemVisivel() === n.id && n.mensagemErro) {
             <tr class="linha-detalhe">
-              <td colspan="8">
+              <td colspan="9">
                 <i class="pi pi-exclamation-triangle"></i> {{ n.mensagemErro }}
               </td>
             </tr>
           }
         } @empty {
-          <tr><td colspan="8" class="vazio">Nenhuma nota baixada. Use "Buscar notas" acima.</td></tr>
+          <tr><td colspan="9" class="vazio">Nenhuma nota baixada. Use "Buscar notas" acima.</td></tr>
         }
       </tbody>
     </table>

@@ -177,6 +177,9 @@
     background: rgba(var(--accent-primary-rgb), 0.15);
     color: #2563eb;
   }
+
+  &.badge-sefaz  { background: rgba(var(--accent-primary-rgb), 0.18); color: var(--accent-primary); }
+  &.badge-manual { background: var(--bg-hover); color: var(--text-muted); }
 }
 
 .confirm-row {

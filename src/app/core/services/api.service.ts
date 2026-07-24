@@ -75,7 +75,7 @@ export class ApiService {
   }
 
   // ===== Documentos =====
-  listarDocumentos(tipo?: string, dataInicio?: string, dataFim?: string, page = 1, pageSize = 50, numero?: string): Observable<PagedResult<DocumentoFiscal>> {
+  listarDocumentos(tipo?: string, dataInicio?: string, dataFim?: string, page = 1, pageSize = 50, numero?: string, origem?: string): Observable<PagedResult<DocumentoFiscal>> {
     let params = new HttpParams()
       .set('page', page.toString())
       .set('pageSize', pageSize.toString());
@@ -83,6 +83,7 @@ export class ApiService {
     if (dataInicio) params = params.set('dataInicio', dataInicio);
     if (dataFim) params = params.set('dataFim', dataFim);
     if (numero) params = params.set('numero', numero);
+    if (origem) params = params.set('origem', origem);
     return this.http.get<PagedResult<DocumentoFiscal>>(`${this.api}/documentos`, { params });
   }
 
@@ -387,15 +388,23 @@ export class ApiService {
   }
 
   listarNotasSefaz(
-    filtros: { status?: string; dataInicio?: string; dataFim?: string; page: number; pageSize: number },
+    filtros: { status?: string; modelo?: string; tipo?: string; cnpj?: string; dataInicio?: string; dataFim?: string; page: number; pageSize: number },
     empresaId?: string
   ): Observable<NotasPendentesPaged> {
     const { url, params } = this.sefazBase(empresaId);
     let p = params.set('page', filtros.page.toString()).set('pageSize', filtros.pageSize.toString());
     if (filtros.status) p = p.set('status', filtros.status);
+    if (filtros.modelo) p = p.set('modelo', filtros.modelo);
+    if (filtros.tipo) p = p.set('tipo', filtros.tipo);
+    if (filtros.cnpj) p = p.set('cnpj', filtros.cnpj);
     if (filtros.dataInicio) p = p.set('dataInicio', filtros.dataInicio);
     if (filtros.dataFim) p = p.set('dataFim', filtros.dataFim);
     return this.http.get<NotasPendentesPaged>(`${url}/pendentes`, { params: p });
+  }
+
+  downloadXmlNotaSefaz(id: string, empresaId?: string): Observable<Blob> {
+    const { url, params } = this.sefazBase(empresaId);
+    return this.http.get(`${url}/pendentes/${id}/xml`, { params, responseType: 'blob' });
   }
 
   importarNotasSefaz(ids: string[], empresaId?: string): Observable<ImportacaoResultado> {

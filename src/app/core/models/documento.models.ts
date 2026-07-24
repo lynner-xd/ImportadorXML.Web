@@ -4,6 +4,7 @@ export interface DocumentoFiscal {
   serie: string | null;
   modelo: string | null;
   tipo: string;
+  origem: 'Manual' | 'Sefaz';
   dataEmissao: string;
   cnpjEmitente: string | null;
   nomeEmitente: string | null;
