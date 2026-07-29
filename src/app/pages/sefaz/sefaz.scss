@@ -139,3 +139,12 @@
   display: flex; align-items: center; justify-content: center; gap: 1rem; margin-top: 1rem;
   span { font-size: 0.875rem; color: var(--text-secondary); }
 }
+
+.sync-info {
+  display: flex; align-items: center; gap: 0.75rem; padding: 1rem;
+  background: rgba(var(--accent-primary-rgb), 0.06); border: 1px solid rgba(var(--accent-primary-rgb), 0.2);
+  border-radius: var(--radius-xs); font-size: 0.875rem; color: var(--text-secondary);
+  flex-wrap: wrap;
+  i { color: var(--accent-primary); font-size: 1rem; }
+  .hint { margin-left: auto; }
+}

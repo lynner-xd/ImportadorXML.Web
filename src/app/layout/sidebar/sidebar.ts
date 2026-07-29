@@ -37,6 +37,7 @@ export class SidebarComponent {
         { label: 'Contratos', icon: 'pi pi-file-edit', route: '/admin/contratos' },
         { label: 'Usuários', icon: 'pi pi-users', route: '/admin/usuarios' },
         { label: 'Integração SEFAZ', icon: 'pi pi-cloud-download', route: '/admin/sefaz' },
+        { label: 'SEFAZ Automático', icon: 'pi pi-clock', route: '/admin/sefaz-automatico' },
         {
           label: 'Configurações', icon: 'pi pi-cog', children: [
             { label: 'Email SMTP', icon: 'pi pi-envelope', route: '/admin/email' },

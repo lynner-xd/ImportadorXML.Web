@@ -1,0 +1,177 @@
+<div class="page-header">
+  <h1>SEFAZ Automático</h1>
+  <p>Configure a busca automática de notas na SEFAZ e acompanhe a fila e o histórico das rodadas.</p>
+</div>
+
+<!-- ===== Configuração ===== -->
+<div class="card">
+  <h2><i class="pi pi-cog"></i> Configuração</h2>
+
+  <div class="config-form">
+    <div class="field field-toggle">
+      <label>
+        <input type="checkbox" [(ngModel)]="ativa" />
+        Busca automática ativa
+      </label>
+    </div>
+    <div class="field">
+      <label>Início (h, Brasília)</label>
+      <select [(ngModel)]="horaInicio">
+        @for (h of horas; track h) { <option [ngValue]="h">{{ h }}h</option> }
+      </select>
+    </div>
+    <div class="field">
+      <label>Fim (h, Brasília)</label>
+      <select [(ngModel)]="horaFim">
+        @for (h of horas; track h) { <option [ngValue]="h">{{ h }}h</option> }
+      </select>
+    </div>
+  </div>
+
+  <div class="actions">
+    <button class="btn-primary" (click)="salvarConfig()" [disabled]="salvandoConfig()">
+      @if (salvandoConfig()) { <i class="pi pi-spinner pi-spin"></i> } @else { <i class="pi pi-save"></i> }
+      Salvar configuração
+    </button>
+  </div>
+  @if (mensagemConfig()) {
+    <div class="success-msg"><i class="pi pi-check-circle"></i> {{ mensagemConfig() }}</div>
+  }
+  @if (erroConfig()) {
+    <div class="error-msg"><i class="pi pi-exclamation-circle"></i> {{ erroConfig() }}</div>
+  }
+</div>
+
+<!-- ===== Fila ===== -->
+<div class="card">
+  <h2><i class="pi pi-list"></i> Fila de empresas</h2>
+
+  @if (carregandoFila()) {
+    <div class="loading"><i class="pi pi-spinner pi-spin"></i> Carregando...</div>
+  } @else {
+    @if (erroFila()) {
+      <div class="error-msg"><i class="pi pi-exclamation-circle"></i> {{ erroFila() }}</div>
+    }
+
+    <table class="data-table">
+    <thead>
+      <tr>
+        <th>Empresa</th>
+        <th class="text-center">Na fila</th>
+        <th class="text-center">Posição</th>
+        <th>Última busca automática</th>
+        <th>Certificado</th>
+      </tr>
+    </thead>
+    <tbody>
+      @for (item of fila(); track item.empresaId) {
+        <tr>
+          <td>{{ item.razaoSocial }}</td>
+          <td class="text-center">
+            <input type="checkbox" [checked]="item.naFila"
+                   [disabled]="processandoFila() === item.empresaId"
+                   (change)="toggleFila(item)" />
+          </td>
+          <td class="text-center">{{ item.posicao ?? '—' }}</td>
+          <td>{{ item.ultimaBuscaAutomatica ? (item.ultimaBuscaAutomatica | date:'dd/MM/yyyy HH:mm':'UTC') : '—' }}</td>
+          <td>
+            @if (certificadoVencido(item)) { <span class="badge badge-erro">Vencido</span> }
+            @else if (certificadoVencendo(item)) { <span class="badge badge-aviso">Vence em breve</span> }
+            @else { <span class="hint">—</span> }
+          </td>
+        </tr>
+      } @empty {
+        <tr><td colspan="5" class="vazio">Nenhuma empresa cadastrada.</td></tr>
+      }
+    </tbody>
+  </table>
+  }
+</div>
+
+<!-- ===== Histórico ===== -->
+<div class="card">
+  <h2><i class="pi pi-history"></i> Histórico de rodadas</h2>
+
+  @if (carregandoHistorico()) {
+    <div class="loading"><i class="pi pi-spinner pi-spin"></i> Carregando...</div>
+  } @else {
+    @if (erroHistorico()) {
+      <div class="error-msg"><i class="pi pi-exclamation-circle"></i> {{ erroHistorico() }}</div>
+    }
+
+    <table class="data-table">
+    <thead>
+      <tr>
+        <th>Data</th>
+        <th>Status</th>
+        <th>Duração</th>
+        <th>Resumo</th>
+      </tr>
+    </thead>
+    <tbody>
+      @for (execucao of execucoes(); track execucao.id) {
+        <tr class="linha-clicavel" (click)="toggleLinha(execucao)">
+          <td>{{ execucao.data | date:'dd/MM/yyyy':'UTC' }}</td>
+          <td><span class="badge" [class]="'badge badge-' + execucao.status.toLowerCase()">{{ statusLabel(execucao.status) }}</span></td>
+          <td>{{ duracaoMinutos(execucao) }}</td>
+          <td>{{ resumoExecucao(execucao) }}</td>
+        </tr>
+        @if (expandidoId() === execucao.id) {
+          <tr class="linha-detalhe">
+            <td colspan="4">
+              @if (carregandoDetalhe() === execucao.id) {
+                <span><i class="pi pi-spinner pi-spin"></i> Carregando detalhes...</span>
+              } @else if (erroDetalhe()) {
+                <span><i class="pi pi-exclamation-triangle"></i> {{ erroDetalhe() }}</span>
+              } @else if (detalhes()[execucao.id]; as detalhe) {
+                <table class="data-table detalhe-table">
+                  <thead>
+                    <tr>
+                      <th>Empresa</th>
+                      <th>Status</th>
+                      <th class="text-right">Novas</th>
+                      <th class="text-right">Completas</th>
+                      <th class="text-right">Aguard. XML</th>
+                      <th class="text-right">Canceladas</th>
+                      <th>Mensagem</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    @for (item of detalhe.itens; track item.empresaId) {
+                      <tr>
+                        <td>{{ item.razaoSocial }}</td>
+                        <td><span class="badge" [class]="'badge badge-' + item.status.toLowerCase()">{{ statusLabel(item.status) }}</span></td>
+                        <td class="text-right">{{ item.notasNovas }}</td>
+                        <td class="text-right">{{ item.completas }}</td>
+                        <td class="text-right">{{ item.aguardandoXml }}</td>
+                        <td class="text-right">{{ item.canceladas }}</td>
+                        <td>{{ item.mensagem || '—' }}</td>
+                      </tr>
+                    } @empty {
+                      <tr><td colspan="7" class="vazio">Nenhuma empresa nesta rodada.</td></tr>
+                    }
+                  </tbody>
+                </table>
+              }
+            </td>
+          </tr>
+        }
+      } @empty {
+        <tr><td colspan="4" class="vazio">Nenhuma rodada executada ainda.</td></tr>
+      }
+    </tbody>
+  </table>
+
+    @if (totalPaginas() > 1) {
+      <div class="paginacao">
+        <button class="btn-icon" (click)="irPara(page() - 1)" [disabled]="page() === 1">
+          <i class="pi pi-chevron-left"></i>
+        </button>
+        <span>Página {{ page() }} de {{ totalPaginas() }} — {{ totalExecucoes() }} rodada(s)</span>
+        <button class="btn-icon" (click)="irPara(page() + 1)" [disabled]="page() === totalPaginas()">
+          <i class="pi pi-chevron-right"></i>
+        </button>
+      </div>
+    }
+  }
+</div>

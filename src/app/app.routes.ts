@@ -43,6 +43,7 @@ export const routes: Routes = [
       { path: 'admin/email', canActivate: [contadorGuard], loadComponent: () => import('./pages/admin-email/admin-email').then(m => m.AdminEmailComponent) },
       { path: 'admin/integracao', canActivate: [contadorGuard], loadComponent: () => import('./pages/admin-integracao/admin-integracao').then(m => m.AdminIntegracaoComponent) },
       { path: 'admin/sefaz', canActivate: [contadorGuard], loadComponent: () => import('./pages/admin-sefaz/admin-sefaz').then(m => m.AdminSefazComponent) },
+      { path: 'admin/sefaz-automatico', canActivate: [contadorGuard], loadComponent: () => import('./pages/admin-sefaz-automatico/admin-sefaz-automatico').then(m => m.AdminSefazAutomaticoComponent) },
 
       // Desenvolvedor
       { path: 'dev/usuarios', canActivate: [desenvolvedorGuard], loadComponent: () => import('./pages/dev-usuarios/dev-usuarios').then(m => m.DevUsuariosComponent) },

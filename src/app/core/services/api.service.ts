@@ -15,6 +15,7 @@ import { ContratoRequest, DadosEmpresaContrato } from '../models/contrato.models
 import { AtividadeMonitor, ErroMonitor, EmpresaMonitorOption } from '../models/monitoramento.models';
 import { IntegracaoEmpresaResponse, GerarTokenResponse } from '../models/integracao.models';
 import { ConfiguracaoSefaz, SefazBuscaResultado, NotasPendentesPaged } from '../models/sefaz.models';
+import { ConfiguracaoBuscaAutomatica, FilaBuscaAutomaticaItem, ExecucaoResumo, ExecucaoDetalhe } from '../models/sefaz-automatico.models';
 
 @Injectable({ providedIn: 'root' })
 export class ApiService {
@@ -420,5 +421,31 @@ export class ApiService {
   manifestarNotaSefaz(id: string, empresaId?: string): Observable<void> {
     const { url, params } = this.sefazBase(empresaId);
     return this.http.post<void>(`${url}/pendentes/${id}/manifestar`, {}, { params });
+  }
+
+  // ===== SEFAZ Automático =====
+  getSefazAutomaticoConfig(): Observable<ConfiguracaoBuscaAutomatica> {
+    return this.http.get<ConfiguracaoBuscaAutomatica>(`${this.api}/admin/sefaz-automatico/configuracao`);
+  }
+
+  salvarSefazAutomaticoConfig(c: ConfiguracaoBuscaAutomatica): Observable<ConfiguracaoBuscaAutomatica> {
+    return this.http.put<ConfiguracaoBuscaAutomatica>(`${this.api}/admin/sefaz-automatico/configuracao`, c);
+  }
+
+  getSefazAutomaticoFila(): Observable<FilaBuscaAutomaticaItem[]> {
+    return this.http.get<FilaBuscaAutomaticaItem[]>(`${this.api}/admin/sefaz-automatico/fila`);
+  }
+
+  toggleSefazAutomaticoFila(empresaId: string): Observable<FilaBuscaAutomaticaItem> {
+    return this.http.post<FilaBuscaAutomaticaItem>(`${this.api}/admin/sefaz-automatico/fila/${empresaId}/toggle`, {});
+  }
+
+  listarSefazAutomaticoExecucoes(page: number, pageSize = 20): Observable<PagedResult<ExecucaoResumo>> {
+    const params = new HttpParams().set('page', page.toString()).set('pageSize', pageSize.toString());
+    return this.http.get<PagedResult<ExecucaoResumo>>(`${this.api}/admin/sefaz-automatico/execucoes`, { params });
+  }
+
+  getSefazAutomaticoExecucao(id: string): Observable<ExecucaoDetalhe> {
+    return this.http.get<ExecucaoDetalhe>(`${this.api}/admin/sefaz-automatico/execucoes/${id}`);
   }
 }

@@ -1,6 +1,6 @@
 <div class="page-header">
   <h1>Integração SEFAZ</h1>
-  <p>Busque as notas fiscais (NF-e/NFC-e) emitidas e recebidas direto da SEFAZ com o certificado digital A1.</p>
+  <p>Notas fiscais recebidas e emitidas, sincronizadas direto da SEFAZ com o certificado digital A1.</p>
 </div>
 
 @if (isAdmin) {
@@ -18,8 +18,9 @@
 }
 
 @if (!isAdmin || empresaId) {
-  <!-- ===== Certificado Digital ===== -->
-  <div class="card">
+  @if (isAdmin) {
+    <!-- ===== Certificado Digital ===== -->
+    <div class="card">
     <h2><i class="pi pi-shield"></i> Certificado Digital</h2>
 
     @if (config()?.certificadoConfigurado) {
@@ -71,10 +72,10 @@
     @if (erroConfig()) {
       <div class="error-msg"><i class="pi pi-exclamation-circle"></i> {{ erroConfig() }}</div>
     }
-  </div>
+    </div>
 
-  <!-- ===== Busca ===== -->
-  <div class="card">
+    <!-- ===== Busca ===== -->
+    <div class="card">
     <h2><i class="pi pi-cloud-download"></i> Buscar notas na SEFAZ</h2>
     <div class="busca-row">
       <button class="btn-primary" (click)="buscar()"
@@ -92,7 +93,18 @@
     @if (erroBusca()) {
       <div class="error-msg"><i class="pi pi-exclamation-circle"></i> {{ erroBusca() }}</div>
     }
-  </div>
+    </div>
+  }
+
+  @if (!isAdmin) {
+    <div class="card sync-info">
+      <i class="pi pi-clock"></i>
+      Notas sincronizadas automaticamente pela contabilidade.
+      @if (config()?.ultimaConsulta) {
+        <span class="hint">Última consulta: {{ config()?.ultimaConsulta | date:'dd/MM/yyyy HH:mm':'UTC' }} (UTC)</span>
+      }
+    </div>
+  }
 
   <!-- ===== Notas pendentes ===== -->
   <div class="card">
@@ -229,7 +241,7 @@
             </tr>
           }
         } @empty {
-          <tr><td colspan="9" class="vazio">Nenhuma nota baixada. Use "Buscar notas" acima.</td></tr>
+          <tr><td colspan="9" class="vazio">{{ isAdmin ? 'Nenhuma nota baixada. Use "Buscar notas" acima.' : 'Nenhuma nota sincronizada ainda.' }}</td></tr>
         }
       </tbody>
     </table>
