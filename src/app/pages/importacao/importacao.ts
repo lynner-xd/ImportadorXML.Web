@@ -5,7 +5,8 @@ import { Router } from '@angular/router';
 import { Subject } from 'rxjs';
 import { debounceTime, takeUntil } from 'rxjs/operators';
 import { ApiService } from '../../core/services/api.service';
-import { DocumentoFiscal } from '../../core/models/documento.models';
+import { DocumentoFiscal, DocumentoDetalhe } from '../../core/models/documento.models';
+import { PlanoContaResponse } from '../../core/models/plano-conta.models';
 
 @Component({
   selector: 'app-importacao',
@@ -34,6 +35,16 @@ export class ImportacaoComponent implements OnInit, OnDestroy {
 
   confirmandoExclusao = signal<string | null>(null);
   confirmandoExclusaoEmMassa = signal(false);
+
+  // Modal de edição das contas do lançamento (somente entradas)
+  editandoDoc = signal<DocumentoDetalhe | null>(null);
+  salvandoContas = signal(false);
+  erroModal = signal('');
+  contas = signal<PlanoContaResponse[]>([]);
+  editContaDebitoId = '';
+  editContaCreditoId = '';
+
+  analiticas = computed(() => this.contas().filter(c => c.codigo.split('.').length === 5));
 
   selecionados = signal<Set<string>>(new Set());
 
@@ -189,6 +200,48 @@ export class ImportacaoComponent implements OnInit, OnDestroy {
 
   cancelarExclusaoEmMassa(): void {
     this.confirmandoExclusaoEmMassa.set(false);
+  }
+
+  abrirEdicao(doc: DocumentoFiscal): void {
+    if (this.contas().length === 0) {
+      this.api.listarPlanoContas().subscribe({
+        next: cs => this.contas.set(cs),
+        error: () => this.error.set('Erro ao carregar plano de contas.')
+      });
+    }
+    this.erroModal.set('');
+    this.api.obterDocumento(doc.id).subscribe({
+      next: det => {
+        this.editandoDoc.set(det);
+        this.editContaDebitoId = det.lancamentos[0]?.contaDebitoId ?? '';
+        this.editContaCreditoId = det.lancamentos[0]?.contaCreditoId ?? '';
+      },
+      error: () => this.error.set('Erro ao carregar documento.')
+    });
+  }
+
+  fecharEdicao(): void {
+    this.editandoDoc.set(null);
+  }
+
+  salvarContas(): void {
+    const det = this.editandoDoc();
+    if (!det || !this.editContaDebitoId || !this.editContaCreditoId) return;
+    this.salvandoContas.set(true);
+    this.erroModal.set('');
+    this.api.atualizarContasDocumento(det.documento.id, {
+      contaDebitoId: this.editContaDebitoId,
+      contaCreditoId: this.editContaCreditoId
+    }).subscribe({
+      next: () => {
+        this.salvandoContas.set(false);
+        this.editandoDoc.set(null);
+      },
+      error: e => {
+        this.erroModal.set(e?.error?.message ?? 'Erro ao salvar as contas.');
+        this.salvandoContas.set(false);
+      }
+    });
   }
 
   nomeParticipante(doc: DocumentoFiscal): string {

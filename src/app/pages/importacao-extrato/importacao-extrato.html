@@ -58,6 +58,11 @@
       <button class="btn-secondary" (click)="limpar()" [disabled]="carregando()">
         <i class="pi pi-undo"></i> Limpar
       </button>
+      <button class="btn-secondary" (click)="excluirPendentes()"
+              [disabled]="carregando() || pendentes() === 0"
+              title="Remover todos os itens pendentes da lista">
+        <i class="pi pi-trash"></i> Excluir pendentes
+      </button>
     </div>
 
     @if (erro()) {

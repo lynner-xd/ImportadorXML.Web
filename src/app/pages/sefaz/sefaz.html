@@ -162,6 +162,10 @@
         <button class="btn-primary" (click)="importarSelecionadas()" [disabled]="processando()">
           <i class="pi pi-download"></i> Importar selecionadas
         </button>
+        <button class="btn-secondary" (click)="baixarSelecionadas()" [disabled]="processando()"
+                title="Baixar os XMLs selecionados em um arquivo .zip">
+          <i class="pi pi-file-export"></i> Baixar XMLs (.zip)
+        </button>
         <button class="btn-secondary" (click)="ignorarSelecionadas()" [disabled]="processando()">
           <i class="pi pi-ban"></i> Ignorar
         </button>
@@ -248,12 +252,18 @@
 
     @if (totalPaginas() > 1) {
       <div class="paginacao">
+        <button class="btn-icon" (click)="irPara(1)" [disabled]="page() === 1" title="Primeira página">
+          <i class="pi pi-angle-double-left"></i>
+        </button>
         <button class="btn-icon" (click)="irPara(page() - 1)" [disabled]="page() === 1">
           <i class="pi pi-chevron-left"></i>
         </button>
         <span>Página {{ page() }} de {{ totalPaginas() }} — {{ total() }} nota(s)</span>
         <button class="btn-icon" (click)="irPara(page() + 1)" [disabled]="page() === totalPaginas()">
           <i class="pi pi-chevron-right"></i>
+        </button>
+        <button class="btn-icon" (click)="irPara(totalPaginas())" [disabled]="page() === totalPaginas()" title="Última página">
+          <i class="pi pi-angle-double-right"></i>
         </button>
       </div>
     }

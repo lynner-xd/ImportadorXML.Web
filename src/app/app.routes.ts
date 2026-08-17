@@ -22,6 +22,7 @@ export const routes: Routes = [
       { path: 'importacao/entrada', canActivate: [empresaGuard], canDeactivate: [CanDeactivateGuard], data: { tipo: 'Entrada' }, loadComponent: () => import('./pages/importacao/importacao-form/importacao-form').then(m => m.ImportacaoFormComponent) },
       { path: 'importacao/saida', canActivate: [empresaGuard], canDeactivate: [CanDeactivateGuard], data: { tipo: 'Saida' }, loadComponent: () => import('./pages/importacao/importacao-form/importacao-form').then(m => m.ImportacaoFormComponent) },
       { path: 'lancamentos', canActivate: [empresaGuard], loadComponent: () => import('./pages/lancamentos/lancamentos').then(m => m.LancamentosComponent) },
+      { path: 'contas-pagar', canActivate: [empresaGuard], loadComponent: () => import('./pages/contas-pagar/contas-pagar').then(m => m.ContasPagarComponent) },
       { path: 'importacao-config', canActivate: [empresaGuard], loadComponent: () => import('./pages/importacao-config/importacao-config').then(m => m.ImportacaoConfigComponent) },
       { path: 'importacao-extrato', canActivate: [empresaGuard], loadComponent: () => import('./pages/importacao-extrato/importacao-extrato').then(m => m.ImportacaoExtratoComponent) },
       { path: 'plano-contas', canActivate: [empresaGuard], loadComponent: () => import('./pages/plano-contas/plano-contas').then(m => m.PlanoContasComponent) },
@@ -44,6 +45,7 @@ export const routes: Routes = [
       { path: 'admin/integracao', canActivate: [contadorGuard], loadComponent: () => import('./pages/admin-integracao/admin-integracao').then(m => m.AdminIntegracaoComponent) },
       { path: 'admin/sefaz', canActivate: [contadorGuard], loadComponent: () => import('./pages/admin-sefaz/admin-sefaz').then(m => m.AdminSefazComponent) },
       { path: 'admin/sefaz-automatico', canActivate: [contadorGuard], loadComponent: () => import('./pages/admin-sefaz-automatico/admin-sefaz-automatico').then(m => m.AdminSefazAutomaticoComponent) },
+      { path: 'admin/contas-pagar', canActivate: [contadorGuard], loadComponent: () => import('./pages/admin-contas-pagar/admin-contas-pagar').then(m => m.AdminContasPagarComponent) },
 
       // Desenvolvedor
       { path: 'dev/usuarios', canActivate: [desenvolvedorGuard], loadComponent: () => import('./pages/dev-usuarios/dev-usuarios').then(m => m.DevUsuariosComponent) },

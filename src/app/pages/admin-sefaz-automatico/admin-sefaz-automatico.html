@@ -164,12 +164,18 @@
 
     @if (totalPaginas() > 1) {
       <div class="paginacao">
+        <button class="btn-icon" (click)="irPara(1)" [disabled]="page() === 1" title="Primeira página">
+          <i class="pi pi-angle-double-left"></i>
+        </button>
         <button class="btn-icon" (click)="irPara(page() - 1)" [disabled]="page() === 1">
           <i class="pi pi-chevron-left"></i>
         </button>
         <span>Página {{ page() }} de {{ totalPaginas() }} — {{ totalExecucoes() }} rodada(s)</span>
         <button class="btn-icon" (click)="irPara(page() + 1)" [disabled]="page() === totalPaginas()">
           <i class="pi pi-chevron-right"></i>
+        </button>
+        <button class="btn-icon" (click)="irPara(totalPaginas())" [disabled]="page() === totalPaginas()" title="Última página">
+          <i class="pi pi-angle-double-right"></i>
         </button>
       </div>
     }

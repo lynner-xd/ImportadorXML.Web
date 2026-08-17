@@ -159,6 +159,22 @@ export class ImportacaoExtratoComponent {
     this.preview.set({ ...p, linhas: p.linhas.filter(x => x.indice !== l.indice) });
   }
 
+  async excluirPendentes(): Promise<void> {
+    const qtd = this.pendentes();
+    if (qtd === 0) return;
+    const ok = await this.confirmService.confirmar({
+      mensagem: qtd === 1
+        ? 'O item pendente será removido da lista. Deseja confirmar?'
+        : `Os ${qtd} itens pendentes serão removidos da lista. Deseja confirmar?`,
+      perigo: true,
+      textoConfirmar: 'Excluir'
+    });
+    if (!ok) return;
+    const p = this.preview();
+    if (!p) return;
+    this.preview.set({ ...p, linhas: p.linhas.filter(x => x.ok) });
+  }
+
   limpar(): void {
     this.preview.set(null);
     this.arquivo.set(null);

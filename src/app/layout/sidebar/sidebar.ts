@@ -38,6 +38,7 @@ export class SidebarComponent {
         { label: 'Usuários', icon: 'pi pi-users', route: '/admin/usuarios' },
         { label: 'Integração SEFAZ', icon: 'pi pi-cloud-download', route: '/admin/sefaz' },
         { label: 'SEFAZ Automático', icon: 'pi pi-clock', route: '/admin/sefaz-automatico' },
+        { label: 'Contas a Pagar', icon: 'pi pi-wallet', route: '/admin/contas-pagar' },
         {
           label: 'Configurações', icon: 'pi pi-cog', children: [
             { label: 'Email SMTP', icon: 'pi pi-envelope', route: '/admin/email' },
@@ -61,6 +62,7 @@ export class SidebarComponent {
       { label: 'Importar XML', icon: 'pi pi-upload', route: '/importacao' },
       { label: 'Integração SEFAZ', icon: 'pi pi-cloud-download', route: '/sefaz' },
       { label: 'Lançamentos', icon: 'pi pi-pencil', route: '/lancamentos' },
+      { label: 'Contas a Pagar', icon: 'pi pi-wallet', route: '/contas-pagar' },
       { label: 'Plano de Contas', icon: 'pi pi-sitemap', route: '/plano-contas' },
       {
         label: 'Relatórios', icon: 'pi pi-chart-bar', children: [

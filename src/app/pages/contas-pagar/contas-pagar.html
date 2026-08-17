@@ -1,0 +1,266 @@
+@if (toastVisible()) {
+  <div class="toast-success">
+    <i class="pi pi-check-circle"></i>
+    {{ toastMessage() }}
+  </div>
+}
+
+<div class="page-header">
+  <div>
+    <h1>Contas a Pagar</h1>
+    <p>Parcelas de notas fiscais importadas por XML</p>
+  </div>
+  <div class="header-actions">
+    <button class="btn-primary" [disabled]="isAdmin && !empresaId" (click)="abrirImportacao()">
+      <i class="pi pi-upload"></i> Importar XML
+    </button>
+  </div>
+</div>
+
+@if (isAdmin) {
+  <div class="card empresa-select">
+    <div class="field">
+      <label>Empresa</label>
+      <select [(ngModel)]="empresaId" (ngModelChange)="onEmpresaChange()">
+        <option value="">Selecione a empresa...</option>
+        @for (e of empresas(); track e.id) {
+          <option [value]="e.id">{{ e.razaoSocial }} - {{ e.cnpj }}</option>
+        }
+      </select>
+    </div>
+  </div>
+}
+
+@if (!isAdmin || empresaId) {
+  @if (!modoImportacao()) {
+  <div class="card filtros-card">
+    <div class="filtros">
+      <div class="field">
+        <label>Status</label>
+        <select [(ngModel)]="filtroStatus" (ngModelChange)="aoMudarFiltro()">
+          <option value="abertas">Em aberto</option>
+          <option value="pagas">Pagas</option>
+          <option value="todas">Todas</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Vencimento de</label>
+        <input type="date" [(ngModel)]="filtroVencInicio" (ngModelChange)="aoMudarFiltro()" />
+      </div>
+      <div class="field">
+        <label>Vencimento até</label>
+        <input type="date" [(ngModel)]="filtroVencFim" (ngModelChange)="aoMudarFiltro()" />
+      </div>
+      <div class="field field-search">
+        <label>Fornecedor</label>
+        <div class="search-wrap">
+          <i class="pi pi-search"></i>
+          <input type="text" placeholder="Nome ou CNPJ" [(ngModel)]="filtroFornecedor" (ngModelChange)="aoDigitarFiltroTexto()" />
+        </div>
+      </div>
+      @if (temFiltroAtivo) {
+        <div class="field field-actions">
+          <button class="btn-secondary btn-limpar" (click)="limparFiltros()"><i class="pi pi-times"></i> Limpar</button>
+        </div>
+      }
+    </div>
+  </div>
+
+  <div class="card">
+    @if (loading()) {
+      <div class="loading"><i class="pi pi-spin pi-spinner"></i> Carregando...</div>
+    } @else if (parcelas().length === 0 && !temFiltroAtivo) {
+      <div class="empty">Nenhuma conta a pagar lançada. Use "Importar XML" para começar.</div>
+    } @else if (parcelas().length === 0 && temFiltroAtivo) {
+      <div class="empty">Nenhuma parcela corresponde aos filtros.</div>
+    } @else {
+      @if (selecionados().size > 0) {
+        <div class="bulk-actions">
+          <span>{{ selecionados().size }} nota(s) selecionada(s)</span>
+          <button class="btn-danger" (click)="excluirSelecionados()">
+            <i class="pi pi-trash"></i> Excluir selecionadas
+          </button>
+          <button class="btn-secondary" (click)="limparSelecao()">
+            <i class="pi pi-times"></i> Cancelar seleção
+          </button>
+        </div>
+      }
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th class="col-check">
+              <input type="checkbox"
+                     [checked]="todosSelecionados()"
+                     (change)="todosSelecionados() ? limparSelecao() : selecionarTodos()" />
+            </th>
+            <th>Fornecedor</th>
+            <th>NF</th>
+            <th class="text-center">Parcela</th>
+            <th class="text-right">Valor</th>
+            <th>Vencimento</th>
+            <th class="text-center">Status</th>
+            <th class="text-center">Ações</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (p of parcelas(); track p.id) {
+            <tr [class.row-selected]="selecionados().has(p.contaPagarId)">
+              <td class="col-check">
+                <input type="checkbox"
+                       [checked]="selecionados().has(p.contaPagarId)"
+                       (change)="toggleSelecao(p.contaPagarId)" />
+              </td>
+              <td>{{ p.nomeFornecedor }}</td>
+              <td>{{ p.numeroNF }}</td>
+              <td class="text-center">{{ p.numero }}/{{ p.totalParcelas }}</td>
+              <td class="text-right">{{ p.valor | number:'1.2-2' }}</td>
+              <td>{{ p.dataVencimento | date:'dd/MM/yyyy':'UTC' }}</td>
+              <td class="text-center">
+                @if (p.paga) {
+                  <span class="badge-paga" [title]="'Paga em ' + (p.dataPagamento | date:'dd/MM/yyyy':'UTC')">Paga</span>
+                } @else if (estaVencida(p)) {
+                  <span class="badge-vencida">Vencida</span>
+                } @else {
+                  <span class="badge-aberta">Em aberto</span>
+                }
+              </td>
+              <td class="text-center">
+                @if (!p.paga) {
+                  <button class="btn-icon" title="Marcar como paga" (click)="abrirBaixa(p)"><i class="pi pi-check-circle"></i></button>
+                } @else {
+                  <button class="btn-icon" title="Desfazer pagamento" (click)="desfazerBaixa(p)"><i class="pi pi-undo"></i></button>
+                }
+                <button class="btn-icon danger" title="Excluir nota" (click)="excluirNota(p)"><i class="pi pi-trash"></i></button>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+
+      <div class="paginacao">
+        <span class="paginacao-info">
+          Página {{ pagina() }} de {{ totalPaginas() }} ({{ parcelas().length }} de {{ totalParcelas() }} parcelas)
+        </span>
+        <div class="paginacao-botoes">
+          <button class="btn-secondary" [disabled]="pagina() === 1" (click)="irParaPagina(1)" title="Primeira página">
+            <i class="pi pi-angle-double-left"></i>
+          </button>
+          <button class="btn-secondary" [disabled]="pagina() === 1" (click)="paginaAnterior()">
+            <i class="pi pi-chevron-left"></i> Página anterior
+          </button>
+          <button class="btn-secondary" [disabled]="pagina() >= totalPaginas()" (click)="proximaPagina()">
+            Próxima página <i class="pi pi-chevron-right"></i>
+          </button>
+          <button class="btn-secondary" [disabled]="pagina() >= totalPaginas()" (click)="irParaPagina(totalPaginas())" title="Última página">
+            <i class="pi pi-angle-double-right"></i>
+          </button>
+        </div>
+      </div>
+    }
+  </div>
+
+  @if (baixaParcelaId()) {
+    <div class="dialog-overlay" (click)="baixaParcelaId.set(null)">
+      <div class="dialog dialog-sm" (click)="$event.stopPropagation()">
+        <div class="dialog-header"><h2>Marcar como paga</h2></div>
+        <div class="dialog-content">
+          <div class="field">
+            <label>Data do pagamento</label>
+            <input type="date" [(ngModel)]="dataPagamento" />
+          </div>
+        </div>
+        <div class="dialog-footer">
+          <button class="btn-secondary" (click)="baixaParcelaId.set(null)">Cancelar</button>
+          <button class="btn-primary" [disabled]="!dataPagamento" (click)="confirmarBaixa()">Confirmar baixa</button>
+        </div>
+      </div>
+    </div>
+  }
+  } @else {
+  <!-- ===== Fluxo de importação ===== -->
+  <div class="card">
+    @if (!previewItens()) {
+      <div class="import-upload">
+        <div class="file-drop" (click)="fileInput.click()">
+          <input #fileInput type="file" accept=".xml" multiple (change)="onFileSelect($event)" hidden />
+          <i class="pi pi-cloud-upload"></i>
+          <span>Selecionar arquivos XML</span>
+          <small>NFe — múltiplos permitidos</small>
+        </div>
+        @if (arquivos().length > 0) {
+          <div class="file-list">
+            @for (f of arquivos(); track f.name) {
+              <div class="file-item">{{ f.name }} <small>{{ (f.size / 1024).toFixed(1) }} KB</small></div>
+            }
+          </div>
+        }
+        @if (erroImportacao()) { <div class="error-msg">{{ erroImportacao() }}</div> }
+        <div class="import-actions">
+          <button class="btn-secondary" (click)="fecharImportacao()">Cancelar</button>
+          <button class="btn-primary" [disabled]="arquivos().length === 0 || analisando()" (click)="analisar()">
+            @if (analisando()) { <i class="pi pi-spin pi-spinner"></i> Analisando... } @else { Analisar }
+          </button>
+        </div>
+      </div>
+    } @else {
+      <div class="import-preview">
+        <h3>Confira as notas antes de confirmar</h3>
+        @for (item of previewItens(); track item.base.arquivo) {
+          <div class="preview-nota" [class.preview-erro]="!item.base.sucesso">
+            @if (!item.base.sucesso) {
+              <div class="preview-nota-head">
+                <strong>{{ item.base.arquivo }}</strong>
+                <span class="badge-vencida">{{ item.base.erro }}</span>
+              </div>
+            } @else {
+              <div class="preview-nota-head">
+                <label class="chk">
+                  <input type="checkbox" [(ngModel)]="item.incluir" />
+                  <strong>{{ item.base.nomeFornecedor }}</strong> — NF {{ item.base.numeroNF }}
+                </label>
+                <span>{{ item.base.dataEmissao | date:'dd/MM/yyyy':'UTC' }} · R$ {{ item.base.valorTotal | number:'1.2-2' }}</span>
+              </div>
+              <div class="preview-nota-config">
+                <div class="field">
+                  <label>Pagamento</label>
+                  <select [(ngModel)]="item.formaPagamento" (ngModelChange)="regerarParcelas(item)">
+                    <option value="AVista">À vista</option>
+                    <option value="APrazo">A prazo</option>
+                  </select>
+                </div>
+                @if (item.formaPagamento === 'APrazo') {
+                  <div class="field">
+                    <label>Parcelas</label>
+                    <input type="number" min="1" max="60" [(ngModel)]="item.numeroParcelas" (change)="regerarParcelas(item)" />
+                  </div>
+                }
+              </div>
+              <table class="data-table parcelas-edit">
+                <thead>
+                  <tr><th>#</th><th>Valor</th><th>Vencimento</th></tr>
+                </thead>
+                <tbody>
+                  @for (par of item.parcelas; track par.numero) {
+                    <tr>
+                      <td>{{ par.numero }}</td>
+                      <td><input type="number" step="0.01" [(ngModel)]="par.valor" /></td>
+                      <td><input type="date" [(ngModel)]="par.dataVencimento" /></td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            }
+          </div>
+        }
+        @if (erroImportacao()) { <div class="error-msg">{{ erroImportacao() }}</div> }
+        <div class="import-actions">
+          <button class="btn-secondary" (click)="fecharImportacao()">Cancelar</button>
+          <button class="btn-primary" [disabled]="totalSelecionados() === 0 || confirmando()" (click)="confirmarImportacao()">
+            @if (confirmando()) { <i class="pi pi-spin pi-spinner"></i> Gravando... } @else { Confirmar {{ totalSelecionados() }} nota(s) }
+          </button>
+        </div>
+      </div>
+    }
+  </div>
+  }
+}

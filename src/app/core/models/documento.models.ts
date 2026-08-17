@@ -1,5 +1,6 @@
 export interface DocumentoFiscal {
   id: string;
+  chaveAcesso: string;
   numero: string | null;
   serie: string | null;
   modelo: string | null;
@@ -12,6 +13,19 @@ export interface DocumentoFiscal {
   nomeDestinatario: string | null;
   valorTotal: number;
   dataImportacao: string;
+}
+
+export interface LancamentoContas {
+  id: string;
+  valor: number;
+  descricao: string | null;
+  contaDebitoId: string;
+  contaCreditoId: string;
+}
+
+export interface DocumentoDetalhe {
+  documento: DocumentoFiscal;
+  lancamentos: LancamentoContas[];
 }
 
 export interface PagedResult<T> {

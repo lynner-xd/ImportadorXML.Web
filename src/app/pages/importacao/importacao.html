@@ -143,6 +143,11 @@
                   </button>
                 </span>
               } @else {
+                @if (doc.tipo === 'Entrada') {
+                  <button class="btn-icon" (click)="abrirEdicao(doc)" title="Editar contas do lançamento">
+                    <i class="pi pi-pencil"></i>
+                  </button>
+                }
                 <button class="btn-icon danger" (click)="solicitarExclusao(doc.id)" title="Excluir">
                   <i class="pi pi-trash"></i>
                 </button>
@@ -155,6 +160,9 @@
 
     @if (totalPaginas() > 1) {
       <div class="pagination">
+        <button class="btn-icon" [disabled]="paginaAtual() === 1" (click)="irParaPagina(1)" title="Primeira página">
+          <i class="pi pi-angle-double-left"></i>
+        </button>
         <button class="btn-icon" [disabled]="paginaAtual() === 1" (click)="irParaPagina(paginaAtual() - 1)" title="Página anterior">
           <i class="pi pi-chevron-left"></i>
         </button>
@@ -162,10 +170,102 @@
         <button class="btn-icon" [disabled]="paginaAtual() === totalPaginas()" (click)="irParaPagina(paginaAtual() + 1)" title="Próxima página">
           <i class="pi pi-chevron-right"></i>
         </button>
+        <button class="btn-icon" [disabled]="paginaAtual() === totalPaginas()" (click)="irParaPagina(totalPaginas())" title="Última página">
+          <i class="pi pi-angle-double-right"></i>
+        </button>
       </div>
     }
   }
 </div>
+
+@if (editandoDoc(); as det) {
+  <div class="dialog-overlay" (click)="fecharEdicao()">
+    <div class="dialog dialog-editar" (click)="$event.stopPropagation()">
+      <div class="dialog-header">
+        <div class="dialog-title-row">
+          <i class="pi pi-pencil dialog-icon-edit"></i>
+          <h2>Editar contas do lançamento</h2>
+        </div>
+        <button class="btn-icon" (click)="fecharEdicao()">
+          <i class="pi pi-times"></i>
+        </button>
+      </div>
+      <div class="dialog-content">
+        <div class="doc-info">
+          <div class="doc-info-item">
+            <span class="doc-info-label">Nº NF</span>
+            <span>{{ det.documento.numero ?? '-' }}</span>
+          </div>
+          <div class="doc-info-item">
+            <span class="doc-info-label">Série</span>
+            <span>{{ det.documento.serie ?? '-' }}</span>
+          </div>
+          <div class="doc-info-item">
+            <span class="doc-info-label">Data Emissão</span>
+            <span>{{ det.documento.dataEmissao | date:'dd/MM/yyyy' }}</span>
+          </div>
+          <div class="doc-info-item">
+            <span class="doc-info-label">Valor Total</span>
+            <span>{{ det.documento.valorTotal | number:'1.2-2' }}</span>
+          </div>
+          <div class="doc-info-item doc-info-wide">
+            <span class="doc-info-label">Emitente</span>
+            <span>{{ det.documento.nomeEmitente ?? '-' }} {{ det.documento.cnpjEmitente ? '(' + det.documento.cnpjEmitente + ')' : '' }}</span>
+          </div>
+          <div class="doc-info-item doc-info-wide">
+            <span class="doc-info-label">Destinatário</span>
+            <span>{{ det.documento.nomeDestinatario ?? '-' }} {{ det.documento.cnpjDestinatario ? '(' + det.documento.cnpjDestinatario + ')' : '' }}</span>
+          </div>
+          <div class="doc-info-item doc-info-wide">
+            <span class="doc-info-label">Chave de Acesso</span>
+            <span class="doc-chave">{{ det.documento.chaveAcesso }}</span>
+          </div>
+        </div>
+
+        @if (det.lancamentos.length === 0) {
+          <p class="dialog-warn-text">Este documento não possui lançamento vinculado.</p>
+        } @else {
+          <div class="contas-edit">
+            <div class="field">
+              <label>Conta Débito</label>
+              <select class="input-select" [(ngModel)]="editContaDebitoId">
+                @for (c of analiticas(); track c.id) {
+                  <option [value]="c.id">{{ c.codigo }} — {{ c.nome }}</option>
+                }
+              </select>
+            </div>
+            <div class="field">
+              <label>Conta Crédito</label>
+              <select class="input-select" [(ngModel)]="editContaCreditoId">
+                @for (c of analiticas(); track c.id) {
+                  <option [value]="c.id">{{ c.codigo }} — {{ c.nome }}</option>
+                }
+              </select>
+            </div>
+          </div>
+        }
+
+        @if (erroModal()) {
+          <div class="error-global">
+            <i class="pi pi-exclamation-circle"></i> {{ erroModal() }}
+          </div>
+        }
+      </div>
+      <div class="dialog-footer">
+        <button class="btn-secondary" (click)="fecharEdicao()">Cancelar</button>
+        <button class="btn-primary" (click)="salvarContas()"
+                [disabled]="salvandoContas() || det.lancamentos.length === 0 || !editContaDebitoId || !editContaCreditoId">
+          @if (salvandoContas()) {
+            <i class="pi pi-spinner pi-spin"></i>
+          } @else {
+            <i class="pi pi-save"></i>
+          }
+          Salvar
+        </button>
+      </div>
+    </div>
+  </div>
+}
 
 @if (confirmandoExclusaoEmMassa()) {
   <div class="dialog-overlay" (click)="cancelarExclusaoEmMassa()">

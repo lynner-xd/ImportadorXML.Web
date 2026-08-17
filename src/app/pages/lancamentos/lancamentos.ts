@@ -185,6 +185,12 @@ export class LancamentosComponent implements OnInit, OnDestroy {
     }
   }
 
+  irParaPagina(p: number): void {
+    if (p < 1 || p > this.totalPaginas() || p === this.pagina()) return;
+    this.pagina.set(p);
+    this.carregarPagina();
+  }
+
   // ===== Valor formatado =====
   onValorInput(value: string): void {
     const apenasNumeros = value.replace(/\D/g, '');

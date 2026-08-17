@@ -325,6 +325,28 @@ export class SefazComponent implements OnInit, OnDestroy {
     return tipo === 'Saida' ? 'Saída' : 'Entrada';
   }
 
+  baixarSelecionadas(): void {
+    const ids = Array.from(this.selecionados());
+    if (ids.length === 0) return;
+    this.processando.set(true);
+    this.erroLista.set(null);
+    this.api.downloadXmlZipNotasSefaz(ids, this.empresaParam).subscribe({
+      next: blob => {
+        this.processando.set(false);
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'notas-sefaz-xml.zip';
+        a.click();
+        URL.revokeObjectURL(url);
+      },
+      error: () => {
+        this.erroLista.set('Falha ao baixar os XMLs selecionados.');
+        this.processando.set(false);
+      }
+    });
+  }
+
   baixarXml(nota: NotaSefazPendente): void {
     this.api.downloadXmlNotaSefaz(nota.id, this.empresaParam).subscribe({
       next: blob => {

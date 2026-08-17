@@ -10,12 +10,13 @@ import { BalanceteItem, AnaliticoItem, EmpresaOption, DreResponse, BalancoPatrim
 import { ConfiguracaoEmailRequest, ConfiguracaoEmailResponse } from '../models/email-config.models';
 import { ImportacaoResultado, ConfiguracaoImportacao, RegraImportacao, RegraImportacaoRequest, ImportarPreview } from '../models/importacao.models';
 import { ScriptResultadoResponse, ScriptHistoricoResponse } from '../models/script.models';
-import { DocumentoFiscal, PagedResult } from '../models/documento.models';
+import { DocumentoFiscal, DocumentoDetalhe, PagedResult } from '../models/documento.models';
 import { ContratoRequest, DadosEmpresaContrato } from '../models/contrato.models';
 import { AtividadeMonitor, ErroMonitor, EmpresaMonitorOption } from '../models/monitoramento.models';
 import { IntegracaoEmpresaResponse, GerarTokenResponse } from '../models/integracao.models';
 import { ConfiguracaoSefaz, SefazBuscaResultado, NotasPendentesPaged } from '../models/sefaz.models';
 import { ConfiguracaoBuscaAutomatica, FilaBuscaAutomaticaItem, ExecucaoResumo, ExecucaoDetalhe } from '../models/sefaz-automatico.models';
+import { ContaPagarParcelaList, ContaPagarParcelaEdicao, ContaPagarPreviewItem, ConfirmarContaPagarItem, ConfirmarContasPagarResultado } from '../models/conta-pagar.models';
 
 @Injectable({ providedIn: 'root' })
 export class ApiService {
@@ -86,6 +87,14 @@ export class ApiService {
     if (numero) params = params.set('numero', numero);
     if (origem) params = params.set('origem', origem);
     return this.http.get<PagedResult<DocumentoFiscal>>(`${this.api}/documentos`, { params });
+  }
+
+  obterDocumento(id: string): Observable<DocumentoDetalhe> {
+    return this.http.get<DocumentoDetalhe>(`${this.api}/documentos/${id}`);
+  }
+
+  atualizarContasDocumento(id: string, req: { contaDebitoId: string; contaCreditoId: string }): Observable<void> {
+    return this.http.put<void>(`${this.api}/documentos/${id}/contas`, req);
   }
 
   excluirDocumento(id: string): Observable<void> {
@@ -408,6 +417,11 @@ export class ApiService {
     return this.http.get(`${url}/pendentes/${id}/xml`, { params, responseType: 'blob' });
   }
 
+  downloadXmlZipNotasSefaz(ids: string[], empresaId?: string): Observable<Blob> {
+    const { url, params } = this.sefazBase(empresaId);
+    return this.http.post(`${url}/pendentes/xml-zip`, { ids }, { params, responseType: 'blob' });
+  }
+
   importarNotasSefaz(ids: string[], empresaId?: string): Observable<ImportacaoResultado> {
     const { url, params } = this.sefazBase(empresaId);
     return this.http.post<ImportacaoResultado>(`${url}/pendentes/importar`, { ids }, { params });
@@ -447,5 +461,55 @@ export class ApiService {
 
   getSefazAutomaticoExecucao(id: string): Observable<ExecucaoDetalhe> {
     return this.http.get<ExecucaoDetalhe>(`${this.api}/admin/sefaz-automatico/execucoes/${id}`);
+  }
+
+  // ===== Contas a Pagar =====
+  private contasPagarBase(empresaId?: string): { url: string; params: HttpParams } {
+    const url = empresaId ? `${this.api}/admin/contas-pagar` : `${this.api}/contas-pagar`;
+    let params = new HttpParams();
+    if (empresaId) params = params.set('empresaId', empresaId);
+    return { url, params };
+  }
+
+  previewContasPagar(arquivos: File[], empresaId?: string): Observable<ContaPagarPreviewItem[]> {
+    const { url, params } = this.contasPagarBase(empresaId);
+    const form = new FormData();
+    arquivos.forEach(f => form.append('arquivos', f, f.name));
+    return this.http.post<ContaPagarPreviewItem[]>(`${url}/preview`, form, { params });
+  }
+
+  confirmarContasPagar(itens: ConfirmarContaPagarItem[], empresaId?: string): Observable<ConfirmarContasPagarResultado> {
+    const { url, params } = this.contasPagarBase(empresaId);
+    return this.http.post<ConfirmarContasPagarResultado>(`${url}/confirmar`, { itens }, { params });
+  }
+
+  listarParcelasContasPagar(opts: {
+    page: number; pageSize: number; paga?: boolean;
+    vencimentoInicio?: string; vencimentoFim?: string; fornecedor?: string; empresaId?: string;
+  }): Observable<PagedResult<ContaPagarParcelaList>> {
+    const { url, params: base } = this.contasPagarBase(opts.empresaId);
+    let params = base
+      .set('page', opts.page.toString())
+      .set('pageSize', opts.pageSize.toString());
+    if (opts.paga !== undefined && opts.paga !== null) params = params.set('paga', String(opts.paga));
+    if (opts.vencimentoInicio) params = params.set('vencimentoInicio', opts.vencimentoInicio);
+    if (opts.vencimentoFim) params = params.set('vencimentoFim', opts.vencimentoFim);
+    if (opts.fornecedor) params = params.set('fornecedor', opts.fornecedor);
+    return this.http.get<PagedResult<ContaPagarParcelaList>>(`${url}/parcelas`, { params });
+  }
+
+  pagarParcelaContaPagar(id: string, dataPagamento: string, empresaId?: string): Observable<void> {
+    const { url, params } = this.contasPagarBase(empresaId);
+    return this.http.post<void>(`${url}/parcelas/${id}/pagar`, { dataPagamento }, { params });
+  }
+
+  desfazerPagamentoParcela(id: string, empresaId?: string): Observable<void> {
+    const { url, params } = this.contasPagarBase(empresaId);
+    return this.http.post<void>(`${url}/parcelas/${id}/desfazer-pagamento`, {}, { params });
+  }
+
+  excluirContaPagar(id: string, empresaId?: string): Observable<void> {
+    const { url, params } = this.contasPagarBase(empresaId);
+    return this.http.delete<void>(`${url}/${id}`, { params });
   }
 }

@@ -146,6 +146,12 @@
       <div class="paginacao-botoes">
         <button class="btn-secondary"
                 [disabled]="pagina() === 1"
+                (click)="irParaPagina(1)"
+                title="Primeira página">
+          <i class="pi pi-angle-double-left"></i>
+        </button>
+        <button class="btn-secondary"
+                [disabled]="pagina() === 1"
                 (click)="paginaAnterior()">
           <i class="pi pi-chevron-left"></i> Página anterior
         </button>
@@ -153,6 +159,12 @@
                 [disabled]="pagina() >= totalPaginas()"
                 (click)="proximaPagina()">
           Próxima página <i class="pi pi-chevron-right"></i>
+        </button>
+        <button class="btn-secondary"
+                [disabled]="pagina() >= totalPaginas()"
+                (click)="irParaPagina(totalPaginas())"
+                title="Última página">
+          <i class="pi pi-angle-double-right"></i>
         </button>
       </div>
     </div>
