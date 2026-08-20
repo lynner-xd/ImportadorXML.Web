@@ -114,6 +114,11 @@
   .text-right { text-align: right; }
 }
 
+h3.grupo-fornecedor {
+  margin: 1rem 0 .5rem;
+  small { color: var(--text-secondary); font-weight: 400; margin-left: .5rem; }
+}
+
 .empty {
   display: flex;
   flex-direction: column;

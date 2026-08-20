@@ -32,6 +32,7 @@ export class SidebarComponent {
             { label: 'Sintético', icon: 'pi pi-table', route: '/admin/relatorios/sintetico' },
             { label: 'DRE', icon: 'pi pi-chart-line', route: '/admin/relatorios/dre' },
             { label: 'Balanço Patrimonial', icon: 'pi pi-wallet', route: '/admin/relatorios/balanco-patrimonial' },
+            { label: 'Contas a Pagar', icon: 'pi pi-money-bill', route: '/admin/relatorios/contas-pagar' },
           ]
         },
         { label: 'Contratos', icon: 'pi pi-file-edit', route: '/admin/contratos' },
@@ -71,6 +72,7 @@ export class SidebarComponent {
           { label: 'Sintético', icon: 'pi pi-table', route: '/relatorios/sintetico' },
           { label: 'DRE', icon: 'pi pi-chart-line', route: '/relatorios/dre' },
           { label: 'Balanço Patrimonial', icon: 'pi pi-wallet', route: '/relatorios/balanco-patrimonial' },
+          { label: 'Contas a Pagar', icon: 'pi pi-money-bill', route: '/relatorios/contas-pagar' },
         ]
       },
     ];

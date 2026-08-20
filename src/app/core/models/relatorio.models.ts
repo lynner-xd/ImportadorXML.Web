@@ -83,3 +83,28 @@ export interface BalancoPatrimonialResponse {
   resultadoExercicioAnterior: number;
   resultadoExercicio: number;
 }
+
+export interface ContasPagarRelatorioItem {
+  numeroNF: string;
+  numero: number;
+  totalParcelas: number;
+  dataVencimento: string;
+  valor: number;
+  paga: boolean;
+  dataPagamento?: string | null;
+  contaPagamento?: string | null;
+}
+
+export interface ContasPagarFornecedorGrupo {
+  nomeFornecedor: string;
+  cnpjFornecedor: string;
+  totalAberto: number;
+  totalPago: number;
+  parcelas: ContasPagarRelatorioItem[];
+}
+
+export interface ContasPagarRelatorioResponse {
+  fornecedores: ContasPagarFornecedorGrupo[];
+  totalGeralAberto: number;
+  totalGeralPago: number;
+}

@@ -1,0 +1,95 @@
+<div class="page-header">
+  <div>
+    <h1>Relatório Contas a Pagar</h1>
+    <p>Fornecedores com parcelas em aberto e pagas por período de vencimento</p>
+  </div>
+</div>
+
+<div class="card">
+  <div class="filtros">
+    @if (isAdmin) {
+      <div class="field">
+        <label>Empresa</label>
+        <select [(ngModel)]="empresaId" class="input-select">
+          <option value="">Selecione a empresa...</option>
+          @for (e of empresas(); track e.id) {
+            <option [value]="e.id">{{ e.razaoSocial }} - {{ e.cnpj }}</option>
+          }
+        </select>
+      </div>
+    }
+    <div class="field">
+      <label>Vencimento de</label>
+      <input type="date" [(ngModel)]="dataInicio" />
+    </div>
+    <div class="field">
+      <label>Vencimento até</label>
+      <input type="date" [(ngModel)]="dataFim" />
+    </div>
+    <div class="field">
+      <label>Status</label>
+      <select [(ngModel)]="status" class="input-select">
+        <option value="todos">Todas</option>
+        <option value="aberto">Em aberto</option>
+        <option value="pago">Pagas</option>
+      </select>
+    </div>
+    <div class="field field-actions">
+      <button class="btn-primary" (click)="gerar()" [disabled]="loading()">
+        @if (loading()) { <i class="pi pi-spinner pi-spin"></i> } @else { <i class="pi pi-search"></i> }
+        Gerar
+      </button>
+      @if (gerado() && (dados()?.fornecedores?.length ?? 0) > 0) {
+        <button class="btn-secondary" (click)="exportarPdf()">
+          <i class="pi pi-file-pdf"></i> PDF
+        </button>
+      }
+    </div>
+  </div>
+</div>
+
+@if (gerado()) {
+  <div class="card" style="margin-top: 1rem;">
+    @if ((dados()?.fornecedores?.length ?? 0) === 0) {
+      <div class="empty"><i class="pi pi-inbox"></i><p>Nenhuma parcela encontrada para o período.</p></div>
+    } @else {
+      @for (f of dados()!.fornecedores; track f.cnpjFornecedor) {
+        <h3 class="grupo-fornecedor">{{ f.nomeFornecedor }} <small>CNPJ {{ f.cnpjFornecedor }}</small></h3>
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>NF</th>
+              <th class="text-center">Parcela</th>
+              <th>Vencimento</th>
+              <th class="text-right">Valor</th>
+              <th class="text-center">Status</th>
+              <th>Data Pgto</th>
+              <th>Conta Pagamento</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (p of f.parcelas; track $index) {
+              <tr>
+                <td>{{ p.numeroNF }}</td>
+                <td class="text-center">{{ p.numero }}/{{ p.totalParcelas }}</td>
+                <td>{{ p.dataVencimento | date:'dd/MM/yyyy':'UTC' }}</td>
+                <td class="text-right">{{ p.valor | number:'1.2-2' }}</td>
+                <td class="text-center">{{ p.paga ? 'Paga' : 'Em aberto' }}</td>
+                <td>{{ p.dataPagamento ? (p.dataPagamento | date:'dd/MM/yyyy':'UTC') : '-' }}</td>
+                <td>{{ p.contaPagamento ?? '-' }}</td>
+              </tr>
+            }
+            <tr>
+              <td colspan="7" class="text-right">
+                <strong>Em aberto: {{ f.totalAberto | number:'1.2-2' }} &nbsp;|&nbsp; Pago: {{ f.totalPago | number:'1.2-2' }}</strong>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      }
+      <p class="text-right" style="margin-top: 1rem;">
+        <strong>TOTAL GERAL — Em aberto: {{ dados()!.totalGeralAberto | number:'1.2-2' }} &nbsp;|&nbsp; Pago: {{ dados()!.totalGeralPago | number:'1.2-2' }}</strong>
+      </p>
+    }
+  </div>
+}

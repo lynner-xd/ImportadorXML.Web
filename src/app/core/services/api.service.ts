@@ -6,7 +6,7 @@ import { environment } from '../../../environments/environment';
 import { UsuarioResponse, CriarUsuarioRequest, EditarUsuarioRequest } from '../models/usuario.models';
 import { PlanoContaResponse, CriarContaRequest, AtualizarContaRequest } from '../models/plano-conta.models';
 import { LancamentoResponse, CriarLancamentoRequest, AtualizarLancamentoRequest } from '../models/lancamento.models';
-import { BalanceteItem, AnaliticoItem, EmpresaOption, DreResponse, BalancoPatrimonialResponse } from '../models/relatorio.models';
+import { BalanceteItem, AnaliticoItem, EmpresaOption, DreResponse, BalancoPatrimonialResponse, ContasPagarRelatorioResponse } from '../models/relatorio.models';
 import { ConfiguracaoEmailRequest, ConfiguracaoEmailResponse } from '../models/email-config.models';
 import { ImportacaoResultado, ConfiguracaoImportacao, RegraImportacao, RegraImportacaoRequest, ImportarPreview } from '../models/importacao.models';
 import { ScriptResultadoResponse, ScriptHistoricoResponse } from '../models/script.models';
@@ -236,6 +236,11 @@ export class ApiService {
     return this.http.get(`${this.api}/relatorios/${tipo}/pdf`, { params, responseType: 'blob' });
   }
 
+  getContasPagarRelatorio(dataInicio: string, dataFim: string, status: string): Observable<ContasPagarRelatorioResponse> {
+    const params = new HttpParams().set('dataInicio', dataInicio).set('dataFim', dataFim).set('status', status);
+    return this.http.get<ContasPagarRelatorioResponse>(`${this.api}/relatorios/contas-pagar`, { params });
+  }
+
   // ===== Admin - Relatórios =====
   getAdminBalancete(empresaId: string, dataInicio: string, dataFim: string): Observable<BalanceteItem[]> {
     const params = new HttpParams().set('empresaId', empresaId).set('dataInicio', dataInicio).set('dataFim', dataFim);
@@ -282,6 +287,11 @@ export class ApiService {
 
   listarEmpresas(): Observable<EmpresaOption[]> {
     return this.http.get<EmpresaOption[]>(`${this.api}/admin/relatorios/empresas`);
+  }
+
+  getAdminContasPagarRelatorio(empresaId: string, dataInicio: string, dataFim: string, status: string): Observable<ContasPagarRelatorioResponse> {
+    const params = new HttpParams().set('empresaId', empresaId).set('dataInicio', dataInicio).set('dataFim', dataFim).set('status', status);
+    return this.http.get<ContasPagarRelatorioResponse>(`${this.api}/admin/relatorios/contas-pagar`, { params });
   }
 
   // ===== Admin - Contratos =====
