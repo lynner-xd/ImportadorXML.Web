@@ -7,6 +7,7 @@ import { ApiService } from '../../core/services/api.service';
 import { ConfirmService } from '../../core/services/confirm.service';
 import { ContaPagarParcelaList, ContaPagarPreviewItem } from '../../core/models/conta-pagar.models';
 import { EmpresaOption } from '../../core/models/relatorio.models';
+import { PlanoContaResponse } from '../../core/models/plano-conta.models';
 
 @Component({
   selector: 'app-contas-pagar',
@@ -49,6 +50,8 @@ export class ContasPagarComponent implements OnInit, OnDestroy {
   // Baixa
   baixaParcelaId = signal<string | null>(null);
   dataPagamento = '';
+  contasPagamento = signal<PlanoContaResponse[]>([]);
+  contaPagamentoId = '';
 
   // Toast
   toastVisible = signal(false);
@@ -70,6 +73,7 @@ export class ContasPagarComponent implements OnInit, OnDestroy {
       this.api.listarEmpresas().subscribe({ next: e => this.empresas.set(e) });
     } else {
       this.carregarPagina();
+      this.carregarContasPagamento();
     }
   }
 
@@ -85,12 +89,23 @@ export class ContasPagarComponent implements OnInit, OnDestroy {
     this.arquivos.set([]);
     this.erroImportacao.set('');
     if (!this.empresaId) return;
+    this.carregarContasPagamento();
     this.pagina.set(1);
     this.carregarPagina();
   }
 
   get temFiltroAtivo(): boolean {
     return !!(this.filtroVencInicio || this.filtroVencFim || this.filtroFornecedor || this.filtroStatus !== 'todas');
+  }
+
+  private carregarContasPagamento(): void {
+    const obs = this.isAdmin
+      ? this.api.getAdminPlanoContas(this.empresaId)
+      : this.api.listarPlanoContas();
+    obs.subscribe({
+      next: contas => this.contasPagamento.set(
+        contas.filter(c => c.codigo.startsWith('1.1.1.') && c.codigo.split('.').length === 5))
+    });
   }
 
   carregarPagina(): void {
@@ -146,12 +161,14 @@ export class ContasPagarComponent implements OnInit, OnDestroy {
   abrirBaixa(p: ContaPagarParcelaList): void {
     this.baixaParcelaId.set(p.id);
     this.dataPagamento = new Date().toISOString().slice(0, 10);
+    const caixa = this.contasPagamento().find(c => c.codigo === '1.1.1.1.001');
+    this.contaPagamentoId = caixa?.id ?? '';
   }
 
   confirmarBaixa(): void {
     const id = this.baixaParcelaId();
-    if (!id || !this.dataPagamento) return;
-    this.api.pagarParcelaContaPagar(id, this.dataPagamento, this.empresaParam).subscribe({
+    if (!id || !this.dataPagamento || !this.contaPagamentoId) return;
+    this.api.pagarParcelaContaPagar(id, this.dataPagamento, this.contaPagamentoId, this.empresaParam).subscribe({
       next: () => { this.baixaParcelaId.set(null); this.carregarPagina(); },
       error: () => { this.baixaParcelaId.set(null); this.carregarPagina(); }
     });

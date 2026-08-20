@@ -165,13 +165,22 @@
         <div class="dialog-header"><h2>Marcar como paga</h2></div>
         <div class="dialog-content">
           <div class="field">
+            <label>Pagar com (caixa/banco)</label>
+            <select [(ngModel)]="contaPagamentoId">
+              <option value="">Selecione a conta...</option>
+              @for (c of contasPagamento(); track c.id) {
+                <option [value]="c.id">{{ c.codigo }} - {{ c.nome }}</option>
+              }
+            </select>
+          </div>
+          <div class="field">
             <label>Data do pagamento</label>
             <input type="date" [(ngModel)]="dataPagamento" />
           </div>
         </div>
         <div class="dialog-footer">
           <button class="btn-secondary" (click)="baixaParcelaId.set(null)">Cancelar</button>
-          <button class="btn-primary" [disabled]="!dataPagamento" (click)="confirmarBaixa()">Confirmar baixa</button>
+          <button class="btn-primary" [disabled]="!dataPagamento || !contaPagamentoId" (click)="confirmarBaixa()">Confirmar baixa</button>
         </div>
       </div>
     </div>

@@ -498,9 +498,9 @@ export class ApiService {
     return this.http.get<PagedResult<ContaPagarParcelaList>>(`${url}/parcelas`, { params });
   }
 
-  pagarParcelaContaPagar(id: string, dataPagamento: string, empresaId?: string): Observable<void> {
+  pagarParcelaContaPagar(id: string, dataPagamento: string, contaPagamentoId: string, empresaId?: string): Observable<void> {
     const { url, params } = this.contasPagarBase(empresaId);
-    return this.http.post<void>(`${url}/parcelas/${id}/pagar`, { dataPagamento }, { params });
+    return this.http.post<void>(`${url}/parcelas/${id}/pagar`, { dataPagamento, contaPagamentoId }, { params });
   }
 
   desfazerPagamentoParcela(id: string, empresaId?: string): Observable<void> {
