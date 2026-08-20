@@ -53,13 +53,14 @@
     @if ((dados()?.fornecedores?.length ?? 0) === 0) {
       <div class="empty"><i class="pi pi-inbox"></i><p>Nenhuma parcela encontrada para o período.</p></div>
     } @else {
-      @for (f of dados()!.fornecedores; track f.cnpjFornecedor) {
+      @for (f of dados()!.fornecedores; track $index) {
         <h3 class="grupo-fornecedor">{{ f.nomeFornecedor }} <small>CNPJ {{ f.cnpjFornecedor }}</small></h3>
         <table class="data-table">
           <thead>
             <tr>
               <th>NF</th>
               <th class="text-center">Parcela</th>
+              <th>Emissão</th>
               <th>Vencimento</th>
               <th class="text-right">Valor</th>
               <th class="text-center">Status</th>
@@ -72,6 +73,7 @@
               <tr>
                 <td>{{ p.numeroNF }}</td>
                 <td class="text-center">{{ p.numero }}/{{ p.totalParcelas }}</td>
+                <td>{{ p.dataEmissao | date:'dd/MM/yyyy':'UTC' }}</td>
                 <td>{{ p.dataVencimento | date:'dd/MM/yyyy':'UTC' }}</td>
                 <td class="text-right">{{ p.valor | number:'1.2-2' }}</td>
                 <td class="text-center">{{ p.paga ? 'Paga' : 'Em aberto' }}</td>
@@ -80,7 +82,7 @@
               </tr>
             }
             <tr>
-              <td colspan="7" class="text-right">
+              <td colspan="8" class="text-right">
                 <strong>Em aberto: {{ f.totalAberto | number:'1.2-2' }} &nbsp;|&nbsp; Pago: {{ f.totalPago | number:'1.2-2' }}</strong>
               </td>
             </tr>

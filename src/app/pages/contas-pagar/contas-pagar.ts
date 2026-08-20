@@ -170,7 +170,11 @@ export class ContasPagarComponent implements OnInit, OnDestroy {
     if (!id || !this.dataPagamento || !this.contaPagamentoId) return;
     this.api.pagarParcelaContaPagar(id, this.dataPagamento, this.contaPagamentoId, this.empresaParam).subscribe({
       next: () => { this.baixaParcelaId.set(null); this.carregarPagina(); },
-      error: () => { this.baixaParcelaId.set(null); this.carregarPagina(); }
+      error: (err) => {
+        this.baixaParcelaId.set(null);
+        this.carregarPagina();
+        this.showToast(err.error?.message ?? 'Erro ao confirmar a baixa.');
+      }
     });
   }
 

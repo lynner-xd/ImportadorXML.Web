@@ -88,6 +88,7 @@ export interface ContasPagarRelatorioItem {
   numeroNF: string;
   numero: number;
   totalParcelas: number;
+  dataEmissao: string;
   dataVencimento: string;
   valor: number;
   paga: boolean;
