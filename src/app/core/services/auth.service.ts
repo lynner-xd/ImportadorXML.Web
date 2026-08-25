@@ -20,8 +20,32 @@ export class AuthService {
   readonly isEmpresa = computed(() => this.role() === 'Empresa');
   readonly isDesenvolvedor = computed(() => this.role() === 'Desenvolvedor');
   readonly primeiroAcesso = computed(() => this._user()?.primeiroAcesso ?? false);
+  readonly telas = computed(() => this._user()?.telas ?? null);
 
   constructor(private http: HttpClient, private router: Router) {}
+
+  /** null/undefined = todas liberadas; roles não-Empresa nunca são bloqueadas */
+  temTela(chave: string): boolean {
+    if (!this.isEmpresa()) return true;
+    const telas = this.telas();
+    return telas == null || telas.includes(chave);
+  }
+
+  atualizarTelas(telas: string[] | null): void {
+    const user = this._user();
+    if (!user) return;
+    const updated = { ...user, telas };
+    localStorage.setItem(this.USER_KEY, JSON.stringify(updated));
+    this._user.set(updated);
+  }
+
+  /** Recarrega as telas do perfil (pega mudanças do contador sem novo login) */
+  carregarPerfil(): void {
+    if (!this.isEmpresa()) return;
+    this.http.get<{ telas?: string[] | null }>(`${this.apiUrl}/usuario/perfil`).subscribe({
+      next: perfil => this.atualizarTelas(perfil.telas ?? null)
+    });
+  }
 
   login(request: LoginRequest): Observable<LoginResponse> {
     return this.http.post<LoginResponse>(`${this.apiUrl}/auth/login`, request).pipe(

@@ -1,5 +1,5 @@
 import { Routes } from '@angular/router';
-import { authGuard, contadorGuard, empresaGuard, desenvolvedorGuard } from './core/guards/auth.guard';
+import { authGuard, contadorGuard, empresaGuard, desenvolvedorGuard, telaGuard } from './core/guards/auth.guard';
 import { CanDeactivateGuard } from './core/guards/can-deactivate.guard';
 import { MainLayoutComponent } from './layout/main-layout/main-layout';
 import { LoginComponent } from './pages/login/login';
@@ -18,21 +18,21 @@ export const routes: Routes = [
 
       // Empresa
       // Empresa — Importação
-      { path: 'importacao', canActivate: [empresaGuard], loadComponent: () => import('./pages/importacao/importacao').then(m => m.ImportacaoComponent) },
-      { path: 'importacao/entrada', canActivate: [empresaGuard], canDeactivate: [CanDeactivateGuard], data: { tipo: 'Entrada' }, loadComponent: () => import('./pages/importacao/importacao-form/importacao-form').then(m => m.ImportacaoFormComponent) },
-      { path: 'importacao/saida', canActivate: [empresaGuard], canDeactivate: [CanDeactivateGuard], data: { tipo: 'Saida' }, loadComponent: () => import('./pages/importacao/importacao-form/importacao-form').then(m => m.ImportacaoFormComponent) },
-      { path: 'lancamentos', canActivate: [empresaGuard], loadComponent: () => import('./pages/lancamentos/lancamentos').then(m => m.LancamentosComponent) },
-      { path: 'contas-pagar', canActivate: [empresaGuard], loadComponent: () => import('./pages/contas-pagar/contas-pagar').then(m => m.ContasPagarComponent) },
-      { path: 'importacao-config', canActivate: [empresaGuard], loadComponent: () => import('./pages/importacao-config/importacao-config').then(m => m.ImportacaoConfigComponent) },
-      { path: 'importacao-extrato', canActivate: [empresaGuard], loadComponent: () => import('./pages/importacao-extrato/importacao-extrato').then(m => m.ImportacaoExtratoComponent) },
-      { path: 'plano-contas', canActivate: [empresaGuard], loadComponent: () => import('./pages/plano-contas/plano-contas').then(m => m.PlanoContasComponent) },
-      { path: 'sefaz', canActivate: [empresaGuard], loadComponent: () => import('./pages/sefaz/sefaz').then(m => m.SefazComponent) },
-      { path: 'relatorios/balancete', canActivate: [empresaGuard], loadComponent: () => import('./pages/relatorios/balancete').then(m => m.BalanceteComponent) },
-      { path: 'relatorios/analitico', canActivate: [empresaGuard], loadComponent: () => import('./pages/relatorios/analitico').then(m => m.AnaliticoComponent) },
-      { path: 'relatorios/sintetico', canActivate: [empresaGuard], loadComponent: () => import('./pages/relatorios/sintetico').then(m => m.SinteticoComponent) },
-      { path: 'relatorios/dre', canActivate: [empresaGuard], loadComponent: () => import('./pages/relatorios/dre').then(m => m.DreComponent) },
-      { path: 'relatorios/balanco-patrimonial', canActivate: [empresaGuard], loadComponent: () => import('./pages/relatorios/balanco-patrimonial').then(m => m.BalancoPatrimonialComponent) },
-      { path: 'relatorios/contas-pagar', canActivate: [empresaGuard], loadComponent: () => import('./pages/relatorios/contas-pagar-relatorio').then(m => m.ContasPagarRelatorioComponent) },
+      { path: 'importacao', canActivate: [empresaGuard, telaGuard('importacao')], loadComponent: () => import('./pages/importacao/importacao').then(m => m.ImportacaoComponent) },
+      { path: 'importacao/entrada', canActivate: [empresaGuard, telaGuard('importacao')], canDeactivate: [CanDeactivateGuard], data: { tipo: 'Entrada' }, loadComponent: () => import('./pages/importacao/importacao-form/importacao-form').then(m => m.ImportacaoFormComponent) },
+      { path: 'importacao/saida', canActivate: [empresaGuard, telaGuard('importacao')], canDeactivate: [CanDeactivateGuard], data: { tipo: 'Saida' }, loadComponent: () => import('./pages/importacao/importacao-form/importacao-form').then(m => m.ImportacaoFormComponent) },
+      { path: 'lancamentos', canActivate: [empresaGuard, telaGuard('lancamentos')], loadComponent: () => import('./pages/lancamentos/lancamentos').then(m => m.LancamentosComponent) },
+      { path: 'contas-pagar', canActivate: [empresaGuard, telaGuard('contas-pagar')], loadComponent: () => import('./pages/contas-pagar/contas-pagar').then(m => m.ContasPagarComponent) },
+      { path: 'importacao-config', canActivate: [empresaGuard, telaGuard('lancamentos')], loadComponent: () => import('./pages/importacao-config/importacao-config').then(m => m.ImportacaoConfigComponent) },
+      { path: 'importacao-extrato', canActivate: [empresaGuard, telaGuard('lancamentos')], loadComponent: () => import('./pages/importacao-extrato/importacao-extrato').then(m => m.ImportacaoExtratoComponent) },
+      { path: 'plano-contas', canActivate: [empresaGuard, telaGuard('plano-contas')], loadComponent: () => import('./pages/plano-contas/plano-contas').then(m => m.PlanoContasComponent) },
+      { path: 'sefaz', canActivate: [empresaGuard, telaGuard('sefaz')], loadComponent: () => import('./pages/sefaz/sefaz').then(m => m.SefazComponent) },
+      { path: 'relatorios/balancete', canActivate: [empresaGuard, telaGuard('relatorios-balancete')], loadComponent: () => import('./pages/relatorios/balancete').then(m => m.BalanceteComponent) },
+      { path: 'relatorios/analitico', canActivate: [empresaGuard, telaGuard('relatorios-analitico')], loadComponent: () => import('./pages/relatorios/analitico').then(m => m.AnaliticoComponent) },
+      { path: 'relatorios/sintetico', canActivate: [empresaGuard, telaGuard('relatorios-sintetico')], loadComponent: () => import('./pages/relatorios/sintetico').then(m => m.SinteticoComponent) },
+      { path: 'relatorios/dre', canActivate: [empresaGuard, telaGuard('relatorios-dre')], loadComponent: () => import('./pages/relatorios/dre').then(m => m.DreComponent) },
+      { path: 'relatorios/balanco-patrimonial', canActivate: [empresaGuard, telaGuard('relatorios-balanco-patrimonial')], loadComponent: () => import('./pages/relatorios/balanco-patrimonial').then(m => m.BalancoPatrimonialComponent) },
+      { path: 'relatorios/contas-pagar', canActivate: [empresaGuard, telaGuard('relatorios-contas-pagar')], loadComponent: () => import('./pages/relatorios/contas-pagar-relatorio').then(m => m.ContasPagarRelatorioComponent) },
 
       // Contador (Admin)
       { path: 'admin/relatorios/balancete', canActivate: [contadorGuard], loadComponent: () => import('./pages/admin-relatorios/admin-balancete').then(m => m.AdminBalanceteComponent) },

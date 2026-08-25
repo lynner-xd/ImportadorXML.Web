@@ -48,3 +48,13 @@ export const desenvolvedorGuard: CanActivateFn = () => {
   router.navigate(['/home']);
   return false;
 };
+
+export const telaGuard = (chave: string): CanActivateFn => () => {
+  const auth = inject(AuthService);
+  const router = inject(Router);
+
+  if (auth.temTela(chave)) return true;
+
+  router.navigate(['/home']);
+  return false;
+};

@@ -9,6 +9,7 @@ interface MenuItem {
   route?: string;
   children?: MenuItem[];
   expanded?: boolean;
+  tela?: string;
 }
 
 @Component({
@@ -58,24 +59,25 @@ export class SidebarComponent {
       ];
     }
 
-    return [
+    const itens: MenuItem[] = [
       { label: 'Home', icon: 'pi pi-home', route: '/home' },
-      { label: 'Importar XML', icon: 'pi pi-upload', route: '/importacao' },
-      { label: 'Integração SEFAZ', icon: 'pi pi-cloud-download', route: '/sefaz' },
-      { label: 'Lançamentos', icon: 'pi pi-pencil', route: '/lancamentos' },
-      { label: 'Contas a Pagar', icon: 'pi pi-wallet', route: '/contas-pagar' },
-      { label: 'Plano de Contas', icon: 'pi pi-sitemap', route: '/plano-contas' },
+      { label: 'Importar XML', icon: 'pi pi-upload', route: '/importacao', tela: 'importacao' },
+      { label: 'Integração SEFAZ', icon: 'pi pi-cloud-download', route: '/sefaz', tela: 'sefaz' },
+      { label: 'Lançamentos', icon: 'pi pi-pencil', route: '/lancamentos', tela: 'lancamentos' },
+      { label: 'Contas a Pagar', icon: 'pi pi-wallet', route: '/contas-pagar', tela: 'contas-pagar' },
+      { label: 'Plano de Contas', icon: 'pi pi-sitemap', route: '/plano-contas', tela: 'plano-contas' },
       {
         label: 'Relatórios', icon: 'pi pi-chart-bar', children: [
-          { label: 'Balancete', icon: 'pi pi-list', route: '/relatorios/balancete' },
-          { label: 'Analítico', icon: 'pi pi-search', route: '/relatorios/analitico' },
-          { label: 'Sintético', icon: 'pi pi-table', route: '/relatorios/sintetico' },
-          { label: 'DRE', icon: 'pi pi-chart-line', route: '/relatorios/dre' },
-          { label: 'Balanço Patrimonial', icon: 'pi pi-wallet', route: '/relatorios/balanco-patrimonial' },
-          { label: 'Contas a Pagar', icon: 'pi pi-money-bill', route: '/relatorios/contas-pagar' },
+          { label: 'Balancete', icon: 'pi pi-list', route: '/relatorios/balancete', tela: 'relatorios-balancete' },
+          { label: 'Analítico', icon: 'pi pi-search', route: '/relatorios/analitico', tela: 'relatorios-analitico' },
+          { label: 'Sintético', icon: 'pi pi-table', route: '/relatorios/sintetico', tela: 'relatorios-sintetico' },
+          { label: 'DRE', icon: 'pi pi-chart-line', route: '/relatorios/dre', tela: 'relatorios-dre' },
+          { label: 'Balanço Patrimonial', icon: 'pi pi-wallet', route: '/relatorios/balanco-patrimonial', tela: 'relatorios-balanco-patrimonial' },
+          { label: 'Contas a Pagar', icon: 'pi pi-money-bill', route: '/relatorios/contas-pagar', tela: 'relatorios-contas-pagar' },
         ]
       },
     ];
+    return this.filtrarPorTelas(itens);
   });
 
   rootMenuItems = computed(() =>
@@ -87,6 +89,16 @@ export class SidebarComponent {
       }))
       .filter((item): item is { label: string; icon: string; route: string } => item.route != null)
   );
+
+  private filtrarPorTelas(itens: MenuItem[]): MenuItem[] {
+    return itens
+      .map(item => item.children
+        ? { ...item, children: item.children.filter(c => !c.tela || this.auth.temTela(c.tela)) }
+        : item)
+      .filter(item => item.children
+        ? item.children.length > 0
+        : !item.tela || this.auth.temTela(item.tela));
+  }
 
   toggleExpand(item: MenuItem): void {
     item.expanded = !item.expanded;

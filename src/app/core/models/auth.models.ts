@@ -9,6 +9,7 @@ export interface LoginResponse {
   role: string;
   razaoSocial?: string;
   primeiroAcesso: boolean;
+  telas?: string[] | null;
 }
 
 export interface AlterarSenhaRequest {
