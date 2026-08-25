@@ -108,6 +108,23 @@
           <input type="text" [(ngModel)]="form.contadorCrc" placeholder="Ex.: CRC/SP 123456/O-7" />
         </div>
 
+        <div class="section-divider">
+          <span>Telas liberadas</span>
+        </div>
+        <p class="section-hint">
+          O usuário só verá e acessará as telas marcadas. Novas funcionalidades do sistema começam desmarcadas.
+        </p>
+        <div class="telas-grid">
+          @for (t of telasCatalogo; track t.chave) {
+            <label class="chk-tela">
+              <input type="checkbox"
+                     [checked]="telasSelecionadas.has(t.chave)"
+                     (change)="toggleTela(t.chave)" />
+              {{ t.label }}
+            </label>
+          }
+        </div>
+
         @if (!editando()) {
           <div class="info-msg">
             <i class="pi pi-info-circle"></i>

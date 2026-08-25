@@ -46,6 +46,21 @@
 .info-msg { display: flex; align-items: center; gap: 0.5rem; padding: 0.65rem 0.85rem; background: rgba(56, 189, 248, 0.1); border: 1px solid rgba(56, 189, 248, 0.3); border-radius: var(--radius-xs); color: var(--info); font-size: 0.8125rem; }
 .error-msg { display: flex; align-items: center; gap: 0.5rem; padding: 0.65rem 0.85rem; background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.3); border-radius: var(--radius-xs); color: var(--error); font-size: 0.8125rem; }
 
+.telas-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.4rem 1rem;
+  margin-bottom: 1rem;
+
+  .chk-tela {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.875rem;
+    cursor: pointer;
+  }
+}
+
 @media (max-width: 768px) {
   .page-header {
     flex-wrap: wrap;

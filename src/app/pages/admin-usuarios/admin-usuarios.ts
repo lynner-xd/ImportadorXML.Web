@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { ApiService } from '../../core/services/api.service';
 import { ConfirmService } from '../../core/services/confirm.service';
 import { UsuarioResponse, CriarUsuarioRequest, EditarUsuarioRequest } from '../../core/models/usuario.models';
+import { TELAS_CATALOGO } from '../../core/models/telas';
 
 @Component({
   selector: 'app-admin-usuarios',
@@ -19,6 +20,9 @@ export class AdminUsuariosComponent implements OnInit {
   editando = signal<UsuarioResponse | null>(null);
   error = signal('');
   successMsg = signal('');
+
+  readonly telasCatalogo = TELAS_CATALOGO;
+  telasSelecionadas = new Set<string>();
 
   form: CriarUsuarioRequest = {
     email: '',
@@ -54,6 +58,7 @@ export class AdminUsuariosComponent implements OnInit {
       contadorNome: '',
       contadorCrc: ''
     };
+    this.telasSelecionadas = new Set(TELAS_CATALOGO.filter(t => t.padrao).map(t => t.chave));
     this.editando.set(null);
     this.error.set('');
     this.showDialog.set(true);
@@ -69,9 +74,15 @@ export class AdminUsuariosComponent implements OnInit {
       contadorNome: u.empresa?.contadorNome ?? '',
       contadorCrc: u.empresa?.contadorCrc ?? ''
     };
+    this.telasSelecionadas = new Set(u.telas ?? TELAS_CATALOGO.map(t => t.chave));
     this.editando.set(u);
     this.error.set('');
     this.showDialog.set(true);
+  }
+
+  toggleTela(chave: string): void {
+    if (this.telasSelecionadas.has(chave)) this.telasSelecionadas.delete(chave);
+    else this.telasSelecionadas.add(chave);
   }
 
   salvar(): void {
@@ -87,7 +98,8 @@ export class AdminUsuariosComponent implements OnInit {
       socioNome: this.form.socioNome || null,
       socioCpfCnpj: this.form.socioCpfCnpj || null,
       contadorNome: this.form.contadorNome || null,
-      contadorCrc: this.form.contadorCrc || null
+      contadorCrc: this.form.contadorCrc || null,
+      telas: TELAS_CATALOGO.filter(t => this.telasSelecionadas.has(t.chave)).map(t => t.chave)
     };
 
     const edit = this.editando();

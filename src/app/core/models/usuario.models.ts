@@ -5,6 +5,7 @@ export interface UsuarioResponse {
   ativo: boolean;
   dataCriacao: string;
   empresa?: EmpresaResumo;
+  telas?: string[] | null;
 }
 
 export interface EmpresaResumo {
@@ -26,6 +27,7 @@ export interface CriarUsuarioRequest {
   socioCpfCnpj?: string | null;
   contadorNome?: string | null;
   contadorCrc?: string | null;
+  telas?: string[] | null;
 }
 
 export interface EditarUsuarioRequest {
@@ -36,6 +38,7 @@ export interface EditarUsuarioRequest {
   socioCpfCnpj?: string | null;
   contadorNome?: string | null;
   contadorCrc?: string | null;
+  telas?: string[] | null;
 }
 
 export interface AlterarStatusRequest {
