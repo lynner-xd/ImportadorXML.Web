@@ -40,3 +40,7 @@ testem.log
 # System files
 .DS_Store
 Thumbs.db
+
+# Logs de build de sessoes de debug
+build*.log
+build_output.txt
