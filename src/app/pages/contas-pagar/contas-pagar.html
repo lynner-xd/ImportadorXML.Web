@@ -199,10 +199,10 @@
       <div class="import-upload">
         <div class="selection-buttons">
           <div class="file-drop" (click)="fileInput.click()">
-            <input #fileInput type="file" accept=".xml,.zip" multiple (change)="onFileSelect($event)" hidden />
+            <input #fileInput type="file" accept=".xml,.zip,.rar" multiple (change)="onFileSelect($event)" hidden />
             <i class="pi pi-cloud-upload"></i>
             <span>Selecionar arquivos</span>
-            <small>XML ou ZIP — múltiplos permitidos</small>
+            <small>XML, ZIP ou RAR — múltiplos permitidos</small>
           </div>
           <div class="file-drop" (click)="folderInput.click()">
             <input #folderInput type="file" webkitdirectory (change)="onFolderSelect($event)" hidden />
