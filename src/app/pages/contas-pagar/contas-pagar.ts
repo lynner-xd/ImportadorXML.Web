@@ -33,13 +33,15 @@ export class ContasPagarComponent implements OnInit, OnDestroy {
   totalParcelas = signal(0);
   totalPaginas = computed(() => Math.max(1, Math.ceil(this.totalParcelas() / this.pageSize)));
 
-  // Seleção múltipla — por nota (contaPagarId): excluir remove a nota inteira com todas as parcelas
+  // Seleção múltipla — por parcela (permite baixa em lote); excluir age sobre as notas das parcelas selecionadas
   selecionados = signal<Set<string>>(new Set());
   todosSelecionados = computed(() => {
-    const ids = new Set(this.parcelas().map(p => p.contaPagarId));
+    const parcelas = this.parcelas();
     const sel = this.selecionados();
-    return ids.size > 0 && Array.from(ids).every(id => sel.has(id));
+    return parcelas.length > 0 && parcelas.every(p => sel.has(p.id));
   });
+  selecionadasAbertas = computed(() =>
+    this.parcelas().filter(p => this.selecionados().has(p.id) && !p.paga));
 
   // Filtros
   filtroStatus: 'abertas' | 'pagas' | 'todas' = 'todas';
@@ -49,6 +51,7 @@ export class ContasPagarComponent implements OnInit, OnDestroy {
 
   // Baixa
   baixaParcelaId = signal<string | null>(null);
+  baixaLote = signal(false);
   dataPagamento = '';
   contasPagamento = signal<PlanoContaResponse[]>([]);
   contaPagamentoId = '';
@@ -165,13 +168,34 @@ export class ContasPagarComponent implements OnInit, OnDestroy {
     this.contaPagamentoId = caixa?.id ?? '';
   }
 
+  abrirBaixaLote(): void {
+    if (this.selecionadasAbertas().length === 0) return;
+    this.baixaLote.set(true);
+    this.dataPagamento = new Date().toISOString().slice(0, 10);
+    const caixa = this.contasPagamento().find(c => c.codigo === '1.1.1.1.001');
+    this.contaPagamentoId = caixa?.id ?? '';
+  }
+
+  fecharBaixa(): void {
+    this.baixaParcelaId.set(null);
+    this.baixaLote.set(false);
+  }
+
   confirmarBaixa(): void {
-    const id = this.baixaParcelaId();
-    if (!id || !this.dataPagamento || !this.contaPagamentoId) return;
-    this.api.pagarParcelaContaPagar(id, this.dataPagamento, this.contaPagamentoId, this.empresaParam).subscribe({
-      next: () => { this.baixaParcelaId.set(null); this.carregarPagina(); },
+    if (!this.dataPagamento || !this.contaPagamentoId) return;
+    const ids = this.baixaLote()
+      ? this.selecionadasAbertas().map(p => p.id)
+      : [this.baixaParcelaId()].filter((id): id is string => !!id);
+    if (ids.length === 0) return;
+    forkJoin(ids.map(id =>
+      this.api.pagarParcelaContaPagar(id, this.dataPagamento, this.contaPagamentoId, this.empresaParam))).subscribe({
+      next: () => {
+        this.fecharBaixa();
+        if (ids.length > 1) this.showToast(`${ids.length} parcela(s) baixada(s).`);
+        this.carregarPagina();
+      },
       error: (err) => {
-        this.baixaParcelaId.set(null);
+        this.fecharBaixa();
         this.carregarPagina();
         this.showToast(err.error?.message ?? 'Erro ao confirmar a baixa.');
       }
@@ -190,15 +214,15 @@ export class ContasPagarComponent implements OnInit, OnDestroy {
   }
 
   // ===== Seleção múltipla =====
-  toggleSelecao(contaPagarId: string): void {
+  toggleSelecao(parcelaId: string): void {
     const set = new Set(this.selecionados());
-    if (set.has(contaPagarId)) set.delete(contaPagarId);
-    else set.add(contaPagarId);
+    if (set.has(parcelaId)) set.delete(parcelaId);
+    else set.add(parcelaId);
     this.selecionados.set(set);
   }
 
   selecionarTodos(): void {
-    this.selecionados.set(new Set(this.parcelas().map(p => p.contaPagarId)));
+    this.selecionados.set(new Set(this.parcelas().map(p => p.id)));
   }
 
   limparSelecao(): void {
@@ -206,15 +230,17 @@ export class ContasPagarComponent implements OnInit, OnDestroy {
   }
 
   async excluirSelecionados(): Promise<void> {
-    const ids = Array.from(this.selecionados());
-    if (ids.length === 0) return;
+    const sel = this.selecionados();
+    const notaIds = Array.from(new Set(
+      this.parcelas().filter(p => sel.has(p.id)).map(p => p.contaPagarId)));
+    if (notaIds.length === 0) return;
     const ok = await this.confirmService.confirmar({
-      mensagem: `Você está prestes a excluir ${ids.length} nota(s) e todas as suas parcelas. Esta ação não pode ser desfeita.`,
+      mensagem: `Você está prestes a excluir ${notaIds.length} nota(s) INTEIRA(S) — todas as parcelas dessas notas serão removidas, não só as selecionadas. Esta ação não pode ser desfeita.`,
       perigo: true,
       textoConfirmar: 'Excluir'
     });
     if (!ok) return;
-    forkJoin(ids.map(id => this.api.excluirContaPagar(id, this.empresaParam))).subscribe({
+    forkJoin(notaIds.map(id => this.api.excluirContaPagar(id, this.empresaParam))).subscribe({
       next: () => this.carregarPagina(),
       error: () => this.carregarPagina()
     });
