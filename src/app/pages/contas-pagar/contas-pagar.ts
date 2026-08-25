@@ -281,6 +281,17 @@ export class ContasPagarComponent implements OnInit, OnDestroy {
     if (input.files) this.arquivos.set(Array.from(input.files));
   }
 
+  onFolderSelect(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    if (!input.files) return;
+    // Só os XMLs do nível raiz da pasta (mesma regra da tela Importador XML)
+    const xmlsRaiz = Array.from(input.files).filter(f =>
+      f.name.toLowerCase().endsWith('.xml') &&
+      (f as any).webkitRelativePath.split('/').length === 2
+    );
+    this.arquivos.set(xmlsRaiz);
+  }
+
   analisar(): void {
     if (this.arquivos().length === 0) return;
     this.analisando.set(true);

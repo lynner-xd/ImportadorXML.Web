@@ -197,11 +197,19 @@
   <div class="card">
     @if (!previewItens()) {
       <div class="import-upload">
-        <div class="file-drop" (click)="fileInput.click()">
-          <input #fileInput type="file" accept=".xml" multiple (change)="onFileSelect($event)" hidden />
-          <i class="pi pi-cloud-upload"></i>
-          <span>Selecionar arquivos XML</span>
-          <small>NFe — múltiplos permitidos</small>
+        <div class="selection-buttons">
+          <div class="file-drop" (click)="fileInput.click()">
+            <input #fileInput type="file" accept=".xml,.zip" multiple (change)="onFileSelect($event)" hidden />
+            <i class="pi pi-cloud-upload"></i>
+            <span>Selecionar arquivos</span>
+            <small>XML ou ZIP — múltiplos permitidos</small>
+          </div>
+          <div class="file-drop" (click)="folderInput.click()">
+            <input #folderInput type="file" webkitdirectory (change)="onFolderSelect($event)" hidden />
+            <i class="pi pi-folder-open"></i>
+            <span>Selecionar pasta</span>
+            <small>Importa todos os XMLs da pasta</small>
+          </div>
         </div>
         @if (arquivos().length > 0) {
           <div class="file-list">

@@ -333,6 +333,15 @@
 .dialog-sm { max-width: 380px; }
 
 // ===== Fluxo de importação (de importacao-form.scss) =====
+.selection-buttons {
+  display: flex;
+  gap: 16px;
+
+  .file-drop {
+    flex: 1;
+  }
+}
+
 .file-drop {
   display: flex;
   flex-direction: column;
