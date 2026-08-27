@@ -44,7 +44,7 @@ export class ContasPagarComponent implements OnInit, OnDestroy {
     this.parcelas().filter(p => this.selecionados().has(p.id) && !p.paga));
 
   // Filtros
-  filtroStatus: 'abertas' | 'pagas' | 'todas' = 'todas';
+  filtroStatus: 'abertas' | 'vencidas' | 'pagas' | 'todas' = 'todas';
   filtroVencInicio = '';
   filtroVencFim = '';
   filtroFornecedor = '';
@@ -53,8 +53,16 @@ export class ContasPagarComponent implements OnInit, OnDestroy {
   baixaParcelaId = signal<string | null>(null);
   baixaLote = signal(false);
   dataPagamento = '';
-  contasPagamento = signal<PlanoContaResponse[]>([]);
+  private contasAnaliticas = signal<PlanoContaResponse[]>([]);
+  contasPagamento = computed(() => this.contasAnaliticas().filter(c => c.codigo.startsWith('1.1.1.')));
   contaPagamentoId = '';
+
+  // Lançamento manual (sem nota): qualquer analítica exceto fornecedores 2.1.1.1.*
+  contasDebito = computed(() => this.contasAnaliticas().filter(c => !c.codigo.startsWith('2.1.1.1.')));
+  modoManual = signal(false);
+  salvandoManual = signal(false);
+  erroManual = signal('');
+  manual = this.novoManual();
 
   // Toast
   toastVisible = signal(false);
@@ -106,18 +114,23 @@ export class ContasPagarComponent implements OnInit, OnDestroy {
       ? this.api.getAdminPlanoContas(this.empresaId)
       : this.api.listarPlanoContas();
     obs.subscribe({
-      next: contas => this.contasPagamento.set(
-        contas.filter(c => c.codigo.startsWith('1.1.1.') && c.codigo.split('.').length === 5))
+      next: contas => this.contasAnaliticas.set(contas.filter(c => c.codigo.split('.').length === 5))
     });
   }
 
   carregarPagina(): void {
     this.loading.set(true);
     const paga = this.filtroStatus === 'todas' ? undefined : this.filtroStatus === 'pagas';
+    // Vencidas = em aberto com vencimento até ontem (mesma regra de estaVencida); a API filtra por dia inclusivo
+    let vencimentoFim = this.filtroVencFim || undefined;
+    if (this.filtroStatus === 'vencidas') {
+      const ontem = hojeLocal(-1);
+      vencimentoFim = vencimentoFim && vencimentoFim < ontem ? vencimentoFim : ontem;
+    }
     this.api.listarParcelasContasPagar({
       page: this.pagina(), pageSize: this.pageSize, paga,
       vencimentoInicio: this.filtroVencInicio || undefined,
-      vencimentoFim: this.filtroVencFim || undefined,
+      vencimentoFim,
       fornecedor: this.filtroFornecedor || undefined,
       empresaId: this.empresaParam
     }).subscribe({
@@ -155,9 +168,7 @@ export class ContasPagarComponent implements OnInit, OnDestroy {
 
   // Vencida = em aberto com vencimento anterior a hoje (método regular: deriva de dados de linha)
   estaVencida(p: ContaPagarParcelaList): boolean {
-    const hoje = new Date();
-    const hojeLocal = `${hoje.getFullYear()}-${String(hoje.getMonth() + 1).padStart(2, '0')}-${String(hoje.getDate()).padStart(2, '0')}`;
-    return !p.paga && p.dataVencimento.slice(0, 10) < hojeLocal;
+    return !p.paga && p.dataVencimento.slice(0, 10) < hojeLocal();
   }
 
   // ===== Baixa =====
@@ -321,20 +332,65 @@ export class ContasPagarComponent implements OnInit, OnDestroy {
   // Regenera as parcelas quando o usuário muda forma de pagamento ou nº de parcelas.
   // Método regular (não computed) — os campos vêm de [(ngModel)].
   regerarParcelas(item: PreviewEdicao): void {
-    const emissao = (item.base.dataEmissao ?? '').slice(0, 10);
-    const valorTotal = item.base.valorTotal ?? 0;
-    if (item.formaPagamento === 'AVista') {
-      item.numeroParcelas = 1;
-      item.parcelas = [{ numero: 1, valor: valorTotal, dataVencimento: emissao }];
+    gerarParcelas(item, (item.base.dataEmissao ?? '').slice(0, 10), item.base.valorTotal ?? 0);
+  }
+
+  // ===== Lançamento manual =====
+  private novoManual(): ManualEdicao {
+    const hoje = new Date().toISOString().slice(0, 10);
+    return {
+      nomeFornecedor: '', cnpjFornecedor: '', documento: '', dataEmissao: hoje, valorTotal: 0,
+      contaDebitoId: '', formaPagamento: 'AVista', numeroParcelas: 1,
+      parcelas: [{ numero: 1, valor: 0, dataVencimento: hoje }]
+    };
+  }
+
+  abrirManual(): void {
+    this.manual = this.novoManual();
+    this.erroManual.set('');
+    this.modoManual.set(true);
+  }
+
+  fecharManual(): void { this.modoManual.set(false); }
+
+  regerarParcelasManual(): void {
+    gerarParcelas(this.manual, this.manual.dataEmissao, Number(this.manual.valorTotal) || 0);
+  }
+
+  salvarManual(): void {
+    const m = this.manual;
+    if (!m.nomeFornecedor.trim() || !m.cnpjFornecedor.trim() || !m.documento.trim() || !m.dataEmissao || !m.contaDebitoId) {
+      this.erroManual.set('Preencha fornecedor, CNPJ/CPF, documento, data e conta de débito.');
       return;
     }
-    const n = Math.max(1, Math.min(60, Math.floor(item.numeroParcelas) || 1));
-    item.numeroParcelas = n;
-    const base = Math.floor((valorTotal / n) * 100) / 100;
-    item.parcelas = Array.from({ length: n }, (_, i) => {
-      const numero = i + 1;
-      const valor = numero === n ? Math.round((valorTotal - base * (n - 1)) * 100) / 100 : base;
-      return { numero, valor, dataVencimento: addMonthsClamped(emissao, numero) };
+    if (!(Number(m.valorTotal) > 0)) { this.erroManual.set('Informe um valor maior que zero.'); return; }
+    if (m.parcelas.some(p => !p.dataVencimento || !(Number(p.valor) > 0))) {
+      this.erroManual.set('Preencha valor e vencimento de todas as parcelas.');
+      return;
+    }
+    this.erroManual.set('');
+    this.salvandoManual.set(true);
+    this.api.criarContaPagarManual({
+      nomeFornecedor: m.nomeFornecedor.trim(),
+      cnpjFornecedor: m.cnpjFornecedor.replace(/\D/g, ''),
+      documento: m.documento.trim(),
+      dataEmissao: m.dataEmissao,
+      valorTotal: Number(m.valorTotal),
+      formaPagamento: m.formaPagamento,
+      numeroParcelas: m.parcelas.length,
+      contaDebitoId: m.contaDebitoId,
+      parcelas: m.parcelas.map(p => ({ numero: p.numero, valor: Number(p.valor), dataVencimento: p.dataVencimento }))
+    }, this.empresaParam).subscribe({
+      next: () => {
+        this.salvandoManual.set(false);
+        this.fecharManual();
+        this.showToast('Conta a pagar lançada.');
+        this.carregarPagina();
+      },
+      error: (err) => {
+        this.erroManual.set(err.error?.message ?? 'Erro ao salvar.');
+        this.salvandoManual.set(false);
+      }
     });
   }
 
@@ -382,6 +438,13 @@ export class ContasPagarComponent implements OnInit, OnDestroy {
   }
 }
 
+// Data local yyyy-MM-dd deslocada em N dias (0 = hoje, -1 = ontem)
+function hojeLocal(offsetDias = 0): string {
+  const d = new Date();
+  d.setDate(d.getDate() + offsetDias);
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+}
+
 // Replica o clamp do .NET DateTime.AddMonths (31/01 + 1 mês = 28/02, não 03/03).
 function addMonthsClamped(dateStr: string, months: number): string {
   const [y, m, d] = dateStr.split('-').map(Number);
@@ -393,10 +456,39 @@ function addMonthsClamped(dateStr: string, months: number): string {
   return `${targetYear}-${String(targetMonth + 1).padStart(2, '0')}-${String(dia).padStart(2, '0')}`;
 }
 
-interface PreviewEdicao {
-  base: ContaPagarPreviewItem;
-  incluir: boolean;
+// Divide valorTotal em N parcelas mensais (arredondamento na última) — espelha ContasPagarService.GerarParcelas.
+function gerarParcelas(alvo: ParcelasEdicao, emissao: string, valorTotal: number): void {
+  if (alvo.formaPagamento === 'AVista') {
+    alvo.numeroParcelas = 1;
+    alvo.parcelas = [{ numero: 1, valor: valorTotal, dataVencimento: emissao }];
+    return;
+  }
+  const n = Math.max(1, Math.min(60, Math.floor(alvo.numeroParcelas) || 1));
+  alvo.numeroParcelas = n;
+  const base = Math.floor((valorTotal / n) * 100) / 100;
+  alvo.parcelas = Array.from({ length: n }, (_, i) => {
+    const numero = i + 1;
+    const valor = numero === n ? Math.round((valorTotal - base * (n - 1)) * 100) / 100 : base;
+    return { numero, valor, dataVencimento: addMonthsClamped(emissao, numero) };
+  });
+}
+
+interface ParcelasEdicao {
   formaPagamento: string;   // 'AVista' | 'APrazo'
   numeroParcelas: number;
   parcelas: { numero: number; valor: number; dataVencimento: string }[]; // dataVencimento yyyy-MM-dd
+}
+
+interface ManualEdicao extends ParcelasEdicao {
+  nomeFornecedor: string;
+  cnpjFornecedor: string;
+  documento: string;
+  dataEmissao: string;
+  valorTotal: number;
+  contaDebitoId: string;
+}
+
+interface PreviewEdicao extends ParcelasEdicao {
+  base: ContaPagarPreviewItem;
+  incluir: boolean;
 }

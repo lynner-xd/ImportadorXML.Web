@@ -8,9 +8,12 @@
 <div class="page-header">
   <div>
     <h1>Contas a Pagar</h1>
-    <p>Parcelas de notas fiscais importadas por XML</p>
+    <p>Parcelas de notas fiscais importadas por XML ou lançadas manualmente</p>
   </div>
   <div class="header-actions">
+    <button class="btn-secondary" [disabled]="isAdmin && !empresaId" (click)="abrirManual()">
+      <i class="pi pi-plus"></i> Lançamento manual
+    </button>
     <button class="btn-primary" [disabled]="isAdmin && !empresaId" (click)="abrirImportacao()">
       <i class="pi pi-upload"></i> Importar XML
     </button>
@@ -39,6 +42,7 @@
         <label>Status</label>
         <select [(ngModel)]="filtroStatus" (ngModelChange)="aoMudarFiltro()">
           <option value="abertas">Em aberto</option>
+          <option value="vencidas">Vencidas</option>
           <option value="pagas">Pagas</option>
           <option value="todas">Todas</option>
         </select>
@@ -70,7 +74,7 @@
     @if (loading()) {
       <div class="loading"><i class="pi pi-spin pi-spinner"></i> Carregando...</div>
     } @else if (parcelas().length === 0 && !temFiltroAtivo) {
-      <div class="empty">Nenhuma conta a pagar lançada. Use "Importar XML" para começar.</div>
+      <div class="empty">Nenhuma conta a pagar lançada. Use "Importar XML" ou "Lançamento manual" para começar.</div>
     } @else if (parcelas().length === 0 && temFiltroAtivo) {
       <div class="empty">Nenhuma parcela corresponde aos filtros.</div>
     } @else {
@@ -188,6 +192,82 @@
         <div class="dialog-footer">
           <button class="btn-secondary" (click)="fecharBaixa()">Cancelar</button>
           <button class="btn-primary" [disabled]="!dataPagamento || !contaPagamentoId" (click)="confirmarBaixa()">Confirmar baixa</button>
+        </div>
+      </div>
+    </div>
+  }
+  @if (modoManual()) {
+    <div class="dialog-overlay" (click)="fecharManual()">
+      <div class="dialog dialog-lg" (click)="$event.stopPropagation()">
+        <div class="dialog-header">
+          <h2>Lançamento manual de conta a pagar</h2>
+        </div>
+        <div class="dialog-content">
+          <div class="form-grid">
+            <div class="field span-2">
+              <label>Fornecedor</label>
+              <input type="text" maxlength="300" [(ngModel)]="manual.nomeFornecedor" placeholder="Razão social / nome" />
+            </div>
+            <div class="field">
+              <label>CNPJ/CPF</label>
+              <input type="text" maxlength="18" [(ngModel)]="manual.cnpjFornecedor" placeholder="Somente números" />
+            </div>
+            <div class="field">
+              <label>Documento / descrição</label>
+              <input type="text" maxlength="20" [(ngModel)]="manual.documento" placeholder="Ex.: Aluguel 08/2026" />
+            </div>
+            <div class="field">
+              <label>Data</label>
+              <input type="date" [(ngModel)]="manual.dataEmissao" (change)="regerarParcelasManual()" />
+            </div>
+            <div class="field">
+              <label>Valor total</label>
+              <input type="number" step="0.01" min="0.01" [(ngModel)]="manual.valorTotal" (change)="regerarParcelasManual()" />
+            </div>
+            <div class="field span-2">
+              <label>Conta de débito (despesa/ativo)</label>
+              <select [(ngModel)]="manual.contaDebitoId">
+                <option value="">Selecione a conta...</option>
+                @for (c of contasDebito(); track c.id) {
+                  <option [value]="c.id">{{ c.codigo }} - {{ c.nome }}</option>
+                }
+              </select>
+            </div>
+            <div class="field">
+              <label>Pagamento</label>
+              <select [(ngModel)]="manual.formaPagamento" (ngModelChange)="regerarParcelasManual()">
+                <option value="AVista">À vista</option>
+                <option value="APrazo">A prazo</option>
+              </select>
+            </div>
+            @if (manual.formaPagamento === 'APrazo') {
+              <div class="field">
+                <label>Parcelas</label>
+                <input type="number" min="1" max="60" [(ngModel)]="manual.numeroParcelas" (change)="regerarParcelasManual()" />
+              </div>
+            }
+          </div>
+          <table class="data-table parcelas-edit">
+            <thead>
+              <tr><th>#</th><th>Valor</th><th>Vencimento</th></tr>
+            </thead>
+            <tbody>
+              @for (par of manual.parcelas; track par.numero) {
+                <tr>
+                  <td>{{ par.numero }}</td>
+                  <td><input type="number" step="0.01" [(ngModel)]="par.valor" /></td>
+                  <td><input type="date" [(ngModel)]="par.dataVencimento" /></td>
+                </tr>
+              }
+            </tbody>
+          </table>
+          @if (erroManual()) { <div class="error-msg">{{ erroManual() }}</div> }
+        </div>
+        <div class="dialog-footer">
+          <button class="btn-secondary" (click)="fecharManual()">Cancelar</button>
+          <button class="btn-primary" [disabled]="salvandoManual()" (click)="salvarManual()">
+            @if (salvandoManual()) { <i class="pi pi-spin pi-spinner"></i> Gravando... } @else { Lançar }
+          </button>
         </div>
       </div>
     </div>

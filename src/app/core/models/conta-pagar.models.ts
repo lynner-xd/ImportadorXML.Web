@@ -44,6 +44,18 @@ export interface ConfirmarContaPagarItem {
   parcelas: ContaPagarParcelaEdicao[];
 }
 
+export interface CriarContaPagarManual {
+  nomeFornecedor: string;
+  cnpjFornecedor: string;
+  documento: string;
+  dataEmissao: string;
+  valorTotal: number;
+  formaPagamento: string;
+  numeroParcelas: number;
+  parcelas: ContaPagarParcelaEdicao[];
+  contaDebitoId: string;
+}
+
 export interface ConfirmarContasPagarResultado {
   totalCriados: number;
   erros: { chaveAcesso: string; mensagem: string }[];

@@ -16,7 +16,7 @@ import { AtividadeMonitor, ErroMonitor, EmpresaMonitorOption } from '../models/m
 import { IntegracaoEmpresaResponse, GerarTokenResponse } from '../models/integracao.models';
 import { ConfiguracaoSefaz, SefazBuscaResultado, NotasPendentesPaged } from '../models/sefaz.models';
 import { ConfiguracaoBuscaAutomatica, FilaBuscaAutomaticaItem, ExecucaoResumo, ExecucaoDetalhe } from '../models/sefaz-automatico.models';
-import { ContaPagarParcelaList, ContaPagarParcelaEdicao, ContaPagarPreviewItem, ConfirmarContaPagarItem, ConfirmarContasPagarResultado } from '../models/conta-pagar.models';
+import { ContaPagarParcelaList, ContaPagarParcelaEdicao, ContaPagarPreviewItem, ConfirmarContaPagarItem, ConfirmarContasPagarResultado, CriarContaPagarManual } from '../models/conta-pagar.models';
 
 @Injectable({ providedIn: 'root' })
 export class ApiService {
@@ -491,6 +491,11 @@ export class ApiService {
   confirmarContasPagar(itens: ConfirmarContaPagarItem[], empresaId?: string): Observable<ConfirmarContasPagarResultado> {
     const { url, params } = this.contasPagarBase(empresaId);
     return this.http.post<ConfirmarContasPagarResultado>(`${url}/confirmar`, { itens }, { params });
+  }
+
+  criarContaPagarManual(dto: CriarContaPagarManual, empresaId?: string): Observable<{ id: string }> {
+    const { url, params } = this.contasPagarBase(empresaId);
+    return this.http.post<{ id: string }>(`${url}/manual`, dto, { params });
   }
 
   listarParcelasContasPagar(opts: {
