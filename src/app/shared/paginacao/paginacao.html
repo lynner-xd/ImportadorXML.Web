@@ -1,0 +1,23 @@
+@if (totalPaginas() > 1) {
+  <nav class="paginacao" aria-label="Paginação">
+    <span class="paginacao-info">
+      Página {{ pagina() }} de {{ totalPaginas() }} ({{ inicio() }}–{{ fim() }} de {{ totalItens() }} {{ rotulo() }})
+    </span>
+    <div class="paginacao-botoes">
+      <button type="button" class="pag-btn" [disabled]="pagina() === 1" (click)="irPara(1)"
+              title="Primeira página" aria-label="Primeira página">
+        <i class="pi pi-angle-double-left"></i>
+      </button>
+      <button type="button" class="pag-btn" [disabled]="pagina() === 1" (click)="irPara(pagina() - 1)">
+        <i class="pi pi-chevron-left"></i> Anterior
+      </button>
+      <button type="button" class="pag-btn" [disabled]="pagina() >= totalPaginas()" (click)="irPara(pagina() + 1)">
+        Próxima <i class="pi pi-chevron-right"></i>
+      </button>
+      <button type="button" class="pag-btn" [disabled]="pagina() >= totalPaginas()" (click)="irPara(totalPaginas())"
+              title="Última página" aria-label="Última página">
+        <i class="pi pi-angle-double-right"></i>
+      </button>
+    </div>
+  </nav>
+}

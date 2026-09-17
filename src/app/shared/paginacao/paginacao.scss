@@ -1,0 +1,46 @@
+.paginacao {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--border-default);
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.paginacao-info {
+  color: var(--text-secondary);
+  font-size: 0.875rem;
+}
+
+.paginacao-botoes {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.pag-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.5rem 0.9rem;
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-xs);
+  background: transparent;
+  color: var(--text-primary);
+  font-family: 'Inter', sans-serif;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s ease;
+
+  &:hover:not(:disabled) { background: var(--bg-hover); }
+  &:focus-visible { outline: none; box-shadow: 0 0 0 2px rgba(var(--accent-primary-rgb), 0.4); }
+  &:disabled { opacity: 0.4; cursor: not-allowed; }
+}
+
+@media (max-width: 768px) {
+  .paginacao { flex-direction: column; align-items: stretch; }
+  .paginacao-botoes { justify-content: center; }
+}

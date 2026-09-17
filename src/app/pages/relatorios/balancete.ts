@@ -1,14 +1,15 @@
-import { Component, Input, OnInit, signal } from '@angular/core';
+import { Component, Input, OnInit, computed, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ApiService } from '../../core/services/api.service';
 import { AuthService } from '../../core/services/auth.service';
 import { BalanceteItem, EmpresaOption } from '../../core/models/relatorio.models';
+import { PaginacaoComponent } from '../../shared/paginacao/paginacao';
 
 @Component({
   selector: 'app-balancete',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, PaginacaoComponent],
   templateUrl: './balancete.html',
   styleUrl: './relatorios.scss'
 })
@@ -20,6 +21,9 @@ export class BalanceteComponent implements OnInit {
   dataInicio = '';
   dataFim = '';
   dados = signal<BalanceteItem[]>([]);
+  readonly porPagina = 50;
+  pagina = signal(1);
+  dadosPagina = computed(() => this.dados().slice((this.pagina() - 1) * this.porPagina, this.pagina() * this.porPagina));
   loading = signal(false);
   gerado = signal(false);
 
@@ -45,7 +49,7 @@ export class BalanceteComponent implements OnInit {
       : this.api.getBalancete(this.dataInicio, this.dataFim);
 
     obs.subscribe({
-      next: (data) => { this.dados.set(data); this.loading.set(false); this.gerado.set(true); },
+      next: (data) => { this.pagina.set(1); this.dados.set(data); this.loading.set(false); this.gerado.set(true); },
       error: () => this.loading.set(false)
     });
   }

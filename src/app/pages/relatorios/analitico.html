@@ -116,7 +116,7 @@
           </tr>
         </thead>
         <tbody>
-          @for (item of dados(); track $index) {
+          @for (item of dadosPagina(); track $index) {
             <tr>
               <td>{{ item.data | date:'dd/MM/yyyy':'UTC' }}</td>
               <td>{{ item.descricao }}</td>
@@ -128,6 +128,7 @@
           }
         </tbody>
       </table>
+      <app-paginacao [(pagina)]="pagina" [totalItens]="dados().length" [porPagina]="porPagina" rotulo="lançamentos" />
     }
   </div>
 }

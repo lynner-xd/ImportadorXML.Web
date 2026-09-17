@@ -61,7 +61,7 @@
           </tr>
         </thead>
         <tbody>
-          @for (item of dados(); track item.codigo) {
+          @for (item of dadosPagina(); track item.codigo) {
             <tr>
               <td><strong>{{ item.codigo }}</strong></td>
               <td>{{ item.nome }}</td>
@@ -73,6 +73,7 @@
           }
         </tbody>
       </table>
+      <app-paginacao [(pagina)]="pagina" [totalItens]="dados().length" [porPagina]="porPagina" rotulo="contas" />
     }
   </div>
 }

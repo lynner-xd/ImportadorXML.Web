@@ -1,13 +1,14 @@
-import { Component, Input, OnInit, signal } from '@angular/core';
+import { Component, Input, OnInit, computed, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ApiService } from '../../core/services/api.service';
 import { ContasPagarRelatorioResponse, EmpresaOption } from '../../core/models/relatorio.models';
+import { PaginacaoComponent } from '../../shared/paginacao/paginacao';
 
 @Component({
   selector: 'app-contas-pagar-relatorio',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, PaginacaoComponent],
   templateUrl: './contas-pagar-relatorio.html',
   styleUrl: './relatorios.scss'
 })
@@ -20,6 +21,10 @@ export class ContasPagarRelatorioComponent implements OnInit {
   dataFim = '';
   status: 'aberto' | 'pago' | 'todos' = 'todos';
   dados = signal<ContasPagarRelatorioResponse | null>(null);
+  readonly porPagina = 20;
+  pagina = signal(1);
+  fornecedores = computed(() => this.dados()?.fornecedores ?? []);
+  fornecedoresPagina = computed(() => this.fornecedores().slice((this.pagina() - 1) * this.porPagina, this.pagina() * this.porPagina));
   loading = signal(false);
   gerado = signal(false);
 
@@ -44,7 +49,7 @@ export class ContasPagarRelatorioComponent implements OnInit {
       : this.api.getContasPagarRelatorio(this.dataInicio, this.dataFim, this.status);
 
     obs.subscribe({
-      next: (data) => { this.dados.set(data); this.loading.set(false); this.gerado.set(true); },
+      next: (data) => { this.pagina.set(1); this.dados.set(data); this.loading.set(false); this.gerado.set(true); },
       error: () => this.loading.set(false)
     });
   }

@@ -53,7 +53,7 @@
     @if ((dados()?.fornecedores?.length ?? 0) === 0) {
       <div class="empty"><i class="pi pi-inbox"></i><p>Nenhuma parcela encontrada para o período.</p></div>
     } @else {
-      @for (f of dados()!.fornecedores; track $index) {
+      @for (f of fornecedoresPagina(); track $index) {
         <h3 class="grupo-fornecedor">{{ f.nomeFornecedor }} <small>CNPJ {{ f.cnpjFornecedor }}</small></h3>
         <table class="data-table">
           <thead>
@@ -89,6 +89,7 @@
           </tbody>
         </table>
       }
+      <app-paginacao [(pagina)]="pagina" [totalItens]="fornecedores().length" [porPagina]="porPagina" rotulo="fornecedores" />
       <p class="text-right" style="margin-top: 1rem;">
         <strong>TOTAL GERAL — Em aberto: {{ dados()!.totalGeralAberto | number:'1.2-2' }} &nbsp;|&nbsp; Pago: {{ dados()!.totalGeralPago | number:'1.2-2' }}</strong>
       </p>
