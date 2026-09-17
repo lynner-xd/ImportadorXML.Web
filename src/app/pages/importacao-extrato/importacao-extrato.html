@@ -74,6 +74,27 @@
         <i class="pi pi-spinner pi-spin"></i> Processando...
       </div>
     } @else {
+      <div class="ie-filtros" role="group" aria-label="Filtrar transações">
+        <button type="button" class="chip-filtro" [class.ativo]="filtro() === 'todos'"
+                [attr.aria-pressed]="filtro() === 'todos'" (click)="filtro.set('todos')">
+          Todos <span class="chip-contador">{{ linhas().length }}</span>
+        </button>
+        <button type="button" class="chip-filtro" [class.ativo]="filtro() === 'pendentes'"
+                [attr.aria-pressed]="filtro() === 'pendentes'" (click)="filtro.set('pendentes')">
+          Pendentes <span class="chip-contador">{{ pendentes() }}</span>
+        </button>
+        <button type="button" class="chip-filtro" [class.ativo]="filtro() === 'completos'"
+                [attr.aria-pressed]="filtro() === 'completos'" (click)="filtro.set('completos')">
+          Completos <span class="chip-contador">{{ completos() }}</span>
+        </button>
+        @if (importados() > 0 || filtro() === 'importados') {
+          <button type="button" class="chip-filtro" [class.ativo]="filtro() === 'importados'"
+                  [attr.aria-pressed]="filtro() === 'importados'" (click)="filtro.set('importados')">
+            Já importados <span class="chip-contador">{{ importados() }}</span>
+          </button>
+        }
+      </div>
+
       <div class="table-wrapper">
         <table class="data-table">
           <thead>
@@ -88,7 +109,7 @@
             </tr>
           </thead>
           <tbody>
-            @for (l of linhas(); track l.indice) {
+            @for (l of linhasVisiveis(); track l.indice) {
               <tr [class.linha-atencao]="!l.ok && !l.duplicada" [class.linha-dup]="l.duplicada">
                 <td class="col-acao">
                   <button class="btn-icon danger" (click)="removerLinha(l)" title="Remover linha">
@@ -97,7 +118,7 @@
                 </td>
                 <td class="col-status">
                   @if (l.duplicada) {
-                    <span class="badge-dup" title="Duplicada">D</span>
+                    <span class="badge-dup" title="Já importado — não será salvo novamente">D</span>
                   } @else if (l.ok) {
                     <i class="pi pi-check status-ok"></i>
                   } @else {
@@ -126,13 +147,13 @@
                   </select>
                 </td>
               </tr>
+            } @empty {
+              <tr>
+                <td colspan="7" class="linha-vazia">Nenhum item neste filtro.</td>
+              </tr>
             }
           </tbody>
         </table>
-      </div>
-
-      <div class="resumo">
-        <span>{{ linhas().length }} transações &bull; {{ pendentes() }} pendentes</span>
       </div>
     }
 

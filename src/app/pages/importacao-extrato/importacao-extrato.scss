@@ -223,10 +223,57 @@
   option { background: var(--bg-card); color: var(--text-primary); }
 }
 
-// Resumo
-.resumo {
-  padding: 0.75rem 0.75rem 0;
+// Chips de filtro
+.ie-filtros {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.chip-filtro {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.4rem 0.9rem;
+  border: 1px solid var(--border-default);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--text-secondary);
+  font-family: 'Inter', sans-serif;
   font-size: 0.8125rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+
+  &:hover { background: var(--bg-hover); color: var(--text-primary); }
+  &:focus-visible { outline: none; box-shadow: 0 0 0 2px rgba(var(--accent-primary-rgb), 0.4); }
+
+  &.ativo {
+    border-color: var(--accent-primary);
+    background: rgba(var(--accent-primary-rgb), 0.12);
+    color: var(--accent-primary);
+  }
+}
+
+.chip-contador {
+  min-width: 1.5rem;
+  padding: 0.05rem 0.45rem;
+  border-radius: 999px;
+  background: var(--bg-hover);
+  color: var(--text-primary);
+  font-size: 0.75rem;
+  text-align: center;
+
+  .ativo & {
+    background: var(--accent-primary);
+    color: var(--text-on-primary);
+  }
+}
+
+.data-table td.linha-vazia {
+  text-align: center;
+  padding: 2rem 0.75rem;
   color: var(--text-muted);
 }
 
@@ -262,6 +309,7 @@
 @media (max-width: 768px) {
   .ie-topo { flex-direction: column; align-items: stretch; }
   .ie-topo .banco-field { flex: unset; }
+  .ie-filtros .chip-filtro { flex: 1 1 auto; justify-content: center; }
   .ie-rodape { flex-direction: column; gap: 0.75rem; align-items: stretch; }
   .rodape-esq { justify-content: center; }
   .ie-rodape .btn-primary { width: 100%; justify-content: center; }

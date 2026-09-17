@@ -60,8 +60,8 @@ export class ApiService {
     return this.http.post<ImportarPreview>(`${this.api}/importacao/reprocessar`, req);
   }
 
-  confirmarImportacao(req: { linhas: any[] }): Observable<{ criados: number }> {
-    return this.http.post<{ criados: number }>(`${this.api}/importacao/confirmar`, req);
+  confirmarImportacao(req: { linhas: any[] }): Observable<{ criados: number; ignorados: number }> {
+    return this.http.post<{ criados: number; ignorados: number }>(`${this.api}/importacao/confirmar`, req);
   }
 
   importarXml(formData: FormData): Observable<ImportacaoResultado> {

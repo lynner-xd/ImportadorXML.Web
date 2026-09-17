@@ -8,6 +8,8 @@ import { ImportarPreview, PreviewLinha, RegraImportacao, CondicaoRegra } from '.
 import { PlanoContaResponse } from '../../core/models/plano-conta.models';
 import { RegraImportacaoModalComponent } from '../../shared/regra-importacao-modal/regra-importacao-modal';
 
+export type FiltroLinhas = 'todos' | 'pendentes' | 'completos' | 'importados';
+
 @Component({
   selector: 'app-importacao-extrato',
   standalone: true,
@@ -28,11 +30,22 @@ export class ImportacaoExtratoComponent {
   erro = signal<string | null>(null);
   showRegra = signal(false);
   regraSelecionada = signal<RegraImportacao | null>(null);
+  filtro = signal<FiltroLinhas>('todos');
 
   analiticas = computed(() => this.contas().filter(c => c.codigo.split('.').length === 5));
   linhas = computed(() => this.preview()?.linhas ?? []);
-  tudoOk = computed(() => this.linhas().length > 0 && this.linhas().every(l => l.ok));
-  pendentes = computed(() => this.linhas().filter(l => !l.ok).length);
+  linhasNovas = computed(() => this.linhas().filter(l => !l.duplicada));
+  tudoOk = computed(() => this.linhasNovas().length > 0 && this.linhasNovas().every(l => l.ok));
+  pendentes = computed(() => this.linhasNovas().filter(l => !l.ok).length);
+  completos = computed(() => this.linhasNovas().length - this.pendentes());
+  importados = computed(() => this.linhas().length - this.linhasNovas().length);
+  linhasVisiveis = computed(() => {
+    const f = this.filtro();
+    if (f === 'pendentes') return this.linhasNovas().filter(l => !l.ok);
+    if (f === 'completos') return this.linhasNovas().filter(l => l.ok);
+    if (f === 'importados') return this.linhas().filter(l => l.duplicada);
+    return this.linhas();
+  });
 
   constructor() {
     this.api.listarPlanoContas().subscribe({
@@ -52,7 +65,7 @@ export class ImportacaoExtratoComponent {
     this.carregando.set(true);
     this.erro.set(null);
     this.api.previewImportacao(f).subscribe({
-      next: p => { this.preview.set(p); this.carregando.set(false); },
+      next: p => { this.preview.set(p); this.filtro.set('todos'); this.carregando.set(false); },
       error: e => {
         this.erro.set(e?.error?.message ?? 'Falha ao analisar o arquivo.');
         this.carregando.set(false);
@@ -142,6 +155,8 @@ export class ImportacaoExtratoComponent {
       if (x.indice !== l.indice) return x;
       const merged = { ...x, ...patch };
       merged.ok = !!merged.contaDebitoId && !!merged.contaCreditoId;
+      const ladoBanco = x.valor >= 0 ? 'contaDebitoId' : 'contaCreditoId';
+      if (ladoBanco in patch && patch[ladoBanco] !== x[ladoBanco]) merged.duplicada = false;
       return merged;
     });
     this.preview.set({ ...p, linhas });
@@ -172,13 +187,14 @@ export class ImportacaoExtratoComponent {
     if (!ok) return;
     const p = this.preview();
     if (!p) return;
-    this.preview.set({ ...p, linhas: p.linhas.filter(x => x.ok) });
+    this.preview.set({ ...p, linhas: p.linhas.filter(x => x.ok || x.duplicada) });
   }
 
   limpar(): void {
     this.preview.set(null);
     this.arquivo.set(null);
     this.erro.set(null);
+    this.filtro.set('todos');
   }
 
   cancelar(): void {
@@ -197,7 +213,19 @@ export class ImportacaoExtratoComponent {
     }));
     this.salvando.set(true);
     this.api.confirmarImportacao({ linhas }).subscribe({
-      next: () => { this.salvando.set(false); this.router.navigate(['/lancamentos']); },
+      next: async r => {
+        this.salvando.set(false);
+        const esperados = this.importados();
+        if (r.ignorados > esperados) {
+          await this.confirmService.confirmar({
+            titulo: 'Importação concluída',
+            mensagem: `${r.criados} lançamento(s) salvo(s). ${r.ignorados - esperados} linha(s) já tinham sido importadas e foram ignoradas.`,
+            textoConfirmar: 'Ok',
+            textoCancelar: 'Fechar'
+          });
+        }
+        this.router.navigate(['/lancamentos']);
+      },
       error: e => {
         this.erro.set(e?.error?.message ?? 'Falha ao salvar lançamentos.');
         this.salvando.set(false);
