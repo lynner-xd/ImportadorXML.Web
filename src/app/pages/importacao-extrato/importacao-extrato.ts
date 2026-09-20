@@ -7,13 +7,14 @@ import { ConfirmService } from '../../core/services/confirm.service';
 import { ImportarPreview, PreviewLinha, RegraImportacao, CondicaoRegra } from '../../core/models/importacao.models';
 import { PlanoContaResponse } from '../../core/models/plano-conta.models';
 import { RegraImportacaoModalComponent } from '../../shared/regra-importacao-modal/regra-importacao-modal';
+import { PaginacaoComponent } from '../../shared/paginacao/paginacao';
 
 export type FiltroLinhas = 'todos' | 'pendentes' | 'completos' | 'importados';
 
 @Component({
   selector: 'app-importacao-extrato',
   standalone: true,
-  imports: [CommonModule, FormsModule, RegraImportacaoModalComponent],
+  imports: [CommonModule, FormsModule, RegraImportacaoModalComponent, PaginacaoComponent],
   templateUrl: './importacao-extrato.html',
   styleUrl: './importacao-extrato.scss'
 })
@@ -47,6 +48,23 @@ export class ImportacaoExtratoComponent {
     return this.linhas();
   });
 
+  readonly porPaginaLinhas = 50;
+  paginaLinhas = signal(1);
+  totalPaginasLinhas = computed(() => Math.max(1, Math.ceil(this.linhasVisiveis().length / this.porPaginaLinhas)));
+  linhasPagina = computed(() => {
+    const p = Math.min(this.paginaLinhas(), this.totalPaginasLinhas());
+    return this.linhasVisiveis().slice((p - 1) * this.porPaginaLinhas, p * this.porPaginaLinhas);
+  });
+
+  selecionarFiltro(f: FiltroLinhas): void {
+    this.filtro.set(f);
+    this.paginaLinhas.set(1);
+  }
+
+  private ajustarPagina(): void {
+    if (this.paginaLinhas() > this.totalPaginasLinhas()) this.paginaLinhas.set(this.totalPaginasLinhas());
+  }
+
   constructor() {
     this.api.listarPlanoContas().subscribe({
       next: cs => this.contas.set(cs),
@@ -65,7 +83,7 @@ export class ImportacaoExtratoComponent {
     this.carregando.set(true);
     this.erro.set(null);
     this.api.previewImportacao(f).subscribe({
-      next: p => { this.preview.set(p); this.filtro.set('todos'); this.carregando.set(false); },
+      next: p => { this.preview.set(p); this.filtro.set('todos'); this.paginaLinhas.set(1); this.carregando.set(false); },
       error: e => {
         this.erro.set(e?.error?.message ?? 'Falha ao analisar o arquivo.');
         this.carregando.set(false);
@@ -78,7 +96,7 @@ export class ImportacaoExtratoComponent {
     if (f) {
       this.carregando.set(true);
       this.api.previewImportacao(f, codigo).subscribe({
-        next: p => { this.preview.set(p); this.carregando.set(false); },
+        next: p => { this.preview.set(p); this.paginaLinhas.set(1); this.carregando.set(false); },
         error: e => {
           this.erro.set(e?.error?.message ?? 'Falha ao reprocessar. Tente novamente.');
           this.carregando.set(false);
@@ -95,7 +113,7 @@ export class ImportacaoExtratoComponent {
       }));
       this.carregando.set(true);
       this.api.reprocessarImportacao({ bancoCodigo: codigo, transacoes }).subscribe({
-        next: np => { this.preview.set(np); this.carregando.set(false); },
+        next: np => { this.preview.set(np); this.paginaLinhas.set(1); this.carregando.set(false); },
         error: e => {
           this.erro.set(e?.error?.message ?? 'Falha ao reprocessar. Tente novamente.');
           this.carregando.set(false);
@@ -132,7 +150,7 @@ export class ImportacaoExtratoComponent {
     }));
     this.carregando.set(true);
     this.api.reprocessarImportacao({ bancoCodigo: p.bancoCodigo, transacoes }).subscribe({
-      next: np => { this.preview.set(np); this.carregando.set(false); },
+      next: np => { this.preview.set(np); this.paginaLinhas.set(1); this.carregando.set(false); },
       error: e => {
         this.erro.set(e?.error?.message ?? 'Falha ao reprocessar. Tente novamente.');
         this.carregando.set(false);
@@ -160,6 +178,7 @@ export class ImportacaoExtratoComponent {
       return merged;
     });
     this.preview.set({ ...p, linhas });
+    this.ajustarPagina();
   }
 
   async removerLinha(l: PreviewLinha): Promise<void> {
@@ -172,6 +191,7 @@ export class ImportacaoExtratoComponent {
     const p = this.preview();
     if (!p) return;
     this.preview.set({ ...p, linhas: p.linhas.filter(x => x.indice !== l.indice) });
+    this.ajustarPagina();
   }
 
   async excluirPendentes(): Promise<void> {
@@ -188,6 +208,7 @@ export class ImportacaoExtratoComponent {
     const p = this.preview();
     if (!p) return;
     this.preview.set({ ...p, linhas: p.linhas.filter(x => x.ok || x.duplicada) });
+    this.ajustarPagina();
   }
 
   limpar(): void {
@@ -195,6 +216,7 @@ export class ImportacaoExtratoComponent {
     this.arquivo.set(null);
     this.erro.set(null);
     this.filtro.set('todos');
+    this.paginaLinhas.set(1);
   }
 
   cancelar(): void {
