@@ -236,6 +236,12 @@ export class ApiService {
     return this.http.get(`${this.api}/relatorios/${tipo}/pdf`, { params, responseType: 'blob' });
   }
 
+  downloadRelatorioExcel(tipo: string, dataInicio: string, dataFim: string, extra?: Record<string, string>): Observable<Blob> {
+    let params = new HttpParams().set('dataInicio', dataInicio).set('dataFim', dataFim);
+    if (extra) Object.entries(extra).forEach(([k, v]) => params = params.set(k, v));
+    return this.http.get(`${this.api}/relatorios/${tipo}/excel`, { params, responseType: 'blob' });
+  }
+
   getContasPagarRelatorio(dataInicio: string, dataFim: string, status: string): Observable<ContasPagarRelatorioResponse> {
     const params = new HttpParams().set('dataInicio', dataInicio).set('dataFim', dataFim).set('status', status);
     return this.http.get<ContasPagarRelatorioResponse>(`${this.api}/relatorios/contas-pagar`, { params });
@@ -283,6 +289,12 @@ export class ApiService {
     let params = new HttpParams().set('empresaId', empresaId).set('dataInicio', dataInicio).set('dataFim', dataFim);
     if (extra) Object.entries(extra).forEach(([k, v]) => params = params.set(k, v));
     return this.http.get(`${this.api}/admin/relatorios/${tipo}/pdf`, { params, responseType: 'blob' });
+  }
+
+  downloadAdminRelatorioExcel(tipo: string, empresaId: string, dataInicio: string, dataFim: string, extra?: Record<string, string>): Observable<Blob> {
+    let params = new HttpParams().set('empresaId', empresaId).set('dataInicio', dataInicio).set('dataFim', dataFim);
+    if (extra) Object.entries(extra).forEach(([k, v]) => params = params.set(k, v));
+    return this.http.get(`${this.api}/admin/relatorios/${tipo}/excel`, { params, responseType: 'blob' });
   }
 
   listarEmpresas(): Observable<EmpresaOption[]> {

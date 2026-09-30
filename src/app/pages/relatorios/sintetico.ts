@@ -72,10 +72,28 @@ export class SinteticoComponent implements OnInit {
     });
   }
 
-  private nomeArquivo(relatorio: string): string {
+  exportarExcel(): void {
+    const extra: Record<string, string> = {};
+    if (this.codigoPrefixo) extra['codigoPrefixo'] = this.codigoPrefixo;
+
+    const obs = this.isAdmin
+      ? this.api.downloadAdminRelatorioExcel('sintetico', this.empresaId, this.dataInicio, this.dataFim, extra)
+      : this.api.downloadRelatorioExcel('sintetico', this.dataInicio, this.dataFim, extra);
+
+    obs.subscribe({
+      next: (blob) => {
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url; a.download = this.nomeArquivo('sintetico', 'xlsx'); a.click();
+        URL.revokeObjectURL(url);
+      }
+    });
+  }
+
+  private nomeArquivo(relatorio: string, extensao: 'pdf' | 'xlsx' = 'pdf'): string {
     const now = new Date();
     const p = (n: number) => n.toString().padStart(2, '0');
     const ts = `${p(now.getDate())}${p(now.getMonth() + 1)}${now.getFullYear()}${p(now.getHours())}${p(now.getMinutes())}${p(now.getSeconds())}`;
-    return `${relatorio}_${ts}.pdf`;
+    return `${relatorio}_${ts}.${extensao}`;
   }
 }

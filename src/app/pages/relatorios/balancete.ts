@@ -62,11 +62,19 @@ export class BalanceteComponent implements OnInit {
     obs.subscribe({ next: (blob) => this.downloadBlob(blob, this.nomeArquivo('balancete')) });
   }
 
-  private nomeArquivo(relatorio: string): string {
+  exportarExcel(): void {
+    const obs = this.isAdmin
+      ? this.api.downloadAdminRelatorioExcel('balancete', this.empresaId, this.dataInicio, this.dataFim)
+      : this.api.downloadRelatorioExcel('balancete', this.dataInicio, this.dataFim);
+
+    obs.subscribe({ next: (blob) => this.downloadBlob(blob, this.nomeArquivo('balancete', 'xlsx')) });
+  }
+
+  private nomeArquivo(relatorio: string, extensao: 'pdf' | 'xlsx' = 'pdf'): string {
     const now = new Date();
     const p = (n: number) => n.toString().padStart(2, '0');
     const ts = `${p(now.getDate())}${p(now.getMonth() + 1)}${now.getFullYear()}${p(now.getHours())}${p(now.getMinutes())}${p(now.getSeconds())}`;
-    return `${relatorio}_${ts}.pdf`;
+    return `${relatorio}_${ts}.${extensao}`;
   }
 
   private downloadBlob(blob: Blob, filename: string): void {

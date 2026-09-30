@@ -158,10 +158,26 @@ export class AnaliticoComponent implements OnInit {
     });
   }
 
-  private nomeArquivo(relatorio: string): string {
+  exportarExcel(): void {
+    const extra = { contaId: this.contaId };
+    const obs = this.isAdmin
+      ? this.api.downloadAdminRelatorioExcel('analitico', this.empresaId, this.dataInicio, this.dataFim, extra)
+      : this.api.downloadRelatorioExcel('analitico', this.dataInicio, this.dataFim, extra);
+
+    obs.subscribe({
+      next: (blob) => {
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url; a.download = this.nomeArquivo('analitico', 'xlsx'); a.click();
+        URL.revokeObjectURL(url);
+      }
+    });
+  }
+
+  private nomeArquivo(relatorio: string, extensao: 'pdf' | 'xlsx' = 'pdf'): string {
     const now = new Date();
     const p = (n: number) => n.toString().padStart(2, '0');
     const ts = `${p(now.getDate())}${p(now.getMonth() + 1)}${now.getFullYear()}${p(now.getHours())}${p(now.getMinutes())}${p(now.getSeconds())}`;
-    return `${relatorio}_${ts}.pdf`;
+    return `${relatorio}_${ts}.${extensao}`;
   }
 }

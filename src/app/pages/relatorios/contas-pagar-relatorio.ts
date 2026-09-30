@@ -62,11 +62,19 @@ export class ContasPagarRelatorioComponent implements OnInit {
     obs.subscribe({ next: (blob) => this.downloadBlob(blob, this.nomeArquivo('contas_pagar')) });
   }
 
-  private nomeArquivo(relatorio: string): string {
+  exportarExcel(): void {
+    const extra = { status: this.status };
+    const obs = this.isAdmin
+      ? this.api.downloadAdminRelatorioExcel('contas-pagar', this.empresaId, this.dataInicio, this.dataFim, extra)
+      : this.api.downloadRelatorioExcel('contas-pagar', this.dataInicio, this.dataFim, extra);
+    obs.subscribe({ next: (blob) => this.downloadBlob(blob, this.nomeArquivo('contas_pagar', 'xlsx')) });
+  }
+
+  private nomeArquivo(relatorio: string, extensao: 'pdf' | 'xlsx' = 'pdf'): string {
     const now = new Date();
     const p = (n: number) => n.toString().padStart(2, '0');
     const ts = `${p(now.getDate())}${p(now.getMonth() + 1)}${now.getFullYear()}${p(now.getHours())}${p(now.getMinutes())}${p(now.getSeconds())}`;
-    return `${relatorio}_${ts}.pdf`;
+    return `${relatorio}_${ts}.${extensao}`;
   }
 
   private downloadBlob(blob: Blob, filename: string): void {
