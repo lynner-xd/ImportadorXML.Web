@@ -16,6 +16,7 @@ import { AtividadeMonitor, ErroMonitor, EmpresaMonitorOption } from '../models/m
 import { IntegracaoEmpresaResponse, GerarTokenResponse } from '../models/integracao.models';
 import { ConfiguracaoSefaz, SefazBuscaResultado, NotasPendentesPaged } from '../models/sefaz.models';
 import { ConfiguracaoBuscaAutomatica, FilaBuscaAutomaticaItem, ExecucaoResumo, ExecucaoDetalhe } from '../models/sefaz-automatico.models';
+import { PreviewReplicacao, ResultadoReplicacao } from '../models/replicacao.models';
 import { ContaPagarParcelaList, ContaPagarParcelaEdicao, ContaPagarPreviewItem, ConfirmarContaPagarItem, ConfirmarContasPagarResultado, CriarContaPagarManual } from '../models/conta-pagar.models';
 
 @Injectable({ providedIn: 'root' })
@@ -299,6 +300,16 @@ export class ApiService {
 
   listarEmpresas(): Observable<EmpresaOption[]> {
     return this.http.get<EmpresaOption[]>(`${this.api}/admin/relatorios/empresas`);
+  }
+
+  // ===== Admin - Replicação de configuração =====
+  previewReplicacao(origemId: string, destinoId: string): Observable<PreviewReplicacao> {
+    const params = new HttpParams().set('origemId', origemId).set('destinoId', destinoId);
+    return this.http.get<PreviewReplicacao>(`${this.api}/admin/replicacao/preview`, { params });
+  }
+
+  replicarConfiguracao(origemId: string, destinoId: string, replicarPlano: boolean, replicarRegras: boolean): Observable<ResultadoReplicacao> {
+    return this.http.post<ResultadoReplicacao>(`${this.api}/admin/replicacao`, { origemId, destinoId, replicarPlano, replicarRegras });
   }
 
   getAdminContasPagarRelatorio(empresaId: string, dataInicio: string, dataFim: string, status: string): Observable<ContasPagarRelatorioResponse> {
