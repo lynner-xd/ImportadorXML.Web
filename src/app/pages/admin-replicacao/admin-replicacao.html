@@ -16,7 +16,7 @@
   <div class="filtros">
     <div class="campo">
       <label for="origem">Empresa de origem</label>
-      <select id="origem" [(ngModel)]="origemId" (ngModelChange)="onEmpresaChange()">
+      <select id="origem" [disabled]="salvando()" [(ngModel)]="origemId" (ngModelChange)="onEmpresaChange()">
         <option value="">Selecione...</option>
         @for (e of empresas(); track e.id) {
           <option [value]="e.id">{{ e.razaoSocial }}</option>
@@ -25,7 +25,7 @@
     </div>
     <div class="campo">
       <label for="destino">Empresa de destino</label>
-      <select id="destino" [(ngModel)]="destinoId" (ngModelChange)="onEmpresaChange()">
+      <select id="destino" [disabled]="salvando()" [(ngModel)]="destinoId" (ngModelChange)="onEmpresaChange()">
         <option value="">Selecione...</option>
         @for (e of empresas(); track e.id) {
           <option [value]="e.id">{{ e.razaoSocial }}</option>
@@ -36,15 +36,15 @@
 
   <div class="opcoes">
     <label class="check">
-      <input type="checkbox" [(ngModel)]="replicarPlano" (ngModelChange)="onPlanoChange()" />
+      <input type="checkbox" [disabled]="salvando()" [(ngModel)]="replicarPlano" (ngModelChange)="onPlanoChange()" />
       Plano de contas
     </label>
     <label class="check">
-      <input type="checkbox" [(ngModel)]="replicarRegras" [disabled]="replicarPlano" />
+      <input type="checkbox" [(ngModel)]="replicarRegras" [disabled]="replicarPlano || salvando()" />
       Regras de importação
     </label>
     @if (replicarPlano) {
-      <span class="nota">Replicar o plano substitui as regras junto.</span>
+      <span class="nota">Replicar o plano substitui as regras de importação e as contas padrão junto.</span>
     }
   </div>
 

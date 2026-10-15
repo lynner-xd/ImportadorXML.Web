@@ -41,12 +41,23 @@ export class AdminReplicacaoComponent implements OnInit {
     this.preview.set(null);
     this.successMsg.set('');
     this.errorMsg.set('');
+    this.carregandoPreview.set(false); // resposta em voo de um par antigo será descartada e não desliga isto
     if (!this.origemId || !this.destinoId) return;
+
+    // Resposta de um par de empresas que já não é o selecionado é descartada; a requisição
+    // do par atual (ainda em voo) é quem desliga o carregando.
+    const pedido = `${this.origemId}|${this.destinoId}`;
+    const atual = () => pedido === `${this.origemId}|${this.destinoId}`;
 
     this.carregandoPreview.set(true);
     this.api.previewReplicacao(this.origemId, this.destinoId).subscribe({
-      next: p => { this.preview.set(p); this.carregandoPreview.set(false); },
+      next: p => {
+        if (!atual()) return;
+        this.preview.set(p);
+        this.carregandoPreview.set(false);
+      },
       error: err => {
+        if (!atual()) return;
         this.carregandoPreview.set(false);
         this.errorMsg.set(err.error?.message || 'Erro ao carregar a prévia.');
       }
@@ -74,9 +85,10 @@ export class AdminReplicacaoComponent implements OnInit {
     if (!this.podeReplicar()) return;
 
     const alvo = this.nomeEmpresa(this.destinoId);
-    const oque = this.replicarPlano
-      ? 'o plano de contas e as regras de importação'
-      : 'as regras de importação';
+    const comPlano = this.replicarPlano;
+    const oque = comPlano
+      ? 'o plano de contas, as regras de importação e as contas padrão'
+      : 'as regras de importação e as contas padrão';
     const confirmado = await this.confirmService.confirmar({
       mensagem: `Substituir ${oque} de ${alvo} pela configuração de ${this.nomeEmpresa(this.origemId)}? O que existe hoje em ${alvo} será apagado.`,
       textoConfirmar: 'Replicar',
@@ -89,12 +101,13 @@ export class AdminReplicacaoComponent implements OnInit {
       next: r => {
         this.salvando.set(false);
         this.onEmpresaChange(); // limpa as mensagens e recarrega o resumo; a de sucesso vem depois
-        this.successMsg.set(this.replicarPlano
+        this.successMsg.set(comPlano
           ? `Replicado: ${r.contasCopiadas} contas e ${r.regrasCopiadas} regras.`
           : `Replicado: ${r.regrasCopiadas} regras.`);
       },
       error: err => {
         this.salvando.set(false);
+        this.onEmpresaChange(); // o resumo antigo pode já não valer (ex.: lançamento gravado no destino)
         this.errorMsg.set(err.error?.message || 'Erro ao replicar a configuração.');
       }
     });
