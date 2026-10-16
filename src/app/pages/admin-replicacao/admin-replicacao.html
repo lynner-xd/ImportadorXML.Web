@@ -36,17 +36,21 @@
 
   <div class="opcoes">
     <label class="check">
-      <input type="checkbox" [disabled]="salvando()" [(ngModel)]="replicarPlano" (ngModelChange)="onPlanoChange()" />
-      Plano de contas
+      <input type="radio" name="modo" value="plano-regras" [disabled]="salvando()" [(ngModel)]="modo" />
+      Plano de contas e regras de importação
     </label>
     <label class="check">
-      <input type="checkbox" [(ngModel)]="replicarRegras" [disabled]="replicarPlano || salvando()" />
-      Regras de importação
+      <input type="radio" name="modo" value="so-regras" [disabled]="salvando()" [(ngModel)]="modo" />
+      Somente as regras de importação
     </label>
-    @if (replicarPlano) {
-      <span class="nota">Replicar o plano substitui as regras de importação e as contas padrão junto.</span>
-    }
+    <label class="check">
+      <input type="radio" name="modo" value="so-plano" [disabled]="salvando()" [(ngModel)]="modo" />
+      Somente o plano de contas
+    </label>
   </div>
+  @if (modo === 'so-plano') {
+    <span class="nota">A empresa de destino ficará sem nenhuma regra de importação: as atuais apontam para contas que serão apagadas junto com o plano.</span>
+  }
 
   @if (carregandoPreview()) {
     <div class="loading"><i class="pi pi-spinner pi-spin"></i> Carregando prévia...</div>

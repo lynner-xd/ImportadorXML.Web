@@ -6,6 +6,10 @@ import { ConfirmService } from '../../core/services/confirm.service';
 import { EmpresaOption } from '../../core/models/relatorio.models';
 import { PreviewReplicacao } from '../../core/models/replicacao.models';
 
+/// Substituir o plano apaga as contas que as regras apontam, então "regras sem plano" é a única
+/// combinação parcial possível no sentido inverso: não existe trocar o plano e manter as regras.
+export type ModoReplicacao = 'plano-regras' | 'so-regras' | 'so-plano';
+
 @Component({
   selector: 'app-admin-replicacao',
   standalone: true,
@@ -17,8 +21,11 @@ export class AdminReplicacaoComponent implements OnInit {
   empresas = signal<EmpresaOption[]>([]);
   origemId = '';
   destinoId = '';
-  replicarPlano = true;
-  replicarRegras = true;
+  modo: ModoReplicacao = 'plano-regras';
+
+  // Derivação de campo [(ngModel)] é getter, nunca computed(): signals não enxergam o ngModel.
+  get replicarPlano(): boolean { return this.modo !== 'so-regras'; }
+  get replicarRegras(): boolean { return this.modo !== 'so-plano'; }
 
   preview = signal<PreviewReplicacao | null>(null);
   carregandoPreview = signal(false);
@@ -30,11 +37,6 @@ export class AdminReplicacaoComponent implements OnInit {
 
   ngOnInit(): void {
     this.api.listarEmpresas().subscribe({ next: e => this.empresas.set(e) });
-  }
-
-  // Trocar o plano apaga as contas que as regras apontam: o plano arrasta as regras.
-  onPlanoChange(): void {
-    if (this.replicarPlano) this.replicarRegras = true;
   }
 
   onEmpresaChange(): void {
@@ -73,7 +75,6 @@ export class AdminReplicacaoComponent implements OnInit {
   podeReplicar(): boolean {
     return !!this.preview()
       && !this.salvando()
-      && (this.replicarPlano || this.replicarRegras)
       && this.bloqueios().length === 0;
   }
 
@@ -85,12 +86,16 @@ export class AdminReplicacaoComponent implements OnInit {
     if (!this.podeReplicar()) return;
 
     const alvo = this.nomeEmpresa(this.destinoId);
-    const comPlano = this.replicarPlano;
-    const oque = comPlano
-      ? 'o plano de contas, as regras de importação e as contas padrão'
-      : 'as regras de importação e as contas padrão';
+    const fonte = this.nomeEmpresa(this.origemId);
+    const modo = this.modo;
+    const mensagem = modo === 'so-plano'
+      ? `Substituir o plano de contas de ${alvo} pelo de ${fonte}? As regras de importação e as contas padrão de ${alvo} serão apagadas junto com o plano antigo e não serão substituídas.`
+      : modo === 'so-regras'
+        ? `Substituir as regras de importação e as contas padrão de ${alvo} pelas de ${fonte}? O que existe hoje em ${alvo} será apagado.`
+        : `Substituir o plano de contas, as regras de importação e as contas padrão de ${alvo} pela configuração de ${fonte}? O que existe hoje em ${alvo} será apagado.`;
+
     const confirmado = await this.confirmService.confirmar({
-      mensagem: `Substituir ${oque} de ${alvo} pela configuração de ${this.nomeEmpresa(this.origemId)}? O que existe hoje em ${alvo} será apagado.`,
+      mensagem,
       textoConfirmar: 'Replicar',
       perigo: true
     });
@@ -101,9 +106,12 @@ export class AdminReplicacaoComponent implements OnInit {
       next: r => {
         this.salvando.set(false);
         this.onEmpresaChange(); // limpa as mensagens e recarrega o resumo; a de sucesso vem depois
-        this.successMsg.set(comPlano
-          ? `Replicado: ${r.contasCopiadas} contas e ${r.regrasCopiadas} regras.`
-          : `Replicado: ${r.regrasCopiadas} regras.`);
+        this.successMsg.set(
+          modo === 'so-plano'
+            ? `Replicado: ${r.contasCopiadas} contas. ${alvo} ficou sem regras de importação.`
+            : modo === 'so-regras'
+              ? `Replicado: ${r.regrasCopiadas} regras.`
+              : `Replicado: ${r.contasCopiadas} contas e ${r.regrasCopiadas} regras.`);
       },
       error: err => {
         this.salvando.set(false);
