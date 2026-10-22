@@ -78,7 +78,7 @@ export class ApiService {
   }
 
   // ===== Documentos =====
-  listarDocumentos(tipo?: string, dataInicio?: string, dataFim?: string, page = 1, pageSize = 50, numero?: string, origem?: string): Observable<PagedResult<DocumentoFiscal>> {
+  listarDocumentos(tipo?: string, dataInicio?: string, dataFim?: string, page = 1, pageSize = 50, numero?: string, origem?: string, emissaoInicio?: string, emissaoFim?: string): Observable<PagedResult<DocumentoFiscal>> {
     let params = new HttpParams()
       .set('page', page.toString())
       .set('pageSize', pageSize.toString());
@@ -87,6 +87,8 @@ export class ApiService {
     if (dataFim) params = params.set('dataFim', dataFim);
     if (numero) params = params.set('numero', numero);
     if (origem) params = params.set('origem', origem);
+    if (emissaoInicio) params = params.set('emissaoInicio', emissaoInicio);
+    if (emissaoFim) params = params.set('emissaoFim', emissaoFim);
     return this.http.get<PagedResult<DocumentoFiscal>>(`${this.api}/documentos`, { params });
   }
 

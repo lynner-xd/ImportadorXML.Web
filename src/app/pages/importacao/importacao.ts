@@ -27,6 +27,8 @@ export class ImportacaoComponent implements OnInit, OnDestroy {
   filtroTipo = '';
   filtroDataInicio = '';
   filtroDataFim = '';
+  filtroEmissaoInicio = '';
+  filtroEmissaoFim = '';
   filtroNumero = '';
   filtroOrigem = '';
 
@@ -51,7 +53,8 @@ export class ImportacaoComponent implements OnInit, OnDestroy {
   totalPaginas = computed(() => Math.ceil(this.totalDocumentos() / this.PAGE_SIZE));
 
   get temFiltroAtivo(): boolean {
-    return !!(this.filtroTipo || this.filtroDataInicio || this.filtroDataFim || this.filtroNumero || this.filtroOrigem);
+    return !!(this.filtroTipo || this.filtroDataInicio || this.filtroDataFim || this.filtroNumero || this.filtroOrigem
+      || this.filtroEmissaoInicio || this.filtroEmissaoFim);
   }
 
   todosSelecionados = computed(() => {
@@ -91,7 +94,9 @@ export class ImportacaoComponent implements OnInit, OnDestroy {
       this.paginaAtual(),
       this.PAGE_SIZE,
       this.filtroNumero.trim() || undefined,
-      this.filtroOrigem || undefined
+      this.filtroOrigem || undefined,
+      this.filtroEmissaoInicio || undefined,
+      this.filtroEmissaoFim || undefined
     ).subscribe({
       next: (result) => {
         this.documentos.set(result.items);
@@ -123,6 +128,8 @@ export class ImportacaoComponent implements OnInit, OnDestroy {
     this.filtroTipo = '';
     this.filtroDataInicio = '';
     this.filtroDataFim = '';
+    this.filtroEmissaoInicio = '';
+    this.filtroEmissaoFim = '';
     this.filtroNumero = '';
     this.filtroOrigem = '';
     this.paginaAtual.set(1);

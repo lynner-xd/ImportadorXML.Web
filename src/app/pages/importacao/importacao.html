@@ -43,6 +43,14 @@
       <label>Importado até</label>
       <input type="date" [(ngModel)]="filtroDataFim" (ngModelChange)="onFiltroChange()" />
     </div>
+    <div class="field">
+      <label>Emitido de</label>
+      <input type="date" [(ngModel)]="filtroEmissaoInicio" (ngModelChange)="onFiltroChange()" />
+    </div>
+    <div class="field">
+      <label>Emitido até</label>
+      <input type="date" [(ngModel)]="filtroEmissaoFim" (ngModelChange)="onFiltroChange()" />
+    </div>
     @if (temFiltroAtivo) {
       <div class="field field-actions">
         <button class="btn-secondary btn-limpar" (click)="limparFiltros()">
