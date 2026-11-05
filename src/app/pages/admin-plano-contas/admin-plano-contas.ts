@@ -56,7 +56,8 @@ export class AdminPlanoContasComponent implements OnInit {
 
   salvarDominio(c: PlanoContaAdmin, valor: string, input: HTMLInputElement): void {
     const novo = valor.trim();
-    if (!this.editavel(c) || novo === (c.codigoDominio ?? '')) {
+    // Valor igual só é no-op em linha sem aviso; em linha marcada, regravar o mesmo código é como o contador diz "conferi".
+    if (!this.editavel(c) || (novo === (c.codigoDominio ?? '') && !c.dominioRevisar)) {
       input.value = c.codigoDominio ?? ''; // descarta espaços digitados sem mudança real
       return;
     }
@@ -73,6 +74,7 @@ export class AdminPlanoContasComponent implements OnInit {
         this.successMsg.set(novo ? `Código Domínio de ${c.nome} gravado.` : `Código Domínio de ${c.nome} removido.`);
       },
       error: err => {
+        if (empresa !== this.empresaId) return;
         input.value = c.codigoDominio ?? '';
         this.errorMsg.set(err.error?.message || 'Erro ao gravar o código Domínio.');
       }
