@@ -10,6 +10,7 @@ export interface PreviewReplicacao {
   destino: ContagemEmpresa;
   bloqueiosPlano: string[];
   bloqueiosRegras: string[];
+  avisosPlano: string[];
 }
 
 export interface ResultadoReplicacao {

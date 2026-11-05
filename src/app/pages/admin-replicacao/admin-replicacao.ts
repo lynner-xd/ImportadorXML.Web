@@ -72,6 +72,12 @@ export class AdminReplicacaoComponent implements OnInit {
     return this.replicarPlano ? p.bloqueiosPlano : p.bloqueiosRegras;
   }
 
+  /** Avisos só valem quando o plano é substituído; não bloqueiam o botão. */
+  avisos(): string[] {
+    const p = this.preview();
+    return p && this.replicarPlano ? p.avisosPlano : [];
+  }
+
   podeReplicar(): boolean {
     return !!this.preview()
       && !this.salvando()
@@ -88,11 +94,13 @@ export class AdminReplicacaoComponent implements OnInit {
     const alvo = this.nomeEmpresa(this.destinoId);
     const fonte = this.nomeEmpresa(this.origemId);
     const modo = this.modo;
-    const mensagem = modo === 'so-plano'
+    const avisoDominio = this.avisos().join(' ');
+    const mensagemBase = modo === 'so-plano'
       ? `Substituir o plano de contas de ${alvo} pelo de ${fonte}? As regras de importação e as contas padrão de ${alvo} serão apagadas junto com o plano antigo e não serão substituídas.`
       : modo === 'so-regras'
         ? `Substituir as regras de importação e as contas padrão de ${alvo} pelas de ${fonte}? O que existe hoje em ${alvo} será apagado.`
         : `Substituir o plano de contas, as regras de importação e as contas padrão de ${alvo} pela configuração de ${fonte}? O que existe hoje em ${alvo} será apagado.`;
+    const mensagem = avisoDominio ? `${mensagemBase} ${avisoDominio}` : mensagemBase;
 
     const confirmado = await this.confirmService.confirmar({
       mensagem,

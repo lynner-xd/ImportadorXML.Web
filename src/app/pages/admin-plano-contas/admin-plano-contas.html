@@ -52,10 +52,12 @@
                 <div class="dominio-cell">
                   <input #campo type="text" inputmode="numeric" maxlength="20" class="dominio-input"
                          [value]="c.codigoDominio ?? ''"
+                         (input)="marcarEditado(c)"
                          (blur)="salvarDominio(c, campo.value, campo)"
-                         (keyup.enter)="campo.blur()" />
+                         (keyup.enter)="confirmarDominio(c, campo.value, campo)" />
                   @if (c.dominioRevisar) {
-                    <i class="pi pi-exclamation-triangle aviso-revisar"
+                    <i class="pi pi-exclamation-triangle aviso-revisar" role="img"
+                       aria-label="O cliente renomeou esta conta depois que o código foi informado. Confira e regrave para tirar o aviso."
                        title="O cliente renomeou esta conta depois que o código foi informado. Confira e regrave para tirar o aviso."></i>
                   }
                 </div>

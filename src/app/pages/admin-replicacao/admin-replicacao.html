@@ -73,6 +73,9 @@
     @for (b of bloqueios(); track b) {
       <div class="bloqueio"><i class="pi pi-ban"></i> {{ b }}</div>
     }
+    @for (a of avisos(); track a) {
+      <div class="aviso"><i class="pi pi-exclamation-triangle"></i> {{ a }}</div>
+    }
   }
 
   <div class="acoes">

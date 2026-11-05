@@ -54,10 +54,26 @@ export class AdminPlanoContasComponent implements OnInit {
     return c.nivel === 4;
   }
 
+  /** Linhas cujo campo foi digitado (evento input) desde o último gravar; por id, porque a lista é recriada a cada save. */
+  private editados = new Set<string>();
+
+  marcarEditado(c: PlanoContaAdmin): void {
+    this.editados.add(c.id);
+  }
+
+  /** Enter confirma de propósito: grava direto (inclusive valor igual, que tira o aviso) sem passar pelo blur. */
+  confirmarDominio(c: PlanoContaAdmin, valor: string, input: HTMLInputElement): void {
+    this.editados.add(c.id);
+    this.salvarDominio(c, valor, input); // o campo segue focado; o blur posterior já vê a linha atualizada e não regrava
+  }
+
   salvarDominio(c: PlanoContaAdmin, valor: string, input: HTMLInputElement): void {
     const novo = valor.trim();
-    // Valor igual só é no-op em linha sem aviso; em linha marcada, regravar o mesmo código é como o contador diz "conferi".
-    if (!this.editavel(c) || (novo === (c.codigoDominio ?? '') && !c.dominioRevisar)) {
+    const igual = novo === (c.codigoDominio ?? '');
+    // Valor igual só vai à API com intenção (digitou ou Enter) em linha marcada: regravar o mesmo código é o "conferi".
+    // Foco e saída sem tocar no campo não podem apagar o aviso.
+    const confirma = this.editados.delete(c.id) && c.dominioRevisar;
+    if (!this.editavel(c) || (igual && !confirma)) {
       input.value = c.codigoDominio ?? ''; // descarta espaços digitados sem mudança real
       return;
     }
