@@ -4,7 +4,7 @@ import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { environment } from '../../../environments/environment';
 import { UsuarioResponse, CriarUsuarioRequest, EditarUsuarioRequest } from '../models/usuario.models';
-import { PlanoContaResponse, CriarContaRequest, AtualizarContaRequest } from '../models/plano-conta.models';
+import { PlanoContaResponse, PlanoContaAdmin, CriarContaRequest, AtualizarContaRequest } from '../models/plano-conta.models';
 import { LancamentoResponse, CriarLancamentoRequest, AtualizarLancamentoRequest } from '../models/lancamento.models';
 import { BalanceteItem, AnaliticoItem, EmpresaOption, DreResponse, BalancoPatrimonialResponse, ContasPagarRelatorioResponse } from '../models/relatorio.models';
 import { ConfiguracaoEmailRequest, ConfiguracaoEmailResponse } from '../models/email-config.models';
@@ -298,6 +298,15 @@ export class ApiService {
     let params = new HttpParams().set('empresaId', empresaId).set('dataInicio', dataInicio).set('dataFim', dataFim);
     if (extra) Object.entries(extra).forEach(([k, v]) => params = params.set(k, v));
     return this.http.get(`${this.api}/admin/relatorios/${tipo}/excel`, { params, responseType: 'blob' });
+  }
+
+  getPlanoContasContador(empresaId: string): Observable<PlanoContaAdmin[]> {
+    const params = new HttpParams().set('empresaId', empresaId);
+    return this.http.get<PlanoContaAdmin[]>(`${this.api}/admin/plano-contas`, { params });
+  }
+
+  definirCodigoDominio(contaId: string, empresaId: string, codigo: string | null): Observable<void> {
+    return this.http.put<void>(`${this.api}/admin/plano-contas/${contaId}/dominio`, { empresaId, codigo });
   }
 
   listarEmpresas(): Observable<EmpresaOption[]> {

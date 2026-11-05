@@ -36,6 +36,7 @@ export class SidebarComponent {
             { label: 'Contas a Pagar', icon: 'pi pi-money-bill', route: '/admin/relatorios/contas-pagar' },
           ]
         },
+        { label: 'Plano de Contas', icon: 'pi pi-sitemap', route: '/admin/plano-contas' },
         { label: 'Contratos', icon: 'pi pi-file-edit', route: '/admin/contratos' },
         { label: 'Usuários', icon: 'pi pi-users', route: '/admin/usuarios' },
         { label: 'Integração SEFAZ', icon: 'pi pi-cloud-download', route: '/admin/sefaz' },

@@ -35,6 +35,7 @@ export const routes: Routes = [
       { path: 'relatorios/contas-pagar', canActivate: [empresaGuard, telaGuard('relatorios-contas-pagar')], loadComponent: () => import('./pages/relatorios/contas-pagar-relatorio').then(m => m.ContasPagarRelatorioComponent) },
 
       // Contador (Admin)
+      { path: 'admin/plano-contas', canActivate: [contadorGuard], loadComponent: () => import('./pages/admin-plano-contas/admin-plano-contas').then(m => m.AdminPlanoContasComponent) },
       { path: 'admin/relatorios/balancete', canActivate: [contadorGuard], loadComponent: () => import('./pages/admin-relatorios/admin-balancete').then(m => m.AdminBalanceteComponent) },
       { path: 'admin/relatorios/analitico', canActivate: [contadorGuard], loadComponent: () => import('./pages/admin-relatorios/admin-analitico').then(m => m.AdminAnaliticoComponent) },
       { path: 'admin/relatorios/sintetico', canActivate: [contadorGuard], loadComponent: () => import('./pages/admin-relatorios/admin-sintetico').then(m => m.AdminSinteticoComponent) },

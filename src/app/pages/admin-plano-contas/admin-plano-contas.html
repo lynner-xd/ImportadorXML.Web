@@ -1,0 +1,71 @@
+<div class="page-header">
+  <div>
+    <h1>Plano de Contas</h1>
+    <p>O código do sistema Domínio é visível só para o contador; o cliente não o enxerga</p>
+  </div>
+</div>
+
+@if (successMsg()) {
+  <div class="success-msg"><i class="pi pi-check-circle"></i> {{ successMsg() }}</div>
+}
+@if (errorMsg()) {
+  <div class="error-msg"><i class="pi pi-exclamation-circle"></i> {{ errorMsg() }}</div>
+}
+
+<div class="card">
+  <div class="filtros">
+    <div class="campo">
+      <label for="empresa">Empresa</label>
+      <select id="empresa" [(ngModel)]="empresaId" (ngModelChange)="onEmpresaChange()">
+        <option value="">Selecione...</option>
+        @for (e of empresas(); track e.id) {
+          <option [value]="e.id">{{ e.razaoSocial }}</option>
+        }
+      </select>
+    </div>
+  </div>
+
+  @if (loading()) {
+    <div class="loading"><i class="pi pi-spinner pi-spin"></i> Carregando...</div>
+  } @else if (empresaId && contas().length === 0 && !errorMsg()) {
+    <div class="empty"><i class="pi pi-sitemap"></i><p>Esta empresa não tem plano de contas.</p></div>
+  } @else if (contas().length > 0) {
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Código</th>
+          <th>Classificação</th>
+          <th>Nome</th>
+          <th>Tipo</th>
+          <th>Domínio</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (c of contas(); track c.id) {
+          <tr [class.revisar]="c.dominioRevisar">
+            <td>{{ c.codigoReduzido }}</td>
+            <td>{{ c.codigo }}</td>
+            <td [class.sintetica]="!editavel(c)">{{ c.nome }}</td>
+            <td>{{ c.tipo }}</td>
+            <td>
+              @if (editavel(c)) {
+                <div class="dominio-cell">
+                  <input #campo type="text" inputmode="numeric" maxlength="20" class="dominio-input"
+                         [value]="c.codigoDominio ?? ''"
+                         (blur)="salvarDominio(c, campo.value, campo)"
+                         (keyup.enter)="campo.blur()" />
+                  @if (c.dominioRevisar) {
+                    <i class="pi pi-exclamation-triangle aviso-revisar"
+                       title="O cliente renomeou esta conta depois que o código foi informado. Confira e regrave para tirar o aviso."></i>
+                  }
+                </div>
+              } @else {
+                <span class="traco">—</span>
+              }
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  }
+</div>
