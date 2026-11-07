@@ -105,12 +105,12 @@
 
 @if (gerado()) {
   <div class="card" style="margin-top: 1rem;">
-    @if (isAdmin && contaDominio() === null && contaFiltro(); as cf) {
+    @if (isAdmin && !contaDominio() && contaFiltro(); as cf) {
       <div class="faixa-dominio">
         <i class="pi pi-exclamation-triangle" role="img" aria-label="Sem código Domínio"></i>
         <span>A conta {{ cf.codigo }} - {{ cf.nome }} está sem código Domínio.</span>
         <input #fx class="dominio-input" inputmode="numeric" maxlength="20" placeholder="Código"
-               (blur)="salvarDominio(contaId, fx.value, fx)" (keydown.enter)="fx.blur()" />
+               (blur)="salvarDominio(cf.id, fx.value, fx)" (keydown.enter)="fx.blur()" />
       </div>
     }
     @if (dados().length === 0) {
@@ -139,12 +139,12 @@
               <td>{{ item.contrapartida }}</td>
               @if (isAdmin) {
                 <td>
-                  @if (item.contrapartidaDominio !== null) {
+                  @if (item.contrapartidaDominio) {
                     {{ item.contrapartidaDominio }}
                   } @else {
                     <div class="dominio-celula">
                       <i class="pi pi-exclamation-triangle dominio-alerta" role="img" aria-label="Contrapartida sem código Domínio"></i>
-                      <input #dx class="dominio-input" inputmode="numeric" maxlength="20"
+                      <input #dx class="dominio-input" aria-label="Código Domínio da contrapartida" inputmode="numeric" maxlength="20"
                              (blur)="salvarDominio(item.contrapartidaId, dx.value, dx)" (keydown.enter)="dx.blur()" />
                     </div>
                   }

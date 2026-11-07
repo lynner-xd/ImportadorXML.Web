@@ -29,7 +29,7 @@ export class AnaliticoComponent implements OnInit {
   dataFim = '';
   dados = signal<AnaliticoAdminItem[]>([]);
   contaDominio = signal<string | null>(null);
-  contaFiltro = signal<{ codigo: string; nome: string } | null>(null);
+  contaFiltro = signal<{ id: string; codigo: string; nome: string } | null>(null);
   readonly porPagina = 50;
   pagina = signal(1);
   dadosPagina = computed(() => this.dados().slice((this.pagina() - 1) * this.porPagina, this.pagina() * this.porPagina));
@@ -133,16 +133,16 @@ export class AnaliticoComponent implements OnInit {
       ? this.api.getAdminAnalitico(this.empresaId, this.dataInicio, this.dataFim, this.contaId)
       : this.api.getAnalitico(this.dataInicio, this.dataFim, this.contaId).pipe(
           // Empresa: a API não traz Domínio; a coluna nem é renderizada.
-          map(itens => ({
+          map((itens): AnaliticoAdmin => ({
             contaCodigo: '', contaNome: '', contaDominio: null,
             itens: itens.map(i => ({ ...i, contrapartidaId: '', contrapartidaDominio: null }))
-          } as AnaliticoAdmin)));
+          })));
 
     obs.subscribe({
       next: (data) => {
         this.dados.set(data.itens);
         this.contaDominio.set(data.contaDominio);
-        this.contaFiltro.set(this.isAdmin ? { codigo: data.contaCodigo, nome: data.contaNome } : null);
+        this.contaFiltro.set(this.isAdmin ? { id: this.contaId, codigo: data.contaCodigo, nome: data.contaNome } : null);
         this.pagina.set(1);
         this.loading.set(false);
         this.gerado.set(true);
@@ -153,7 +153,7 @@ export class AnaliticoComponent implements OnInit {
 
   // Método regular (não computed): reage ao que o usuário grava na grade.
   temPendencia(): boolean {
-    return this.isAdmin && (this.contaDominio() === null || this.dados().some(i => i.contrapartidaDominio === null));
+    return this.isAdmin && (!this.contaDominio() || this.dados().some(i => !i.contrapartidaDominio));
   }
 
   salvarDominio(contaId: string, valor: string, input: HTMLInputElement): void {
@@ -162,7 +162,7 @@ export class AnaliticoComponent implements OnInit {
     this.api.definirCodigoDominio(contaId, this.empresaId, codigo).subscribe({
       next: () => {
         this.dados.update(l => l.map(i => i.contrapartidaId === contaId ? { ...i, contrapartidaDominio: codigo } : i));
-        if (contaId === this.contaId) this.contaDominio.set(codigo);
+        if (contaId === this.contaFiltro()?.id) this.contaDominio.set(codigo);
       },
       error: (err) => {
         input.value = '';
@@ -172,7 +172,7 @@ export class AnaliticoComponent implements OnInit {
   }
 
   exportarTxt(): void {
-    this.api.downloadAdminAnaliticoTxt(this.empresaId, this.dataInicio, this.dataFim, this.contaId).subscribe({
+    this.api.downloadAdminAnaliticoTxt(this.empresaId, this.dataInicio, this.dataFim, this.contaFiltro()?.id ?? this.contaId).subscribe({
       next: (blob) => {
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
