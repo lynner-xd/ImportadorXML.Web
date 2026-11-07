@@ -93,7 +93,7 @@
         <button class="btn-secondary" (click)="exportarPdf()"><i class="pi pi-file-pdf"></i> PDF</button>
         <button class="btn-secondary" (click)="exportarExcel()"><i class="pi pi-file-excel"></i> Excel</button>
         @if (isAdmin) {
-          <button class="btn-secondary" (click)="exportarTxt()" [disabled]="temPendencia()"
+          <button class="btn-secondary" (click)="exportarTxt()"
                   [title]="temPendencia() ? 'Preencha o código Domínio de todas as contas para gerar o TXT.' : 'Exportar TXT para o Domínio'">
             <i class="pi pi-file"></i> TXT
           </button>

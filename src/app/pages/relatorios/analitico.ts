@@ -171,7 +171,24 @@ export class AnaliticoComponent implements OnInit {
     });
   }
 
+  /// Quantas contas distintas estão sem código: as contrapartidas pendentes mais,
+  /// se for o caso, a própria conta do filtro.
+  private contasSemDominio(): number {
+    const pendentes = new Set(this.dados().filter(i => !i.contrapartidaDominio).map(i => i.contrapartidaId));
+    if (!this.contaDominio()) pendentes.add(this.contaFiltro()?.id ?? this.contaId);
+    return pendentes.size;
+  }
+
   exportarTxt(): void {
+    // O botão fica clicável mesmo com pendência: um botão morto não explica nada.
+    if (this.temPendencia()) {
+      const n = this.contasSemDominio();
+      this.showToast(n === 1
+        ? 'Há 1 conta sem código Domínio nesta listagem. Preencha o código na coluna Domínio antes de gerar o TXT.'
+        : `Há ${n} contas sem código Domínio nesta listagem. Preencha os códigos na coluna Domínio antes de gerar o TXT.`);
+      return;
+    }
+
     this.api.downloadAdminAnaliticoTxt(this.empresaId, this.dataInicio, this.dataFim, this.contaFiltro()?.id ?? this.contaId).subscribe({
       next: (blob) => {
         const url = URL.createObjectURL(blob);
