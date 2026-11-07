@@ -6,7 +6,7 @@ import { environment } from '../../../environments/environment';
 import { UsuarioResponse, CriarUsuarioRequest, EditarUsuarioRequest } from '../models/usuario.models';
 import { PlanoContaResponse, PlanoContaAdmin, CriarContaRequest, AtualizarContaRequest } from '../models/plano-conta.models';
 import { LancamentoResponse, CriarLancamentoRequest, AtualizarLancamentoRequest } from '../models/lancamento.models';
-import { BalanceteItem, AnaliticoItem, EmpresaOption, DreResponse, BalancoPatrimonialResponse, ContasPagarRelatorioResponse } from '../models/relatorio.models';
+import { BalanceteItem, AnaliticoItem, AnaliticoAdmin, EmpresaOption, DreResponse, BalancoPatrimonialResponse, ContasPagarRelatorioResponse } from '../models/relatorio.models';
 import { ConfiguracaoEmailRequest, ConfiguracaoEmailResponse } from '../models/email-config.models';
 import { ImportacaoResultado, ConfiguracaoImportacao, RegraImportacao, RegraImportacaoRequest, ImportarPreview } from '../models/importacao.models';
 import { ScriptResultadoResponse, ScriptHistoricoResponse } from '../models/script.models';
@@ -261,9 +261,14 @@ export class ApiService {
     return this.http.get<PlanoContaResponse[]>(`${this.api}/admin/relatorios/plano-contas`, { params });
   }
 
-  getAdminAnalitico(empresaId: string, dataInicio: string, dataFim: string, contaId: string): Observable<AnaliticoItem[]> {
+  getAdminAnalitico(empresaId: string, dataInicio: string, dataFim: string, contaId: string): Observable<AnaliticoAdmin> {
     const params = new HttpParams().set('empresaId', empresaId).set('dataInicio', dataInicio).set('dataFim', dataFim).set('contaId', contaId);
-    return this.http.get<AnaliticoItem[]>(`${this.api}/admin/relatorios/analitico`, { params });
+    return this.http.get<AnaliticoAdmin>(`${this.api}/admin/relatorios/analitico`, { params });
+  }
+
+  downloadAdminAnaliticoTxt(empresaId: string, dataInicio: string, dataFim: string, contaId: string): Observable<Blob> {
+    const params = new HttpParams().set('empresaId', empresaId).set('dataInicio', dataInicio).set('dataFim', dataFim).set('contaId', contaId);
+    return this.http.get(`${this.api}/admin/relatorios/analitico/txt`, { params, responseType: 'blob' });
   }
 
   getAdminSintetico(empresaId: string, dataInicio: string, dataFim: string, codigoPrefixo?: string): Observable<BalanceteItem[]> {

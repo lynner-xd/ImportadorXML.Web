@@ -22,6 +22,18 @@ export interface AnaliticoItem {
   saldoAtual: number;
 }
 
+export interface AnaliticoAdminItem extends AnaliticoItem {
+  contrapartidaId: string;
+  contrapartidaDominio: string | null;
+}
+
+export interface AnaliticoAdmin {
+  contaCodigo: string;
+  contaNome: string;
+  contaDominio: string | null;
+  itens: AnaliticoAdminItem[];
+}
+
 export interface EmpresaOption {
   id: string;
   razaoSocial: string;

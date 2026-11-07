@@ -2,7 +2,8 @@ import { Component, Input, OnInit, computed, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ApiService } from '../../core/services/api.service';
-import { AnaliticoItem, EmpresaOption } from '../../core/models/relatorio.models';
+import { map } from 'rxjs';
+import { AnaliticoAdmin, AnaliticoAdminItem, EmpresaOption } from '../../core/models/relatorio.models';
 import { PlanoContaResponse } from '../../core/models/plano-conta.models';
 import { PaginacaoComponent } from '../../shared/paginacao/paginacao';
 
@@ -26,7 +27,9 @@ export class AnaliticoComponent implements OnInit {
   contaId = '';
   dataInicio = '';
   dataFim = '';
-  dados = signal<AnaliticoItem[]>([]);
+  dados = signal<AnaliticoAdminItem[]>([]);
+  contaDominio = signal<string | null>(null);
+  contaFiltro = signal<{ codigo: string; nome: string } | null>(null);
   readonly porPagina = 50;
   pagina = signal(1);
   dadosPagina = computed(() => this.dados().slice((this.pagina() - 1) * this.porPagina, this.pagina() * this.porPagina));
@@ -128,11 +131,60 @@ export class AnaliticoComponent implements OnInit {
     this.loading.set(true);
     const obs = this.isAdmin
       ? this.api.getAdminAnalitico(this.empresaId, this.dataInicio, this.dataFim, this.contaId)
-      : this.api.getAnalitico(this.dataInicio, this.dataFim, this.contaId);
+      : this.api.getAnalitico(this.dataInicio, this.dataFim, this.contaId).pipe(
+          // Empresa: a API não traz Domínio; a coluna nem é renderizada.
+          map(itens => ({
+            contaCodigo: '', contaNome: '', contaDominio: null,
+            itens: itens.map(i => ({ ...i, contrapartidaId: '', contrapartidaDominio: null }))
+          } as AnaliticoAdmin)));
 
     obs.subscribe({
-      next: (data) => { this.pagina.set(1); this.dados.set(data); this.loading.set(false); this.gerado.set(true); },
+      next: (data) => {
+        this.dados.set(data.itens);
+        this.contaDominio.set(data.contaDominio);
+        this.contaFiltro.set(this.isAdmin ? { codigo: data.contaCodigo, nome: data.contaNome } : null);
+        this.pagina.set(1);
+        this.loading.set(false);
+        this.gerado.set(true);
+      },
       error: () => this.loading.set(false)
+    });
+  }
+
+  // Método regular (não computed): reage ao que o usuário grava na grade.
+  temPendencia(): boolean {
+    return this.isAdmin && (this.contaDominio() === null || this.dados().some(i => i.contrapartidaDominio === null));
+  }
+
+  salvarDominio(contaId: string, valor: string, input: HTMLInputElement): void {
+    const codigo = valor.trim();
+    if (!codigo) { input.value = ''; return; }
+    this.api.definirCodigoDominio(contaId, this.empresaId, codigo).subscribe({
+      next: () => {
+        this.dados.update(l => l.map(i => i.contrapartidaId === contaId ? { ...i, contrapartidaDominio: codigo } : i));
+        if (contaId === this.contaId) this.contaDominio.set(codigo);
+      },
+      error: (err) => {
+        input.value = '';
+        this.showToast(err.error?.message ?? 'Não foi possível salvar o código Domínio.');
+      }
+    });
+  }
+
+  exportarTxt(): void {
+    this.api.downloadAdminAnaliticoTxt(this.empresaId, this.dataInicio, this.dataFim, this.contaId).subscribe({
+      next: (blob) => {
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url; a.download = this.nomeArquivo('analitico', 'txt'); a.click();
+        URL.revokeObjectURL(url);
+      },
+      // Com responseType blob, o corpo do 409 chega como Blob.
+      error: async (err) => {
+        let msg = 'Não foi possível gerar o TXT.';
+        try { msg = JSON.parse(await (err.error as Blob).text()).message ?? msg; } catch { /* mantém padrão */ }
+        this.showToast(msg);
+      }
     });
   }
 
@@ -174,7 +226,7 @@ export class AnaliticoComponent implements OnInit {
     });
   }
 
-  private nomeArquivo(relatorio: string, extensao: 'pdf' | 'xlsx' = 'pdf'): string {
+  private nomeArquivo(relatorio: string, extensao: 'pdf' | 'xlsx' | 'txt' = 'pdf'): string {
     const now = new Date();
     const p = (n: number) => n.toString().padStart(2, '0');
     const ts = `${p(now.getDate())}${p(now.getMonth() + 1)}${now.getFullYear()}${p(now.getHours())}${p(now.getMinutes())}${p(now.getSeconds())}`;

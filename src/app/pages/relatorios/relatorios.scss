@@ -328,3 +328,38 @@ h3.grupo-fornecedor {
     .text-right { text-align: right; }
   }
 }
+
+.dominio-celula {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.dominio-alerta {
+  color: var(--warning);
+}
+
+.dominio-input {
+  width: 7rem;
+  padding: 0.25rem 0.5rem;
+  background: var(--bg-input);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-xs);
+  color: var(--text-primary);
+  font-size: 0.8125rem;
+}
+
+.faixa-dominio {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.5rem 0.85rem;
+  margin-bottom: 0.75rem;
+  background: var(--bg-hover);
+  border-left: 3px solid var(--warning);
+  border-radius: var(--radius-xs);
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+
+  i { color: var(--warning); }
+}

@@ -92,6 +92,12 @@
       @if (gerado() && dados().length > 0) {
         <button class="btn-secondary" (click)="exportarPdf()"><i class="pi pi-file-pdf"></i> PDF</button>
         <button class="btn-secondary" (click)="exportarExcel()"><i class="pi pi-file-excel"></i> Excel</button>
+        @if (isAdmin) {
+          <button class="btn-secondary" (click)="exportarTxt()" [disabled]="temPendencia()"
+                  [title]="temPendencia() ? 'Preencha o código Domínio de todas as contas para gerar o TXT.' : 'Exportar TXT para o Domínio'">
+            <i class="pi pi-file"></i> TXT
+          </button>
+        }
       }
     </div>
   </div>
@@ -99,6 +105,14 @@
 
 @if (gerado()) {
   <div class="card" style="margin-top: 1rem;">
+    @if (isAdmin && contaDominio() === null && contaFiltro(); as cf) {
+      <div class="faixa-dominio">
+        <i class="pi pi-exclamation-triangle" role="img" aria-label="Sem código Domínio"></i>
+        <span>A conta {{ cf.codigo }} - {{ cf.nome }} está sem código Domínio.</span>
+        <input #fx class="dominio-input" inputmode="numeric" maxlength="20" placeholder="Código"
+               (blur)="salvarDominio(contaId, fx.value, fx)" (keydown.enter)="fx.blur()" />
+      </div>
+    }
     @if (dados().length === 0) {
       <div class="empty"><i class="pi pi-inbox"></i><p>Nenhum dado encontrado.</p></div>
     } @else {
@@ -111,6 +125,7 @@
             <th>Data</th>
             <th>Descrição</th>
             <th>Contrapartida</th>
+            @if (isAdmin) { <th>Domínio</th> }
             <th class="text-right">Débito</th>
             <th class="text-right">Crédito</th>
             <th class="text-right">Saldo Atual</th>
@@ -122,6 +137,19 @@
               <td>{{ item.data | date:'dd/MM/yyyy':'UTC' }}</td>
               <td>{{ item.descricao }}</td>
               <td>{{ item.contrapartida }}</td>
+              @if (isAdmin) {
+                <td>
+                  @if (item.contrapartidaDominio !== null) {
+                    {{ item.contrapartidaDominio }}
+                  } @else {
+                    <div class="dominio-celula">
+                      <i class="pi pi-exclamation-triangle dominio-alerta" role="img" aria-label="Contrapartida sem código Domínio"></i>
+                      <input #dx class="dominio-input" inputmode="numeric" maxlength="20"
+                             (blur)="salvarDominio(item.contrapartidaId, dx.value, dx)" (keydown.enter)="dx.blur()" />
+                    </div>
+                  }
+                </td>
+              }
               <td class="text-right">{{ item.debito | number:'1.2-2' }}</td>
               <td class="text-right">{{ item.credito | number:'1.2-2' }}</td>
               <td class="text-right"><strong>{{ item.saldoAtual | number:'1.2-2' }}</strong></td>
