@@ -19,6 +19,7 @@
         <input type="text"
                [(ngModel)]="form.texto"
                [disabled]="textoDesabilitado()"
+               maxlength="500"
                placeholder="Texto para comparar..." />
         @if (!textoDesabilitado()) {
           <span class="field-hint">
